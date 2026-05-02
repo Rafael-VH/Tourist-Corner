@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { User, UserRole } from '@/domain/entities/User';
+import { getContainer } from '@/core/di/Container';
 
 interface AuthState {
   user: User | null;
@@ -7,7 +8,6 @@ interface AuthState {
   error: string | null;
   isAuthenticated: boolean;
 
-  // Actions
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -16,28 +16,6 @@ interface AuthState {
   signOut: () => Promise<void>;
   clearError: () => void;
 }
-
-// Demo data for development
-const demoUsers: Record<string, User> = {
-  'demo@turista.com': {
-    id: '1',
-    email: 'demo@turista.com',
-    name: 'Carlos Turista',
-    role: 'tourist',
-    avatarUrl: 'https://i.pravatar.cc/150?u=1',
-    phone: '+591 77712345',
-    createdAt: new Date(),
-  },
-  'demo@hotel.com': {
-    id: '2',
-    email: 'demo@hotel.com',
-    name: 'Hotel Administrator',
-    role: 'manager',
-    avatarUrl: 'https://i.pravatar.cc/150?u=2',
-    phone: '+591 77767890',
-    createdAt: new Date(),
-  },
-};
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -51,17 +29,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   clearError: () => set({ error: null }),
 
   signIn: async (email, password) => {
-    void password;
     set({ isLoading: true, error: null });
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      const user = demoUsers[email] || {
-        id: '3',
-        email,
-        name: email.split('@')[0],
-        role: 'tourist' as UserRole,
-        createdAt: new Date(),
-      };
+      const { signIn } = getContainer();
+      const user = await signIn.execute(email, password);
       set({ user, isAuthenticated: true, isLoading: false });
     } catch (error: unknown) {
       set({ error: (error as Error).message, isLoading: false });
@@ -69,17 +40,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signUp: async (email, password, name, role) => {
-    void password;
     set({ isLoading: true, error: null });
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      const user: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        email,
-        name,
-        role,
-        createdAt: new Date(),
-      };
+      const { signUp } = getContainer();
+      const user = await signUp.execute(email, password, name, role);
       set({ user, isAuthenticated: true, isLoading: false });
     } catch (error: unknown) {
       set({ error: (error as Error).message, isLoading: false });
@@ -88,7 +52,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: async () => {
     set({ isLoading: true });
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    set({ user: null, isAuthenticated: false, isLoading: false });
+    try {
+      const { signOut } = getContainer();
+      await signOut.execute();
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
+    }
   },
 }));
