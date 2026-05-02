@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
@@ -21,6 +21,7 @@ import {
 
 export function HotelManagementPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { selectedHotel, fetchHotelById, isLoading, updateHotel } =
     useHotelStore();
   const { rooms, fetchRoomsByHotel } = useRoomStore();
@@ -337,7 +338,10 @@ export function HotelManagementPage() {
                   {rooms.length} habitaciones registradas
                 </p>
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors">
+              <button
+                onClick={() => navigate(`/dashboard/room/new?hotelId=${id}`)}
+                className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
+              >
                 <Plus className="w-4 h-4" />
                 Nueva Habitacion
               </button>
