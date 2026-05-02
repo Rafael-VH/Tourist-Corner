@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
+import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import {
   LayoutDashboard,
   Hotel,
   Plus,
-  Users,
   Bed,
   Star,
   DollarSign,
@@ -19,85 +19,61 @@ import {
 
 export function ManagerDashboardPage() {
   const { user } = useAuthStore();
-  const { hotels, fetchHotels } = useHotelStore();
+  const navigate = useNavigate();
+  const { hotels, fetchManagerHotels, isLoading } = useHotelStore();
+  const { rooms } = useRoomStore();
   const [timeRange, setTimeRange] = useState<"week" | "month" | "year">(
     "month",
   );
 
   useEffect(() => {
-    fetchHotels();
-  }, []);
+    if (user?.id) {
+      fetchManagerHotels(user.id);
+    }
+  }, [user?.id, fetchManagerHotels]);
 
-  // Mock stats
+  const totalRooms = rooms.length;
+  const totalRevenue = hotels.reduce(
+    (sum, h) => sum + h.priceRange.min * h.reviewCount,
+    0,
+  );
+
   const stats = [
     {
       label: "Mis Hoteles",
-      value: "3",
+      value: String(hotels.length),
       icon: <Hotel className="w-5 h-5" />,
       color: "bg-[#E8850C]",
     },
     {
       label: "Habitaciones",
-      value: "24",
+      value: String(totalRooms),
       icon: <Bed className="w-5 h-5" />,
       color: "bg-[#FF7A52]",
     },
     {
-      label: "Reservas",
-      value: "156",
+      label: "Resenas",
+      value: String(
+        hotels.reduce((sum, h) => sum + h.reviewCount, 0),
+      ),
       icon: <Calendar className="w-5 h-5" />,
       color: "bg-emerald-500",
     },
     {
-      label: "Ingresos",
-      value: "$12.4k",
+      label: "Ingreso Ref.",
+      value: `$${(totalRevenue / 1000).toFixed(1)}k`,
       icon: <DollarSign className="w-5 h-5" />,
       color: "bg-blue-500",
     },
   ];
 
-  const recentBookings = [
-    {
-      guest: "Maria Garcia",
-      hotel: "Hotel Plaza Grande",
-      room: "Suite Presidencial",
-      date: "2024-12-01",
-      status: "confirmed",
-      amount: 450,
-    },
-    {
-      guest: "Juan Perez",
-      hotel: "Hotel Plaza Grande",
-      room: "Habitacion Deluxe",
-      date: "2024-12-03",
-      status: "pending",
-      amount: 220,
-    },
-    {
-      guest: "Ana Lopez",
-      hotel: "Resort Los Tajibos",
-      room: "Bungalow Jardin",
-      date: "2024-12-05",
-      status: "confirmed",
-      amount: 600,
-    },
-    {
-      guest: "Carlos Ruiz",
-      hotel: "Hotel Plaza Grande",
-      room: "Habitacion Estandar",
-      date: "2024-12-07",
-      status: "confirmed",
-      amount: 120,
-    },
-    {
-      guest: "Laura Martinez",
-      hotel: "Resort Los Tajibos",
-      room: "Suite Familiar",
-      date: "2024-12-10",
-      status: "pending",
-      amount: 800,
-    },
-  ];
+  const handleNewHotel = () => {
+    navigate("/dashboard/hotel/new");
+  };
+
+  const handleNewRoom = (hotelId: string) => {
+    navigate(`/dashboard/room/new?hotelId=${hotelId}`);
+  };
 
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
@@ -170,10 +146,13 @@ export function ManagerDashboardPage() {
                       Gestiona tus hoteles y habitaciones
                     </p>
                   </div>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors">
-                    <Plus className="w-4 h-4" />
-                    Agregar
-                  </button>
+                    <button
+                      onClick={handleNewHotel}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Agregar
+                    </button>
                 </div>
               </div>
 
@@ -235,7 +214,7 @@ export function ManagerDashboardPage() {
               </div>
             </motion.div>
 
-            {/* Recent Bookings */}
+            {/* Hotel Summary Table */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -244,7 +223,7 @@ export function ManagerDashboardPage() {
             >
               <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
                 <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
-                  Reservas Recientes
+                  Resumen de Hoteles
                 </h2>
               </div>
               <div className="overflow-x-auto">
@@ -252,61 +231,69 @@ export function ManagerDashboardPage() {
                   <thead>
                     <tr className="border-b border-[#F5EDE3] dark:border-[#2D3748]">
                       <th className="text-left px-6 py-3 text-xs font-medium text-[#96785A] dark:text-[#64748B] uppercase">
-                        Huesped
-                      </th>
-                      <th className="text-left px-6 py-3 text-xs font-medium text-[#96785A] dark:text-[#64748B] uppercase">
                         Hotel
                       </th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-[#96785A] dark:text-[#64748B] uppercase">
-                        Habitacion
+                        Tipo
                       </th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-[#96785A] dark:text-[#64748B] uppercase">
-                        Fecha
+                        Ciudad
+                      </th>
+                      <th className="text-left px-6 py-3 text-xs font-medium text-[#96785A] dark:text-[#64748B] uppercase">
+                        Rating
                       </th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-[#96785A] dark:text-[#64748B] uppercase">
                         Estado
                       </th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-[#96785A] dark:text-[#64748B] uppercase">
-                        Monto
+                        Precio
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F5EDE3] dark:divide-[#2D3748]">
-                    {recentBookings.map((booking, index) => (
+                    {hotels.map((hotel) => (
                       <tr
-                        key={index}
+                        key={hotel.id}
                         className="hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors"
                       >
                         <td className="px-6 py-4 text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
-                          {booking.guest}
+                          {hotel.name}
                         </td>
-                        <td className="px-6 py-4 text-sm text-[#5E4836] dark:text-[#94A3B8]">
-                          {booking.hotel}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-[#5E4836] dark:text-[#94A3B8]">
-                          {booking.room}
+                        <td className="px-6 py-4 text-sm text-[#5E4836] dark:text-[#94A3B8] capitalize">
+                          {hotel.type}
                         </td>
                         <td className="px-6 py-4 text-sm text-[#96785A] dark:text-[#64748B]">
-                          {booking.date}
+                          {hotel.city}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-[#E8850C] font-medium">
+                          {hotel.rating}
                         </td>
                         <td className="px-6 py-4">
                           <span
                             className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                              booking.status === "confirmed"
+                              hotel.isActive
                                 ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20"
-                                : "bg-amber-50 text-amber-600 dark:bg-amber-900/20"
+                                : "bg-red-50 text-red-600 dark:bg-red-900/20"
                             }`}
                           >
-                            {booking.status === "confirmed"
-                              ? "Confirmada"
-                              : "Pendiente"}
+                            {hotel.isActive ? "Activo" : "Inactivo"}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-[#E8850C]">
-                          ${booking.amount}
+                          ${hotel.priceRange.min}
                         </td>
                       </tr>
                     ))}
+                    {hotels.length === 0 && !isLoading && (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          className="px-6 py-8 text-center text-sm text-[#96785A] dark:text-[#64748B]"
+                        >
+                          No tienes hoteles registrados aun
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -326,7 +313,10 @@ export function ManagerDashboardPage() {
                 Acciones Rapidas
               </h3>
               <div className="space-y-2">
-                <button className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors">
+                <button
+                  onClick={handleNewHotel}
+                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                >
                   <Plus className="w-5 h-5 text-[#E8850C]" />
                   <div>
                     <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
@@ -337,7 +327,11 @@ export function ManagerDashboardPage() {
                     </p>
                   </div>
                 </button>
-                <button className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors">
+                <button
+                  onClick={() => hotels[0] && handleNewRoom(hotels[0].id)}
+                  disabled={hotels.length === 0}
+                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors disabled:opacity-50"
+                >
                   <Bed className="w-5 h-5 text-[#E8850C]" />
                   <div>
                     <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
