@@ -1,65 +1,65 @@
-import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuthStore } from '@/presentation/providers/useAuthStore';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MapPin, 
-  Mail, 
-  Lock, 
-  User, 
-  Phone, 
-  ArrowRight, 
-  Eye, 
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuthStore } from "@/presentation/providers/useAuthStore";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MapPin,
+  Mail,
+  Lock,
+  User,
+  Phone,
+  ArrowRight,
+  Eye,
   EyeOff,
   Building2,
-  Users
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
+  Users,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
-type UserRole = 'tourist' | 'manager';
-type AuthTab = 'login' | 'register';
+type UserRole = "tourist" | "manager";
+type AuthTab = "login" | "register";
 
 export function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { signIn, signUp, isLoading } = useAuthStore();
-  
+
   const [activeTab, setActiveTab] = useState<AuthTab>(
-    searchParams.get('tab') === 'register' ? 'register' : 'login'
+    searchParams.get("tab") === "register" ? "register" : "login",
   );
-  const [role, setRole] = useState<UserRole>('tourist');
+  const [role, setRole] = useState<UserRole>("tourist");
   const [showPassword, setShowPassword] = useState(false);
-  
+
   // Form fields
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     try {
-      await signIn(email || 'demo@turista.com', password || 'demo123');
-      navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesion');
+      await signIn(email || "demo@turista.com", password || "demo123");
+      navigate("/");
+    } catch (err: unknown) {
+      setError((err as Error).message || "Error al iniciar sesion");
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     if (!name || !email || !password) {
-      setError('Por favor completa todos los campos obligatorios');
+      setError("Por favor completa todos los campos obligatorios");
       return;
     }
     try {
       await signUp(email, password, name, role);
-      navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Error al registrarse');
+      navigate("/");
+    } catch (err: unknown) {
+      setError((err as Error).message || "Error al registrarse");
     }
   };
 
@@ -85,15 +85,18 @@ export function LoginPage() {
           {/* Tabs */}
           <div className="flex border-b border-[#E8D9C8] dark:border-[#2D3748]">
             <button
-              onClick={() => { setActiveTab('login'); setError(''); }}
+              onClick={() => {
+                setActiveTab("login");
+                setError("");
+              }}
               className={`flex-1 py-4 text-sm font-medium transition-colors relative ${
-                activeTab === 'login'
-                  ? 'text-[#E8850C]'
-                  : 'text-[#96785A] dark:text-[#64748B] hover:text-[#5E4836] dark:hover:text-[#94A3B8]'
+                activeTab === "login"
+                  ? "text-[#E8850C]"
+                  : "text-[#96785A] dark:text-[#64748B] hover:text-[#5E4836] dark:hover:text-[#94A3B8]"
               }`}
             >
               Iniciar Sesion
-              {activeTab === 'login' && (
+              {activeTab === "login" && (
                 <motion.div
                   layoutId="activeTab"
                   className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E8850C]"
@@ -101,15 +104,18 @@ export function LoginPage() {
               )}
             </button>
             <button
-              onClick={() => { setActiveTab('register'); setError(''); }}
+              onClick={() => {
+                setActiveTab("register");
+                setError("");
+              }}
               className={`flex-1 py-4 text-sm font-medium transition-colors relative ${
-                activeTab === 'register'
-                  ? 'text-[#E8850C]'
-                  : 'text-[#96785A] dark:text-[#64748B] hover:text-[#5E4836] dark:hover:text-[#94A3B8]'
+                activeTab === "register"
+                  ? "text-[#E8850C]"
+                  : "text-[#96785A] dark:text-[#64748B] hover:text-[#5E4836] dark:hover:text-[#94A3B8]"
               }`}
             >
               Crear Cuenta
-              {activeTab === 'register' && (
+              {activeTab === "register" && (
                 <motion.div
                   layoutId="activeTab"
                   className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E8850C]"
@@ -120,7 +126,7 @@ export function LoginPage() {
 
           <div className="p-6">
             <AnimatePresence mode="wait">
-              {activeTab === 'login' ? (
+              {activeTab === "login" ? (
                 <motion.div
                   key="login"
                   initial={{ opacity: 0, x: -20 }}
@@ -158,7 +164,7 @@ export function LoginPage() {
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B89A7A]" />
                         <input
-                          type={showPassword ? 'text' : 'password'}
+                          type={showPassword ? "text" : "password"}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="Tu contrasena"
@@ -169,7 +175,11 @@ export function LoginPage() {
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B89A7A] hover:text-[#E8850C] transition-colors"
                         >
-                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          {showPassword ? (
+                            <EyeOff className="w-5 h-5" />
+                          ) : (
+                            <Eye className="w-5 h-5" />
+                          )}
                         </button>
                       </div>
                     </div>
@@ -200,7 +210,12 @@ export function LoginPage() {
                     </button>
 
                     <p className="text-xs text-center text-[#96785A] dark:text-[#64748B] mt-4">
-                      Demo: usa <strong className="text-[#E8850C]">demo@turista.com</strong> / <strong className="text-[#E8850C]">demo@hotel.com</strong>
+                      Demo: usa{" "}
+                      <strong className="text-[#E8850C]">
+                        demo@turista.com
+                      </strong>{" "}
+                      /{" "}
+                      <strong className="text-[#E8850C]">demo@hotel.com</strong>
                     </p>
                   </form>
                 </motion.div>
@@ -226,36 +241,48 @@ export function LoginPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
-                        onClick={() => setRole('tourist')}
+                        onClick={() => setRole("tourist")}
                         className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                          role === 'tourist'
-                            ? 'border-[#E8850C] bg-[#FFF8F1] dark:bg-[#242B35]'
-                            : 'border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]/50'
+                          role === "tourist"
+                            ? "border-[#E8850C] bg-[#FFF8F1] dark:bg-[#242B35]"
+                            : "border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]/50"
                         }`}
                       >
-                        <Users className={`w-5 h-5 ${role === 'tourist' ? 'text-[#E8850C]' : 'text-[#B89A7A]'}`} />
+                        <Users
+                          className={`w-5 h-5 ${role === "tourist" ? "text-[#E8850C]" : "text-[#B89A7A]"}`}
+                        />
                         <div className="text-left">
-                          <p className={`text-sm font-medium ${role === 'tourist' ? 'text-[#E8850C]' : 'text-[#5E4836] dark:text-[#94A3B8]'}`}>
+                          <p
+                            className={`text-sm font-medium ${role === "tourist" ? "text-[#E8850C]" : "text-[#5E4836] dark:text-[#94A3B8]"}`}
+                          >
                             Turista
                           </p>
-                          <p className="text-xs text-[#96785A] dark:text-[#64748B]">Explora hoteles</p>
+                          <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                            Explora hoteles
+                          </p>
                         </div>
                       </button>
                       <button
                         type="button"
-                        onClick={() => setRole('manager')}
+                        onClick={() => setRole("manager")}
                         className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                          role === 'manager'
-                            ? 'border-[#E8850C] bg-[#FFF8F1] dark:bg-[#242B35]'
-                            : 'border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]/50'
+                          role === "manager"
+                            ? "border-[#E8850C] bg-[#FFF8F1] dark:bg-[#242B35]"
+                            : "border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]/50"
                         }`}
                       >
-                        <Building2 className={`w-5 h-5 ${role === 'manager' ? 'text-[#E8850C]' : 'text-[#B89A7A]'}`} />
+                        <Building2
+                          className={`w-5 h-5 ${role === "manager" ? "text-[#E8850C]" : "text-[#B89A7A]"}`}
+                        />
                         <div className="text-left">
-                          <p className={`text-sm font-medium ${role === 'manager' ? 'text-[#E8850C]' : 'text-[#5E4836] dark:text-[#94A3B8]'}`}>
+                          <p
+                            className={`text-sm font-medium ${role === "manager" ? "text-[#E8850C]" : "text-[#5E4836] dark:text-[#94A3B8]"}`}
+                          >
                             Gestion
                           </p>
-                          <p className="text-xs text-[#96785A] dark:text-[#64748B]">Administra hotel</p>
+                          <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                            Administra hotel
+                          </p>
                         </div>
                       </button>
                     </div>
@@ -319,7 +346,7 @@ export function LoginPage() {
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B89A7A]" />
                         <input
-                          type={showPassword ? 'text' : 'password'}
+                          type={showPassword ? "text" : "password"}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="Minimo 6 caracteres"
@@ -331,7 +358,11 @@ export function LoginPage() {
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B89A7A] hover:text-[#E8850C] transition-colors"
                         >
-                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          {showPassword ? (
+                            <EyeOff className="w-5 h-5" />
+                          ) : (
+                            <Eye className="w-5 h-5" />
+                          )}
                         </button>
                       </div>
                     </div>
