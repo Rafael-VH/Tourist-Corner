@@ -1,25 +1,31 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from '@/presentation/providers/useAuthStore';
-import { Layout } from '@/presentation/widgets/Layout';
-import { LoginPage } from '@/presentation/pages/LoginPage';
-import { HomePage } from '@/presentation/pages/HomePage';
-import { HotelDetailPage } from '@/presentation/pages/HotelDetailPage';
-import { RoomDetailPage } from '@/presentation/pages/RoomDetailPage';
-import { ManagerDashboardPage } from '@/presentation/pages/ManagerDashboardPage';
-import { HotelManagementPage } from '@/presentation/pages/HotelManagementPage';
-import { RoomManagementPage } from '@/presentation/pages/RoomManagementPage';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuthStore } from "@/presentation/providers/useAuthStore";
+import { Layout } from "@/presentation/widgets/Layout";
+import { LoginPage } from "@/presentation/pages/LoginPage";
+import { HomePage } from "@/presentation/pages/HomePage";
+import { HotelDetailPage } from "@/presentation/pages/HotelDetailPage";
+import { RoomDetailPage } from "@/presentation/pages/RoomDetailPage";
+import { ManagerDashboardPage } from "@/presentation/pages/ManagerDashboardPage";
+import { HotelManagementPage } from "@/presentation/pages/HotelManagementPage";
+import { RoomManagementPage } from "@/presentation/pages/RoomManagementPage";
 
-function ProtectedRoute({ children, requireManager = false }: { children: React.ReactNode; requireManager?: boolean }) {
+function ProtectedRoute({
+  children,
+  requireManager = false,
+}: {
+  children: React.ReactNode;
+  requireManager?: boolean;
+}) {
   const { isAuthenticated, user } = useAuthStore();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  
-  if (requireManager && user?.role !== 'manager') {
+
+  if (requireManager && user?.role !== "manager") {
     return <Navigate to="/" replace />;
   }
-  
+
   return <>{children}</>;
 }
 
