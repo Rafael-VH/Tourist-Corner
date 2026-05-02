@@ -69,30 +69,30 @@
   * {
     @apply border-border;
   }
-  
+
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
     @apply bg-[#FDF8F3] dark:bg-[#0F1419] text-[#2D1F14] dark:text-[#E2E8F0] antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  
+
   /* Scrollbar styling */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
-  
+
   ::-webkit-scrollbar-track {
     @apply bg-[#F5EDE3] dark:bg-[#1A2028];
   }
-  
+
   ::-webkit-scrollbar-thumb {
     @apply bg-[#D4BEA5] dark:bg-[#2D3748] rounded-full;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-[#B89A7A] dark:bg-[#4A3829];
   }
@@ -102,26 +102,27 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .animate-fade-in {
     animation: fadeIn 0.3s ease-in-out;
   }
-  
+
   @keyframes fadeIn {
     from {
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
+
   .glass-effect {
     @apply bg-white/80 dark:bg-[#1A2028]/80 backdrop-blur-lg;
   }
-  
+
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:shadow-[#E8850C]/10 hover:-translate-y-1;
   }
