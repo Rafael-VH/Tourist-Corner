@@ -21,7 +21,7 @@ import {
 
 export function HotelManagementPage() {
   const { id } = useParams<{ id: string }>();
-  const { selectedHotel, fetchHotelById, isLoading } = useHotelStore();
+  const { selectedHotel, fetchHotelById, isLoading, updateHotel } = useHotelStore();
   const { rooms, fetchRoomsByHotel } = useRoomStore();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -38,7 +38,7 @@ export function HotelManagementPage() {
       fetchHotelById(id);
       fetchRoomsByHotel(id);
     }
-  }, [id]);
+  }, [id, fetchHotelById, fetchRoomsByHotel]);
 
   if (isLoading || !selectedHotel) {
     return (
@@ -50,8 +50,15 @@ export function HotelManagementPage() {
 
   const hotel = selectedHotel;
 
-  const handleSave = () => {
-    // In real app, call API
+  const handleSave = async () => {
+    if (!id) return;
+    await updateHotel(id, {
+      name: editForm.name,
+      description: editForm.description,
+      phone: editForm.phone,
+      email: editForm.email,
+      address: editForm.address,
+    });
     setIsEditing(false);
   };
 
