@@ -39,18 +39,20 @@ export class SupabaseAuthRepository implements AuthRepository {
     if (error) handleSupabaseError(error);
     if (!data.user) throw new Error('No se pudo crear el usuario');
 
-    const { error: profileError } = await supabase
-      .from('users')
-      .insert({
-        id: data.user.id,
-        email: data.user.email!,
-        name,
-        role,
-      });
+    // Profile is auto-created by the handle_new_user trigger
+    // Wait a moment for the trigger to complete
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    if (profileError) handleSupabaseError(profileError);
+    // Auto sign-in after registration
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    return this.mapToUser(data.user, { name, role });
+    if (signInError) handleSupabaseError(signInError);
+    if (!signInData?.user) throw new Error('No se pudo iniciar sesion despues del registro');
+
+    return this.mapToUser(signInData.user, { name, role });
   }
 
   async signOut(): Promise<void> {

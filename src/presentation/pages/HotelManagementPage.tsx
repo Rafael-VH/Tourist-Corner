@@ -21,7 +21,8 @@ import {
 
 export function HotelManagementPage() {
   const { id } = useParams<{ id: string }>();
-  const { selectedHotel, fetchHotelById, isLoading, updateHotel } = useHotelStore();
+  const { selectedHotel, fetchHotelById, isLoading, updateHotel } =
+    useHotelStore();
   const { rooms, fetchRoomsByHotel } = useRoomStore();
 
   const [isEditing, setIsEditing] = useState(false);

@@ -8,6 +8,8 @@ import { RoomDetailPage } from "@/presentation/pages/RoomDetailPage";
 import { ManagerDashboardPage } from "@/presentation/pages/ManagerDashboardPage";
 import { HotelManagementPage } from "@/presentation/pages/HotelManagementPage";
 import { RoomManagementPage } from "@/presentation/pages/RoomManagementPage";
+import { NewHotelPage } from "@/presentation/pages/NewHotelPage";
+import { NewRoomPage } from "@/presentation/pages/NewRoomPage";
 
 function ProtectedRoute({
   children,
@@ -47,10 +49,26 @@ export function AppRouter() {
             }
           />
           <Route
+            path="/dashboard/hotel/new"
+            element={
+              <ProtectedRoute requireManager>
+                <NewHotelPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/dashboard/hotel/:id"
             element={
               <ProtectedRoute requireManager>
                 <HotelManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/room/new"
+            element={
+              <ProtectedRoute requireManager>
+                <NewRoomPage />
               </ProtectedRoute>
             }
           />

@@ -20,7 +20,8 @@ import {
 
 export function RoomManagementPage() {
   const { id } = useParams<{ id: string }>();
-  const { rooms, fetchRoomById, isLoading, updateRoomStatus, updateRoom } = useRoomStore();
+  const { rooms, fetchRoomById, isLoading, updateRoomStatus, updateRoom } =
+    useRoomStore();
   const selectedRoom = rooms.find((r) => r.id === id) || null;
 
   const [isEditing, setIsEditing] = useState(true);

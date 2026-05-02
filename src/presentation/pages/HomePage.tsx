@@ -51,7 +51,7 @@ export function HomePage() {
 
   useEffect(() => {
     fetchHotels();
-  }, []);
+  }, [fetchHotels]);
 
   const handleSearch = () => {
     setFilters({ searchQuery: searchQuery || undefined });

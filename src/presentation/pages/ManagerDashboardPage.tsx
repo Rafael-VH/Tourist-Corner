@@ -15,6 +15,7 @@ import {
   ChevronRight,
   BarChart3,
   Calendar,
+  Users,
 } from "lucide-react";
 
 export function ManagerDashboardPage() {
