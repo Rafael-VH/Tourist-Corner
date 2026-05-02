@@ -6,7 +6,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  
+
   // Actions
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
@@ -50,7 +50,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   setError: (error) => set({ error }),
   clearError: () => set({ error: null }),
 
-  signIn: async (email, _password) => {
+  signIn: async (email, password) => {
+    void password;
     set({ isLoading: true, error: null });
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
@@ -62,12 +63,13 @@ export const useAuthStore = create<AuthState>((set) => ({
         createdAt: new Date(),
       };
       set({ user, isAuthenticated: true, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 
-  signUp: async (email, _password, name, role) => {
+  signUp: async (email, password, name, role) => {
+    void password;
     set({ isLoading: true, error: null });
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
@@ -79,8 +81,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         createdAt: new Date(),
       };
       set({ user, isAuthenticated: true, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 
