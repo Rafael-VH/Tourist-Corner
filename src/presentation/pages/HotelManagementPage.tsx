@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useHotelStore } from '@/presentation/providers/useHotelStore';
-import { useRoomStore } from '@/presentation/providers/useRoomStore';
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useHotelStore } from "@/presentation/providers/useHotelStore";
+import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import {
   ArrowLeft,
   Plus,
@@ -17,20 +17,20 @@ import {
   Save,
   X,
   Image,
-} from 'lucide-react';
+} from "lucide-react";
 
 export function HotelManagementPage() {
   const { id } = useParams<{ id: string }>();
   const { selectedHotel, fetchHotelById, isLoading } = useHotelStore();
   const { rooms, fetchRoomsByHotel } = useRoomStore();
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
-    name: '',
-    description: '',
-    phone: '',
-    email: '',
-    address: '',
+    name: selectedHotel?.name || "",
+    description: selectedHotel?.description || "",
+    phone: selectedHotel?.phone || "",
+    email: selectedHotel?.email || "",
+    address: selectedHotel?.address || "",
   });
 
   useEffect(() => {
@@ -39,18 +39,6 @@ export function HotelManagementPage() {
       fetchRoomsByHotel(id);
     }
   }, [id]);
-
-  useEffect(() => {
-    if (selectedHotel) {
-      setEditForm({
-        name: selectedHotel.name,
-        description: selectedHotel.description,
-        phone: selectedHotel.phone,
-        email: selectedHotel.email,
-        address: selectedHotel.address,
-      });
-    }
-  }, [selectedHotel]);
 
   if (isLoading || !selectedHotel) {
     return (
@@ -68,7 +56,7 @@ export function HotelManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
+    <div key={hotel.id} className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
       {/* Header */}
       <div className="bg-white dark:bg-[#1A2028] border-b border-[#E8D9C8] dark:border-[#2D3748]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -82,7 +70,9 @@ export function HotelManagementPage() {
                 <span className="text-sm font-medium">Panel</span>
               </Link>
               <span className="text-[#D4BEA5]">/</span>
-              <span className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">{hotel.name}</span>
+              <span className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                {hotel.name}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               {!isEditing ? (
@@ -142,10 +132,14 @@ export function HotelManagementPage() {
             <div className="absolute inset-0 bg-[#2D1F14]/30" />
             <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-white">{hotel.name}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-white">
+                  {hotel.name}
+                </h1>
                 <div className="flex items-center gap-2 mt-1 text-white/80">
                   <MapPin className="w-4 h-4" />
-                  <span className="text-sm">{hotel.address}, {hotel.city}</span>
+                  <span className="text-sm">
+                    {hotel.address}, {hotel.city}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white/90 backdrop-blur rounded-xl">
@@ -160,49 +154,69 @@ export function HotelManagementPage() {
             {isEditing ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">Nombre</label>
+                  <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                    Nombre
+                  </label>
                   <input
                     type="text"
                     value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, name: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">Descripcion</label>
+                  <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                    Descripcion
+                  </label>
                   <textarea
                     value={editForm.description}
-                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, description: e.target.value })
+                    }
                     rows={4}
                     className="w-full px-4 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 resize-none"
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">Telefono</label>
+                    <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                      Telefono
+                    </label>
                     <input
                       type="text"
                       value={editForm.phone}
-                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, phone: e.target.value })
+                      }
                       className="w-full px-4 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">Email</label>
+                    <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                      Email
+                    </label>
                     <input
                       type="email"
                       value={editForm.email}
-                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, email: e.target.value })
+                      }
                       className="w-full px-4 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">Direccion</label>
+                  <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                    Direccion
+                  </label>
                   <input
                     type="text"
                     value={editForm.address}
-                    onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, address: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50"
                   />
                 </div>
@@ -210,29 +224,45 @@ export function HotelManagementPage() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">Descripcion</h3>
-                  <p className="text-[#2D1F14] dark:text-[#E2E8F0] leading-relaxed">{hotel.description}</p>
+                  <h3 className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                    Descripcion
+                  </h3>
+                  <p className="text-[#2D1F14] dark:text-[#E2E8F0] leading-relaxed">
+                    {hotel.description}
+                  </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[#F5EDE3] dark:border-[#2D3748]">
                   <div className="flex items-center gap-3">
                     <Phone className="w-5 h-5 text-[#E8850C]" />
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Telefono</p>
-                      <p className="text-sm text-[#2D1F14] dark:text-[#E2E8F0]">{hotel.phone}</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Telefono
+                      </p>
+                      <p className="text-sm text-[#2D1F14] dark:text-[#E2E8F0]">
+                        {hotel.phone}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="w-5 h-5 text-[#E8850C]" />
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Email</p>
-                      <p className="text-sm text-[#2D1F14] dark:text-[#E2E8F0]">{hotel.email}</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Email
+                      </p>
+                      <p className="text-sm text-[#2D1F14] dark:text-[#E2E8F0]">
+                        {hotel.email}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPin className="w-5 h-5 text-[#E8850C]" />
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Ciudad</p>
-                      <p className="text-sm text-[#2D1F14] dark:text-[#E2E8F0]">{hotel.city}</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Ciudad
+                      </p>
+                      <p className="text-sm text-[#2D1F14] dark:text-[#E2E8F0]">
+                        {hotel.city}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -249,7 +279,9 @@ export function HotelManagementPage() {
           className="bg-white dark:bg-[#1A2028] rounded-2xl p-6 border border-[#E8D9C8] dark:border-[#2D3748] mb-8"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">Galeria de Imagenes</h2>
+            <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+              Galeria de Imagenes
+            </h2>
             <button className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors">
               <Plus className="w-4 h-4" />
               Agregar
@@ -257,8 +289,15 @@ export function HotelManagementPage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {hotel.images.map((img, index) => (
-              <div key={index} className="relative group rounded-xl overflow-hidden aspect-square">
-                <img src={img} alt={`${hotel.name} ${index + 1}`} className="w-full h-full object-cover" />
+              <div
+                key={index}
+                className="relative group rounded-xl overflow-hidden aspect-square"
+              >
+                <img
+                  src={img}
+                  alt={`${hotel.name} ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <button className="p-2 bg-white/90 rounded-lg text-red-500 hover:bg-white transition-colors">
                     <Trash2 className="w-4 h-4" />
@@ -283,8 +322,12 @@ export function HotelManagementPage() {
           <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">Habitaciones</h2>
-                <p className="text-sm text-[#96785A] dark:text-[#64748B]">{rooms.length} habitaciones registradas</p>
+                <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                  Habitaciones
+                </h2>
+                <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                  {rooms.length} habitaciones registradas
+                </p>
               </div>
               <button className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors">
                 <Plus className="w-4 h-4" />
@@ -308,16 +351,22 @@ export function HotelManagementPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0]">{room.name}</h3>
-                        <p className="text-sm text-[#96785A] dark:text-[#64748B]">{room.type}</p>
+                        <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                          {room.name}
+                        </h3>
+                        <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                          {room.type}
+                        </p>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                          room.isAvailable
-                            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20'
-                            : 'bg-red-50 text-red-600 dark:bg-red-900/20'
-                        }`}>
-                          {room.isAvailable ? 'Disponible' : 'Ocupada'}
+                        <span
+                          className={`px-2 py-1 rounded-lg text-xs font-medium ${
+                            room.isAvailable
+                              ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20"
+                              : "bg-red-50 text-red-600 dark:bg-red-900/20"
+                          }`}
+                        >
+                          {room.isAvailable ? "Disponible" : "Ocupada"}
                         </span>
                       </div>
                     </div>
