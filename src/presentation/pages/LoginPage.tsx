@@ -40,8 +40,12 @@ export function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!email || !password) {
+      setError("Por favor ingresa tu correo y contrasena");
+      return;
+    }
     try {
-      await signIn(email || "demo@turista.com", password || "demo123");
+      await signIn(email, password);
       navigate("/");
     } catch (err: unknown) {
       setError((err as Error).message || "Error al iniciar sesion");
@@ -208,15 +212,6 @@ export function LoginPage() {
                         </>
                       )}
                     </button>
-
-                    <p className="text-xs text-center text-[#96785A] dark:text-[#64748B] mt-4">
-                      Demo: usa{" "}
-                      <strong className="text-[#E8850C]">
-                        demo@turista.com
-                      </strong>{" "}
-                      /{" "}
-                      <strong className="text-[#E8850C]">demo@hotel.com</strong>
-                    </p>
                   </form>
                 </motion.div>
               ) : (
