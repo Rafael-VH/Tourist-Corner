@@ -5,7 +5,7 @@ interface CommentState {
   comments: Comment[];
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   setComments: (comments: Comment[]) => void;
   fetchCommentsByTarget: (targetId: string, targetType: string) => Promise<void>;
@@ -96,8 +96,8 @@ export const useCommentStore = create<CommentState>((set) => ({
         (c) => c.targetId === targetId && c.targetType === targetType
       );
       set({ comments: filtered, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 
@@ -115,8 +115,8 @@ export const useCommentStore = create<CommentState>((set) => ({
         comments: [newComment, ...state.comments],
         isLoading: false,
       }));
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 

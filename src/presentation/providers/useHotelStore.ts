@@ -17,7 +17,7 @@ interface HotelState {
   isLoading: boolean;
   error: string | null;
   filters: HotelFilters;
-  
+
   // Actions
   setHotels: (hotels: Hotel[]) => void;
   setSelectedHotel: (hotel: Hotel | null) => void;
@@ -200,7 +200,7 @@ export const useHotelStore = create<HotelState>((set, get) => ({
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       let filtered = [...demoHotels];
-      
+
       if (filters.city) {
         filtered = filtered.filter((h) => h.city.toLowerCase().includes(filters.city!.toLowerCase()));
       }
@@ -222,10 +222,10 @@ export const useHotelStore = create<HotelState>((set, get) => ({
           (h) => h.name.toLowerCase().includes(q) || h.description.toLowerCase().includes(q)
         );
       }
-      
+
       set({ hotels: filtered, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 
@@ -235,8 +235,8 @@ export const useHotelStore = create<HotelState>((set, get) => ({
       await new Promise((resolve) => setTimeout(resolve, 300));
       const hotel = demoHotels.find((h) => h.id === id) || null;
       set({ selectedHotel: hotel, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 }));

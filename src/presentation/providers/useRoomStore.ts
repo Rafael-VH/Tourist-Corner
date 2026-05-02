@@ -6,7 +6,7 @@ interface RoomState {
   selectedRoom: Room | null;
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   setRooms: (rooms: Room[]) => void;
   setSelectedRoom: (room: Room | null) => void;
@@ -220,8 +220,8 @@ export const useRoomStore = create<RoomState>((set) => ({
       await new Promise((resolve) => setTimeout(resolve, 400));
       const rooms = demoRooms[hotelId] || [];
       set({ rooms, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 
@@ -232,8 +232,8 @@ export const useRoomStore = create<RoomState>((set) => ({
       const allRooms = Object.values(demoRooms).flat();
       const room = allRooms.find((r) => r.id === id) || null;
       set({ selectedRoom: room, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 
@@ -247,8 +247,8 @@ export const useRoomStore = create<RoomState>((set) => ({
         ),
         isLoading: false,
       }));
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
     }
   },
 }));
