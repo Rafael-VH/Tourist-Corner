@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useHotelStore } from '@/presentation/providers/useHotelStore';
-import type { Hotel } from '@/domain/entities/Hotel';
-import type { HotelType } from '@/domain/entities/Hotel';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useHotelStore } from "@/presentation/providers/useHotelStore";
+import type { Hotel } from "@/domain/entities/Hotel";
+import type { HotelType } from "@/domain/entities/Hotel";
 import {
   Search,
   MapPin,
@@ -22,7 +22,7 @@ import {
   Dumbbell,
   Wine,
   Bath,
-} from 'lucide-react';
+} from "lucide-react";
 
 const hotelTypeIcons: Record<HotelType, React.ReactNode> = {
   hotel: <HotelIcon className="w-4 h-4" />,
@@ -32,21 +32,22 @@ const hotelTypeIcons: Record<HotelType, React.ReactNode> = {
 };
 
 const amenityIcons: Record<string, React.ReactNode> = {
-  'WiFi': <Wifi className="w-3.5 h-3.5" />,
-  'Piscina': <Waves className="w-3.5 h-3.5" />,
-  'Restaurante': <UtensilsCrossed className="w-3.5 h-3.5" />,
-  'Estacionamiento': <Car className="w-3.5 h-3.5" />,
-  'Gimnasio': <Dumbbell className="w-3.5 h-3.5" />,
-  'Bar': <Wine className="w-3.5 h-3.5" />,
-  'Spa': <Bath className="w-3.5 h-3.5" />,
+  WiFi: <Wifi className="w-3.5 h-3.5" />,
+  Piscina: <Waves className="w-3.5 h-3.5" />,
+  Restaurante: <UtensilsCrossed className="w-3.5 h-3.5" />,
+  Estacionamiento: <Car className="w-3.5 h-3.5" />,
+  Gimnasio: <Dumbbell className="w-3.5 h-3.5" />,
+  Bar: <Wine className="w-3.5 h-3.5" />,
+  Spa: <Bath className="w-3.5 h-3.5" />,
 };
 
 export function HomePage() {
-  const { hotels, fetchHotels, isLoading, filters, setFilters } = useHotelStore();
-  const [searchQuery, setSearchQuery] = useState('');
+  const { hotels, fetchHotels, isLoading, filters, setFilters } =
+    useHotelStore();
+  const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedType, setSelectedType] = useState<string>('');
-  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<string>("");
+  const [selectedCity, setSelectedCity] = useState<string>("");
 
   useEffect(() => {
     fetchHotels();
@@ -58,21 +59,21 @@ export function HomePage() {
   };
 
   const handleTypeFilter = (type: string) => {
-    const newType = selectedType === type ? '' : type;
+    const newType = selectedType === type ? "" : type;
     setSelectedType(newType);
     setFilters({ type: newType || undefined });
     fetchHotels({ ...filters, type: newType || undefined });
   };
 
   const handleCityFilter = (city: string) => {
-    const newCity = selectedCity === city ? '' : city;
+    const newCity = selectedCity === city ? "" : city;
     setSelectedCity(newCity);
     setFilters({ city: newCity || undefined });
     fetchHotels({ ...filters, city: newCity || undefined });
   };
 
   const cities = [...new Set(hotels.map((h) => h.city))];
-  const types: HotelType[] = ['hotel', 'resort', 'motel', 'residential'];
+  const types: HotelType[] = ["hotel", "resort", "motel", "residential"];
 
   return (
     <div className="bg-[#FDF8F3] dark:bg-[#0F1419]">
@@ -86,7 +87,7 @@ export function HomePage() {
           />
           <div className="absolute inset-0 bg-[#2D1F14]/60" />
         </div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -95,12 +96,12 @@ export function HomePage() {
             className="max-w-2xl"
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Descubre los mejores{' '}
+              Descubre los mejores{" "}
               <span className="text-[#FFB84D]">hoteles</span> de la ciudad
             </h1>
             <p className="text-lg text-[#E8D9C8] mb-8 leading-relaxed">
-              Encuentra hospedaje perfecto para tu viaje. Desde hoteles boutique hasta resorts de lujo, 
-              todos en un solo lugar.
+              Encuentra hospedaje perfecto para tu viaje. Desde hoteles boutique
+              hasta resorts de lujo, todos en un solo lugar.
             </p>
 
             {/* Search Bar */}
@@ -111,7 +112,7 @@ export function HomePage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="Buscar por nombre, ciudad o tipo..."
                   className="w-full pl-12 pr-4 py-4 bg-white/95 backdrop-blur rounded-xl text-[#2D1F14] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C] shadow-lg"
                 />
@@ -133,10 +134,26 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { label: 'Hoteles', value: '120+', icon: <HotelIcon className="w-6 h-6" /> },
-              { label: 'Resorts', value: '35+', icon: <TreePine className="w-6 h-6" /> },
-              { label: 'Ciudades', value: '8', icon: <MapPin className="w-6 h-6" /> },
-              { label: 'Opiniones', value: '10k+', icon: <Star className="w-6 h-6" /> },
+              {
+                label: "Hoteles",
+                value: "120+",
+                icon: <HotelIcon className="w-6 h-6" />,
+              },
+              {
+                label: "Resorts",
+                value: "35+",
+                icon: <TreePine className="w-6 h-6" />,
+              },
+              {
+                label: "Ciudades",
+                value: "8",
+                icon: <MapPin className="w-6 h-6" />,
+              },
+              {
+                label: "Opiniones",
+                value: "10k+",
+                icon: <Star className="w-6 h-6" />,
+              },
             ].map((stat, index) => (
               <motion.div
                 key={stat.label}
@@ -148,8 +165,12 @@ export function HomePage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#FFF8F1] dark:bg-[#242B35] text-[#E8850C] mb-3">
                   {stat.icon}
                 </div>
-                <p className="text-2xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">{stat.value}</p>
-                <p className="text-sm text-[#96785A] dark:text-[#64748B]">{stat.label}</p>
+                <p className="text-2xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                  {stat.value}
+                </p>
+                <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                  {stat.label}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -183,13 +204,15 @@ export function HomePage() {
           {showFilters && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="mb-8 p-6 bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] space-y-4"
             >
               {/* Type Filter */}
               <div>
-                <p className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-2">Tipo de Alojamiento</p>
+                <p className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-2">
+                  Tipo de Alojamiento
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {types.map((type) => (
                     <button
@@ -197,8 +220,8 @@ export function HomePage() {
                       onClick={() => handleTypeFilter(type)}
                       className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                         selectedType === type
-                          ? 'bg-[#E8850C] text-white'
-                          : 'bg-[#FDF8F3] dark:bg-[#242B35] text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748]'
+                          ? "bg-[#E8850C] text-white"
+                          : "bg-[#FDF8F3] dark:bg-[#242B35] text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748]"
                       }`}
                     >
                       {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -210,7 +233,9 @@ export function HomePage() {
               {/* City Filter */}
               {cities.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-2">Ciudad</p>
+                  <p className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-2">
+                    Ciudad
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {cities.map((city) => (
                       <button
@@ -218,8 +243,8 @@ export function HomePage() {
                         onClick={() => handleCityFilter(city)}
                         className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                           selectedCity === city
-                            ? 'bg-[#E8850C] text-white'
-                            : 'bg-[#FDF8F3] dark:bg-[#242B35] text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748]'
+                            ? "bg-[#E8850C] text-white"
+                            : "bg-[#FDF8F3] dark:bg-[#242B35] text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748]"
                         }`}
                       >
                         {city}
@@ -234,11 +259,11 @@ export function HomePage() {
           {/* Type Quick Filter */}
           <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
             <button
-              onClick={() => handleTypeFilter('')}
+              onClick={() => handleTypeFilter("")}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                selectedType === ''
-                  ? 'bg-[#E8850C] text-white shadow-md shadow-[#E8850C]/20'
-                  : 'bg-white dark:bg-[#1A2028] text-[#5E4836] dark:text-[#94A3B8] border border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]'
+                selectedType === ""
+                  ? "bg-[#E8850C] text-white shadow-md shadow-[#E8850C]/20"
+                  : "bg-white dark:bg-[#1A2028] text-[#5E4836] dark:text-[#94A3B8] border border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]"
               }`}
             >
               Todos
@@ -249,8 +274,8 @@ export function HomePage() {
                 onClick={() => handleTypeFilter(type)}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                   selectedType === type
-                    ? 'bg-[#E8850C] text-white shadow-md shadow-[#E8850C]/20'
-                    : 'bg-white dark:bg-[#1A2028] text-[#5E4836] dark:text-[#94A3B8] border border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]'
+                    ? "bg-[#E8850C] text-white shadow-md shadow-[#E8850C]/20"
+                    : "bg-white dark:bg-[#1A2028] text-[#5E4836] dark:text-[#94A3B8] border border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]"
                 }`}
               >
                 {hotelTypeIcons[type]}
@@ -274,7 +299,10 @@ export function HomePage() {
               ))}
             </div>
           ) : (
-            <div id="featured" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              id="featured"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
               {hotels.map((hotel, index) => (
                 <motion.div
                   key={hotel.id}
@@ -319,7 +347,7 @@ function HotelCard({ hotel }: { hotel: Hotel }) {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-[#2D1F14]/20 group-hover:bg-[#2D1F14]/10 transition-colors" />
-        
+
         {/* Badge */}
         <div className="absolute top-4 left-4">
           <span className="px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-xs font-medium text-[#5E4836] flex items-center gap-1.5">
@@ -350,7 +378,7 @@ function HotelCard({ hotel }: { hotel: Hotel }) {
         <h3 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
           {hotel.name}
         </h3>
-        
+
         <div className="flex items-center gap-1 mt-1.5 text-[#96785A] dark:text-[#64748B]">
           <MapPin className="w-4 h-4" />
           <span className="text-sm">{hotel.city}</span>
