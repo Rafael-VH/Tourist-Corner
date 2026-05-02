@@ -1,48 +1,46 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/presentation/providers/useAuthStore';
-import { useState, useEffect } from 'react';
-import { 
-  MapPin, 
-  User, 
-  LogOut, 
-  Menu, 
-  X, 
-  Sun, 
-  Moon, 
-  LayoutDashboard
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuthStore } from "@/presentation/providers/useAuthStore";
+import { useState } from "react";
+import {
+  MapPin,
+  User,
+  LogOut,
+  Menu,
+  X,
+  Sun,
+  Moon,
+  LayoutDashboard,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function Navbar() {
   const { user, isAuthenticated, signOut } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-
-  // Check system dark mode preference
-  useEffect(() => {
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDark(true);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       document.documentElement.classList.add('dark');
+      return true;
     }
-  }, []);
+    return false;
+  });
 
   const toggleDarkMode = () => {
     setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
+    document.documentElement.classList.toggle("dark");
   };
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate("/");
     setIsMenuOpen(false);
   };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
       setIsMenuOpen(false);
     }
   };
@@ -63,36 +61,36 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className={`text-sm font-medium transition-colors ${
-                location.pathname === '/' 
-                  ? 'text-[#E8850C]' 
-                  : 'text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C]'
+                location.pathname === "/"
+                  ? "text-[#E8850C]"
+                  : "text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C]"
               }`}
             >
               Inicio
             </Link>
-            <button 
-              onClick={() => scrollToSection('explore')}
+            <button
+              onClick={() => scrollToSection("explore")}
               className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C] transition-colors"
             >
               Explorar
             </button>
-            <button 
-              onClick={() => scrollToSection('featured')}
+            <button
+              onClick={() => scrollToSection("featured")}
               className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C] transition-colors"
             >
               Destacados
             </button>
-            
-            {isAuthenticated && user?.role === 'manager' && (
-              <Link 
+
+            {isAuthenticated && user?.role === "manager" && (
+              <Link
                 to="/dashboard"
                 className={`text-sm font-medium transition-colors ${
-                  location.pathname.startsWith('/dashboard')
-                    ? 'text-[#E8850C]'
-                    : 'text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C]'
+                  location.pathname.startsWith("/dashboard")
+                    ? "text-[#E8850C]"
+                    : "text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C]"
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -123,9 +121,9 @@ export function Navbar() {
               <div className="hidden md:flex items-center gap-3">
                 <div className="flex items-center gap-2">
                   {user?.avatarUrl ? (
-                    <img 
-                      src={user.avatarUrl} 
-                      alt={user.name} 
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name}
                       className="w-8 h-8 rounded-full border-2 border-[#E8850C]"
                     />
                   ) : (
@@ -182,33 +180,33 @@ export function Navbar() {
         {isMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-white dark:bg-[#1A2028] border-t border-[#E8D9C8] dark:border-[#2D3748]"
           >
             <div className="px-4 py-4 space-y-3">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 onClick={() => setIsMenuOpen(false)}
                 className="block py-2 text-[#2D1F14] dark:text-[#E2E8F0] font-medium"
               >
                 Inicio
               </Link>
-              <button 
-                onClick={() => scrollToSection('explore')}
+              <button
+                onClick={() => scrollToSection("explore")}
                 className="block py-2 text-[#5E4836] dark:text-[#94A3B8] font-medium"
               >
                 Explorar
               </button>
-              <button 
-                onClick={() => scrollToSection('featured')}
+              <button
+                onClick={() => scrollToSection("featured")}
                 className="block py-2 text-[#5E4836] dark:text-[#94A3B8] font-medium"
               >
                 Destacados
               </button>
-              
-              {isAuthenticated && user?.role === 'manager' && (
-                <Link 
+
+              {isAuthenticated && user?.role === "manager" && (
+                <Link
                   to="/dashboard"
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center gap-2 py-2 text-[#E8850C] font-medium"
@@ -223,7 +221,11 @@ export function Navbar() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       {user?.avatarUrl ? (
-                        <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full" />
+                        <img
+                          src={user.avatarUrl}
+                          alt={user.name}
+                          className="w-8 h-8 rounded-full"
+                        />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-[#E8850C] flex items-center justify-center">
                           <User className="w-4 h-4 text-white" />
