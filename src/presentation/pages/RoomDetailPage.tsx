@@ -56,21 +56,22 @@ export function RoomDetailPage() {
       fetchRoomById(id);
       fetchCommentsByTarget(id, "room");
     }
-  }, [id]);
+  }, [id, fetchRoomById, fetchCommentsByTarget]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim() || !id) return;
 
-    await addComment({
-      targetId: id,
-      targetType: "room",
-      rating: commentRating,
-      content: commentText,
-      userId: "current-user",
-      userName: "Usuario Anonimo",
-      likes: 0,
-    });
+    await addComment(
+      {
+        targetId: id,
+        targetType: "room",
+        rating: commentRating,
+        content: commentText,
+      },
+      "current-user",
+      "Usuario Anonimo",
+    );
     setCommentText("");
     setCommentRating(5);
   };
