@@ -1,5 +1,5 @@
-import { MapPin, Mail, Phone, Heart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { MapPin, Mail, Phone, Heart } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
@@ -17,34 +17,90 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-[#D4BEA5] leading-relaxed">
-              Descubre los mejores hoteles, resorts y alojamientos de la ciudad. Tu proxima aventura comienza aqui.
+              Descubre los mejores hoteles, resorts y alojamientos de la ciudad.
+              Tu proxima aventura comienza aqui.
             </p>
           </div>
 
           {/* Links */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Explorar</h4>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
+              Explorar
+            </h4>
             <ul className="space-y-2">
-              <li><Link to="/" className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors">Inicio</Link></li>
-              <li><Link to="/" className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors">Hoteles</Link></li>
-              <li><Link to="/" className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors">Resorts</Link></li>
-              <li><Link to="/" className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors">Residenciales</Link></li>
+              <li>
+                <Link
+                  to="/"
+                  className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors"
+                >
+                  Inicio
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/"
+                  className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors"
+                >
+                  Hoteles
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/"
+                  className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors"
+                >
+                  Resorts
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/"
+                  className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors"
+                >
+                  Residenciales
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* More Links */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Para Negocios</h4>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
+              Para Negocios
+            </h4>
             <ul className="space-y-2">
-              <li><Link to="/login" className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors">Registra tu Hotel</Link></li>
-              <li><Link to="/login" className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors">Panel de Gestion</Link></li>
-              <li><Link to="/login" className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors">Iniciar Sesion</Link></li>
+              <li>
+                <Link
+                  to="/login"
+                  className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors"
+                >
+                  Registra tu Hotel
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/login"
+                  className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors"
+                >
+                  Panel de Gestion
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/login"
+                  className="text-sm text-[#D4BEA5] hover:text-[#FFB84D] transition-colors"
+                >
+                  Iniciar Sesion
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Contacto</h4>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
+              Contacto
+            </h4>
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-[#D4BEA5]">
                 <Mail className="w-4 h-4 text-[#E8850C]" />
@@ -68,7 +124,9 @@ export function Footer() {
             &copy; 2024 TurismoCiudad. Todos los derechos reservados.
           </p>
           <p className="flex items-center gap-1 text-xs text-[#96785A] dark:text-[#64748B]">
-            Hecho con <Heart className="w-3 h-3 text-[#E8850C] fill-[#E8850C]" /> para viajeros
+            Hecho con{" "}
+            <Heart className="w-3 h-3 text-[#E8850C] fill-[#E8850C]" /> para
+            viajeros
           </p>
         </div>
       </div>
