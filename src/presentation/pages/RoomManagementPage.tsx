@@ -20,7 +20,7 @@ import {
 
 export function RoomManagementPage() {
   const { id } = useParams<{ id: string }>();
-  const { rooms, fetchRoomById, isLoading, updateRoomStatus } = useRoomStore();
+  const { rooms, fetchRoomById, isLoading, updateRoomStatus, updateRoom } = useRoomStore();
   const selectedRoom = rooms.find((r) => r.id === id) || null;
 
   const [isEditing, setIsEditing] = useState(true);
@@ -35,10 +35,10 @@ export function RoomManagementPage() {
   });
 
   useEffect(() => {
-    if (id && !selectedRoom) {
+    if (id) {
       fetchRoomById(id);
     }
-  }, [id, selectedRoom]);
+  }, [id, fetchRoomById]);
 
   if (isLoading || !selectedRoom) {
     return (
@@ -56,7 +56,18 @@ export function RoomManagementPage() {
     await updateRoomStatus(room.id, newStatus);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!room) return;
+    await updateRoom(room.id, {
+      name: editForm.name,
+      description: editForm.description,
+      pricePerNight: editForm.pricePerNight,
+      capacity: editForm.capacity,
+      bedType: editForm.bedType,
+      size: editForm.size,
+      status: editForm.status,
+      isAvailable: editForm.status === "available",
+    });
     setIsEditing(false);
   };
 
