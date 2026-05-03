@@ -16,6 +16,8 @@ import {
   BarChart3,
   Calendar,
   Users,
+  Wrench,
+  Tag,
 } from "lucide-react";
 
 export function ManagerDashboardPage() {
@@ -76,6 +78,22 @@ export function ManagerDashboardPage() {
     navigate(`/dashboard/room/new?hotelId=${hotelId}`);
   };
 
+  const handleNewRoomType = () => {
+    navigate("/dashboard/room-type/new");
+  };
+
+  const handleNewService = () => {
+    navigate("/dashboard/service/new");
+  };
+
+  const handleViewReports = () => {
+    navigate("/dashboard/reports");
+  };
+
+  const handleSettings = () => {
+    navigate("/dashboard/settings");
+  };
+
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -94,7 +112,7 @@ export function ManagerDashboardPage() {
                 Panel de Gestion
               </h1>
               <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                Bienvenido, {user?.name}
+                Bienvenido, {user?.name} (Dueño)
               </p>
             </div>
           </div>
@@ -343,7 +361,38 @@ export function ManagerDashboardPage() {
                     </p>
                   </div>
                 </button>
-                <button className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors">
+                <button
+                  onClick={handleNewRoomType}
+                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                >
+                  <Tag className="w-5 h-5 text-[#E8850C]" />
+                  <div>
+                    <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                      Nuevo Tipo de Habitacion
+                    </p>
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                      Crear tipo personalizado
+                    </p>
+                  </div>
+                </button>
+                <button
+                  onClick={handleNewService}
+                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                >
+                  <Wrench className="w-5 h-5 text-[#E8850C]" />
+                  <div>
+                    <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                      Nuevo Servicio
+                    </p>
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                      Crear servicio personalizado
+                    </p>
+                  </div>
+                </button>
+                <button
+                  onClick={handleViewReports}
+                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                >
                   <BarChart3 className="w-5 h-5 text-[#E8850C]" />
                   <div>
                     <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
@@ -354,7 +403,10 @@ export function ManagerDashboardPage() {
                     </p>
                   </div>
                 </button>
-                <button className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors">
+                <button
+                  onClick={handleSettings}
+                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                >
                   <Settings className="w-5 h-5 text-[#E8850C]" />
                   <div>
                     <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
