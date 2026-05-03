@@ -87,7 +87,7 @@ export function HotelManagementPage() {
               {!isEditing ? (
                 <>
                   <Link
-                    to={`/hotel/${hotel.id}`}
+                    to={`/hotel/${hotel.id}?from=management`}
                     className="flex items-center gap-2 px-4 py-2 border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-sm text-[#5E4836] dark:text-[#94A3B8] hover:border-[#E8850C] transition-colors"
                   >
                     <Eye className="w-4 h-4" />

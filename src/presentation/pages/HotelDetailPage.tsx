@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { useCommentStore } from "@/presentation/providers/useCommentStore";
+import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import type { HotelType } from "@/domain/entities/Hotel";
 import {
   MapPin,
@@ -47,6 +48,8 @@ const amenityIcons: Record<string, React.ReactNode> = {
 
 export function HotelDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuthStore();
   const {
     selectedHotel,
     fetchHotelById,
@@ -59,6 +62,8 @@ export function HotelDetailPage() {
   const [commentText, setCommentText] = useState("");
   const [commentRating, setCommentRating] = useState(5);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+
+  const isOwnerViewing = user?.role === "owner" && searchParams.get("from") === "management";
 
   useEffect(() => {
     if (id) {
@@ -104,13 +109,23 @@ export function HotelDetailPage() {
       {/* Header with Back Button */}
       <div className="bg-white dark:bg-[#1A2028] border-b border-[#E8D9C8] dark:border-[#2D3748]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Volver a explorar</span>
-          </Link>
+          {isOwnerViewing ? (
+            <Link
+              to={`/dashboard/hotel/${id}`}
+              className="inline-flex items-center gap-2 text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Volver a Gestion</span>
+            </Link>
+          ) : (
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Volver a explorar</span>
+            </Link>
+          )}
         </div>
       </div>
 

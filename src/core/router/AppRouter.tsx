@@ -48,6 +48,14 @@ function AdminRedirect({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function OwnerRedirect({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, user } = useAuthStore();
+  if (isAuthenticated && user?.role === "owner") {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <>{children}</>;
+}
+
 export function AppRouter() {
   return (
     <BrowserRouter>
@@ -56,10 +64,16 @@ export function AppRouter() {
         <Route element={<Layout />}>
           <Route path="/" element={
             <AdminRedirect>
-              <HomePage />
+              <OwnerRedirect>
+                <HomePage />
+              </OwnerRedirect>
             </AdminRedirect>
           } />
-          <Route path="/hotel/:id" element={<HotelDetailPage />} />
+          <Route path="/hotel/:id" element={
+            <OwnerRedirect>
+              <HotelDetailPage />
+            </OwnerRedirect>
+          } />
           <Route path="/room/:id" element={<RoomDetailPage />} />
 
           <Route
