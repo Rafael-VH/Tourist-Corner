@@ -42,11 +42,16 @@ export function NewRoomPage() {
 
   useEffect(() => {
     const fetchCustomTypes = async () => {
-      const { data } = await supabase
-        .from("custom_room_types")
-        .select("id, name, description")
-        .order("name");
-      setCustomTypes(data || []);
+      try {
+        const { data, error } = await supabase
+          .from("custom_room_types")
+          .select("id, name, description")
+          .order("name");
+        if (error) throw error;
+        setCustomTypes(data || []);
+      } catch (err: unknown) {
+        console.error("Error fetching custom room types:", err);
+      }
     };
     fetchCustomTypes();
   }, []);

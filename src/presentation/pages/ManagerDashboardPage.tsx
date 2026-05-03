@@ -21,6 +21,7 @@ import {
   Tag,
   GitBranch,
   Trash2,
+  X,
 } from "lucide-react";
 
 export function ManagerDashboardPage() {
@@ -33,6 +34,7 @@ export function ManagerDashboardPage() {
   );
 
   const [customRoomTypes, setCustomRoomTypes] = useState<{ id: string; name: string; description: string | null; created_at: string }[]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (user?.id) {
@@ -50,11 +52,16 @@ export function ManagerDashboardPage() {
 
   useEffect(() => {
     const fetchCustomTypes = async () => {
-      const { data } = await supabase
-        .from("custom_room_types")
-        .select("id, name, description, created_at")
-        .order("created_at", { ascending: false });
-      setCustomRoomTypes(data || []);
+      try {
+        const { data, error } = await supabase
+          .from("custom_room_types")
+          .select("id, name, description, created_at")
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        setCustomRoomTypes(data || []);
+      } catch (err: unknown) {
+        console.error("Error fetching custom room types:", err);
+      }
     };
     fetchCustomTypes();
   }, []);
@@ -142,6 +149,16 @@ export function ManagerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-between">
+            <span>{error}</span>
+            <button onClick={() => setError("")} className="text-red-400 hover:text-red-500">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div

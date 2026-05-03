@@ -39,6 +39,17 @@ export function HotelManagementPage() {
     address: selectedHotel?.address || "",
   });
 
+  const deleteBranch = async (branchId: string, branchName: string) => {
+    if (!confirm(`Eliminar la sucursal "${branchName}"? Esta accion no se puede deshacer.`)) return;
+    try {
+      const { error } = await supabase.from("hotels").delete().eq("id", branchId);
+      if (error) throw error;
+      setBranches((prev) => prev.filter((b) => b.id !== branchId));
+    } catch (err: unknown) {
+      alert((err as Error).message || "Error al eliminar sucursal");
+    }
+  };
+
   useEffect(() => {
     if (id) {
       fetchHotelById(id);
@@ -328,16 +339,18 @@ export function HotelManagementPage() {
             </div>
             <div className="divide-y divide-[#F5EDE3] dark:divide-[#2D3748]">
               {branches.map((branch) => (
-                <Link
+                <div
                   key={branch.id}
-                  to={`/dashboard/hotel/${branch.id}`}
                   className="flex items-center justify-between p-5 hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors group"
                 >
-                  <div className="flex items-center gap-3">
+                  <Link
+                    to={`/dashboard/hotel/${branch.id}`}
+                    className="flex items-center gap-3 flex-1 min-w-0"
+                  >
                     <div className="w-10 h-10 rounded-lg bg-[#FFF8F1] dark:bg-[#242B35] flex items-center justify-center">
                       <GitBranch className="w-5 h-5 text-[#E8850C]" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="font-medium text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
                         {branch.name}
                       </h3>
@@ -345,9 +358,22 @@ export function HotelManagementPage() {
                         {branch.city}
                       </p>
                     </div>
+                  </Link>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link
+                      to={`/dashboard/hotel/${branch.id}`}
+                      className="p-2 hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] rounded-lg transition-colors"
+                    >
+                      <ChevronRight className="w-5 h-5 text-[#B89A7A] group-hover:text-[#E8850C] group-hover:translate-x-1 transition-all" />
+                    </Link>
+                    <button
+                      onClick={() => deleteBranch(branch.id, branch.name)}
+                      className="p-2 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-[#B89A7A] group-hover:text-[#E8850C] group-hover:translate-x-1 transition-all" />
-                </Link>
+                </div>
               ))}
               {branches.length === 0 && (
                 <div className="p-8 text-center text-sm text-[#96785A] dark:text-[#64748B]">
