@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
+import { supabase } from "@/data/datasources/SupabaseClient";
 import {
   LayoutDashboard,
   Hotel,
@@ -19,6 +20,7 @@ import {
   Wrench,
   Tag,
   GitBranch,
+  Trash2,
 } from "lucide-react";
 
 export function ManagerDashboardPage() {
@@ -29,6 +31,8 @@ export function ManagerDashboardPage() {
   const [timeRange, setTimeRange] = useState<"week" | "month" | "year">(
     "month",
   );
+
+  const [customRoomTypes, setCustomRoomTypes] = useState<{ id: string; name: string; description: string | null; created_at: string }[]>([]);
 
   useEffect(() => {
     if (user?.id) {
@@ -43,6 +47,17 @@ export function ManagerDashboardPage() {
       });
     }
   }, [hotels, fetchRoomsByHotel]);
+
+  useEffect(() => {
+    const fetchCustomTypes = async () => {
+      const { data } = await supabase
+        .from("custom_room_types")
+        .select("id, name, description, created_at")
+        .order("created_at", { ascending: false });
+      setCustomRoomTypes(data || []);
+    };
+    fetchCustomTypes();
+  }, []);
 
   const mainHotels = hotels.filter((h) => h.isMain);
   const branchHotels = hotels.filter((h) => h.branchOf);
@@ -109,6 +124,20 @@ export function ManagerDashboardPage() {
 
   const handleSettings = () => {
     navigate("/dashboard/settings");
+  };
+
+  const deleteCustomRoomType = async (id: string) => {
+    if (!confirm("Eliminar este tipo de habitacion?")) return;
+    try {
+      const { error } = await supabase
+        .from("custom_room_types")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      setCustomRoomTypes((prev) => prev.filter((t) => t.id !== id));
+    } catch (err: unknown) {
+      setError((err as Error).message || "Error al eliminar tipo");
+    }
   };
 
   return (
@@ -533,6 +562,63 @@ export function ManagerDashboardPage() {
                   </div>
                 </button>
               </div>
+            </motion.div>
+
+            {/* Custom Room Types */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="bg-white dark:bg-[#1A2028] rounded-2xl p-6 border border-[#E8D9C8] dark:border-[#2D3748]"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
+                  <Tag className="w-5 h-5 text-[#E8850C]" />
+                  Tipos Personalizados
+                </h3>
+                <button
+                  onClick={handleNewRoomType}
+                  className="p-1.5 bg-[#FFF8F1] dark:bg-[#242B35] rounded-lg hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] transition-colors"
+                >
+                  <Plus className="w-4 h-4 text-[#E8850C]" />
+                </button>
+              </div>
+              {customRoomTypes.length > 0 ? (
+                <div className="space-y-2">
+                  {customRoomTypes.slice(0, 4).map((type) => (
+                    <div
+                      key={type.id}
+                      className="p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-lg flex items-center justify-between gap-2"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                          {type.name}
+                        </p>
+                        {type.description && (
+                          <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-0.5 line-clamp-1">
+                            {type.description}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => deleteCustomRoomType(type.id)}
+                        className="p-1.5 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {customRoomTypes.length > 4 && (
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B] text-center">
+                      +{customRoomTypes.length - 4} mas
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-[#96785A] dark:text-[#64748B] text-center py-4">
+                  No tienes tipos personalizados
+                </p>
+              )}
             </motion.div>
 
             {/* Performance Card */}

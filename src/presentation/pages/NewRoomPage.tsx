@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/data/datasources/SupabaseClient";
@@ -10,7 +10,14 @@ import {
   Maximize,
   Save,
   AlertTriangle,
+  Tag,
 } from "lucide-react";
+
+interface CustomRoomType {
+  id: string;
+  name: string;
+  description: string | null;
+}
 
 export function NewRoomPage() {
   const navigate = useNavigate();
@@ -19,10 +26,12 @@ export function NewRoomPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [customTypes, setCustomTypes] = useState<CustomRoomType[]>([]);
 
   const [form, setForm] = useState({
     name: "",
     type: "standard",
+    customRoomTypeId: "",
     description: "",
     pricePerNight: "",
     capacity: "2",
@@ -30,6 +39,17 @@ export function NewRoomPage() {
     size: "",
     amenities: [] as string[],
   });
+
+  useEffect(() => {
+    const fetchCustomTypes = async () => {
+      const { data } = await supabase
+        .from("custom_room_types")
+        .select("id, name, description")
+        .order("name");
+      setCustomTypes(data || []);
+    };
+    fetchCustomTypes();
+  }, []);
 
   const commonAmenities = [
     "WiFi",
@@ -65,7 +85,8 @@ export function NewRoomPage() {
         .insert({
           hotel_id: hotelId,
           name: form.name,
-          type: form.type,
+          type: form.customRoomTypeId ? customTypes.find((t) => t.id === form.customRoomTypeId)?.name || form.type : form.type,
+          custom_room_type_id: form.customRoomTypeId || null,
           description: form.description,
           price_per_night: Number(form.pricePerNight),
           capacity: Number(form.capacity),
@@ -173,6 +194,41 @@ export function NewRoomPage() {
                   className="w-full px-4 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 focus:border-[#E8850C] transition-all"
                 />
               </div>
+
+              {customTypes.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                    <Tag className="w-4 h-4 inline mr-1" />
+                    Tipo Personalizado
+                  </label>
+                  <select
+                    value={form.customRoomTypeId}
+                    onChange={(e) => {
+                      const selected = customTypes.find((t) => t.id === e.target.value);
+                      if (selected) {
+                        setForm({
+                          ...form,
+                          customRoomTypeId: selected.id,
+                          type: selected.name,
+                        });
+                      }
+                    }}
+                    className="w-full px-4 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 focus:border-[#E8850C] transition-all appearance-none"
+                  >
+                    <option value="">Sin tipo personalizado</option>
+                    {customTypes.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                  {form.customRoomTypeId && (
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-1">
+                      {customTypes.find((t) => t.id === form.customRoomTypeId)?.description}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
