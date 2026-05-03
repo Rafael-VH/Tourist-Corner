@@ -38,6 +38,13 @@ interface Hotel {
   featured_order: number;
 }
 
+interface OrphanHotel {
+  id: string;
+  name: string;
+  city: string;
+  rooms: { id: string; name: string }[];
+}
+
 interface UserRow {
   id: string;
   email: string;
@@ -51,6 +58,7 @@ export function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [codes, setCodes] = useState<RegistrationCode[]>([]);
   const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [orphanHotels, setOrphanHotels] = useState<OrphanHotel[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
@@ -93,6 +101,22 @@ export function AdminDashboardPage() {
           featured_order: featuredMap.get(h.id)?.order || 0,
         }))
       );
+
+      const { data: orphanData } = await supabase
+        .from("hotels")
+        .select("id, name, city")
+        .is("manager_id", null)
+        .order("name");
+
+      const orphaned: OrphanHotel[] = [];
+      for (const h of orphanData || []) {
+        const { data: roomsData } = await supabase
+          .from("rooms")
+          .select("id, name")
+          .eq("hotel_id", h.id);
+        orphaned.push({ ...h, rooms: roomsData || [] });
+      }
+      setOrphanHotels(orphaned);
     } catch (err: unknown) {
       setError((err as Error).message || "Error al cargar datos");
     } finally {
@@ -128,6 +152,25 @@ export function AdminDashboardPage() {
       await loadData();
     } catch (err: unknown) {
       setError((err as Error).message || "Error al eliminar codigo");
+    }
+  };
+
+  const deleteOrphanHotel = async (hotelId: string) => {
+    if (!confirm("Eliminar hotel y todas sus habitaciones?")) return;
+    try {
+      const { error: roomsErr } = await supabase
+        .from("rooms")
+        .delete()
+        .eq("hotel_id", hotelId);
+      if (roomsErr) throw roomsErr;
+      const { error: hotelErr } = await supabase
+        .from("hotels")
+        .delete()
+        .eq("id", hotelId);
+      if (hotelErr) throw hotelErr;
+      await loadData();
+    } catch (err: unknown) {
+      setError((err as Error).message || "Error al eliminar hotel");
     }
   };
 
@@ -354,6 +397,59 @@ export function AdminDashboardPage() {
                 </div>
               </div>
             </motion.div>
+
+            {/* Orphaned Hotels */}
+            {orphanHotels.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className="bg-white dark:bg-[#1A2028] rounded-2xl border border-red-300 dark:border-red-900/50 shadow-sm mb-8"
+              >
+                <div className="p-6 border-b border-red-200 dark:border-red-900/30">
+                  <h2 className="text-xl font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
+                    <Building2 className="w-5 h-5" />
+                    Hoteles sin Dueño
+                  </h2>
+                  <p className="text-sm text-[#96785A] dark:text-[#64748B] mt-1">
+                    Estos hoteles no tienen un dueño asignado y pueden ser eliminados
+                  </p>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-4">
+                    {orphanHotels.map((hotel) => (
+                      <div
+                        key={hotel.id}
+                        className="p-4 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-900/30"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">{hotel.name}</p>
+                            <p className="text-sm text-[#96785A] dark:text-[#64748B]">{hotel.city}</p>
+                            {hotel.rooms.length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                {hotel.rooms.map((room) => (
+                                  <p key={room.id} className="text-xs text-[#5E4836] dark:text-[#94A3B8] pl-2">
+                                    • {room.name}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => deleteOrphanHotel(hotel.id)}
+                            className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                            title="Eliminar hotel y habitaciones"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {/* Users List */}
             <motion.div
