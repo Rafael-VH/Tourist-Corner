@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
-import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { supabase } from "@/data/datasources/SupabaseClient";
 import {
   LayoutDashboard,
@@ -22,6 +21,7 @@ import {
   GitBranch,
   Trash2,
   X,
+  ArrowUpRight,
 } from "lucide-react";
 
 interface CustomService {
@@ -36,7 +36,7 @@ export function ManagerDashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { hotels, fetchManagerHotels, isLoading } = useHotelStore();
-  const { rooms, fetchRoomsByHotel } = useRoomStore();
+  const [roomsFromAllHotels, setRoomsFromAllHotels] = useState<{ id: string; name: string; type: string; price_per_night: number; is_available: boolean; images: string[]; bed_type: string; capacity: number; hotel_id: string; custom_room_types?: { name: string } | null }[]>([]);
   const [timeRange, setTimeRange] = useState<"week" | "month" | "year">(
     "month",
   );
@@ -53,11 +53,25 @@ export function ManagerDashboardPage() {
 
   useEffect(() => {
     if (hotels.length > 0) {
-      hotels.forEach((hotel) => {
-        fetchRoomsByHotel(hotel.id);
-      });
+      const fetchAllRooms = async () => {
+        try {
+          const allRooms = await Promise.all(
+            hotels.map((hotel) =>
+              supabase
+                .from("rooms")
+                .select("*, custom_room_types(id, name)")
+                .eq("hotel_id", hotel.id)
+            )
+          );
+          const flatRooms = allRooms.flatMap((r) => r.data || []);
+          setRoomsFromAllHotels(flatRooms);
+        } catch {
+          setRoomsFromAllHotels([]);
+        }
+      };
+      fetchAllRooms();
     }
-  }, [hotels, fetchRoomsByHotel]);
+  }, [hotels]);
 
   useEffect(() => {
     const fetchCustomTypes = async () => {
@@ -99,7 +113,7 @@ export function ManagerDashboardPage() {
     branches: branchHotels.filter((b) => b.branchOf === main.id),
   }));
 
-  const totalRooms = rooms.length;
+  const totalRooms = roomsFromAllHotels.length;
   const totalRevenue = hotels.reduce(
     (sum, h) => sum + h.priceRange.min * h.reviewCount,
     0,
@@ -183,6 +197,35 @@ export function ManagerDashboardPage() {
       setCustomServices((prev) => prev.filter((s) => s.id !== id));
     } catch (err: unknown) {
       setError((err as Error).message || "Error al eliminar servicio");
+    }
+  };
+
+  const deleteRoom = async (id: string) => {
+    if (!confirm("Eliminar esta habitacion? Esta accion no se puede deshacer.")) return;
+    try {
+      const { error } = await supabase.from("rooms").delete().eq("id", id);
+      if (error) throw error;
+      setRoomsFromAllHotels((prev) => prev.filter((r) => r.id !== id));
+    } catch (err: unknown) {
+      setError((err as Error).message || "Error al eliminar habitacion");
+    }
+  };
+
+  const refreshRooms = async () => {
+    if (hotels.length === 0) return;
+    try {
+      const allRooms = await Promise.all(
+        hotels.map((hotel) =>
+          supabase
+            .from("rooms")
+            .select("*, custom_room_types(id, name)")
+            .eq("hotel_id", hotel.id)
+        )
+      );
+      const flatRooms = allRooms.flatMap((r) => r.data || []);
+      setRoomsFromAllHotels(flatRooms);
+    } catch {
+      setRoomsFromAllHotels([]);
     }
   };
 
@@ -384,48 +427,65 @@ export function ManagerDashboardPage() {
                       Habitaciones
                     </h2>
                     <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                      {rooms.length} habitaciones registradas
+                      {roomsFromAllHotels.length} habitaciones registradas
                     </p>
                   </div>
                 </div>
               </div>
               <div className="divide-y divide-[#F5EDE3] dark:divide-[#2D3748]">
-                {rooms.map((room) => (
-                  <Link
+                {roomsFromAllHotels.map((room) => (
+                  <div
                     key={room.id}
-                    to={`/dashboard/room/${room.id}`}
                     className="flex items-center gap-4 p-5 hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors group"
                   >
-                    <img
-                      src={room.images[0]}
-                      alt={room.name}
-                      className="w-16 h-16 rounded-xl object-cover shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
-                        {room.name}
-                      </h3>
-                      <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                        {room.type} · {room.bedType} · {room.capacity} personas
-                      </p>
-                    </div>
-                    <span className="text-sm font-medium text-[#E8850C]">
-                      ${room.pricePerNight}
-                      <span className="text-xs text-[#96785A]">/noche</span>
-                    </span>
-                    <span
-                      className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                        room.isAvailable
-                          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20"
-                          : "bg-red-50 text-red-600 dark:bg-red-900/20"
-                      }`}
+                    <Link
+                      to={`/dashboard/room/${room.id}`}
+                      className="flex items-center gap-4 flex-1 min-w-0"
                     >
-                      {room.isAvailable ? "Disponible" : "Ocupada"}
-                    </span>
-                    <ChevronRight className="w-5 h-5 text-[#B89A7A] group-hover:text-[#E8850C] group-hover:translate-x-1 transition-all shrink-0" />
-                  </Link>
+                      <img
+                        src={room.images?.[0] || "/placeholder-room.jpg"}
+                        alt={room.name}
+                        className="w-16 h-16 rounded-xl object-cover shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
+                          {room.name}
+                        </h3>
+                        <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                          {room.custom_room_types?.name || room.type} · {room.bed_type} · {room.capacity} personas
+                        </p>
+                      </div>
+                      <span className="text-sm font-medium text-[#E8850C]">
+                        ${room.price_per_night}
+                        <span className="text-xs text-[#96785A]">/noche</span>
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-lg text-xs font-medium ${
+                          room.is_available
+                            ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20"
+                            : "bg-red-50 text-red-600 dark:bg-red-900/20"
+                        }`}
+                      >
+                        {room.is_available ? "Disponible" : "Ocupada"}
+                      </span>
+                    </Link>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Link
+                        to={`/dashboard/room/${room.id}`}
+                        className="p-2 hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] rounded-lg transition-colors"
+                      >
+                        <ChevronRight className="w-5 h-5 text-[#B89A7A]" />
+                      </Link>
+                      <button
+                        onClick={() => deleteRoom(room.id)}
+                        className="p-2 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 ))}
-                {rooms.length === 0 && !isLoading && (
+                {roomsFromAllHotels.length === 0 && !isLoading && (
                   <div className="p-8 text-center text-sm text-[#96785A] dark:text-[#64748B]">
                     No hay habitaciones registradas aun
                   </div>
@@ -521,7 +581,7 @@ export function ManagerDashboardPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Quick Actions */}
+            {/* Gestion Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -529,7 +589,7 @@ export function ManagerDashboardPage() {
               className="bg-white dark:bg-[#1A2028] rounded-2xl p-6 border border-[#E8D9C8] dark:border-[#2D3748]"
             >
               <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-4">
-                Acciones Rapidas
+                Gestion
               </h3>
               <div className="space-y-2">
                 <button
@@ -542,7 +602,7 @@ export function ManagerDashboardPage() {
                       Nuevo Hotel
                     </p>
                     <p className="text-xs text-[#96785A] dark:text-[#64748B]">
-                      Agregar un establecimiento
+                      Agregar establecimiento o sucursal
                     </p>
                   </div>
                 </button>
@@ -589,6 +649,35 @@ export function ManagerDashboardPage() {
                     </p>
                   </div>
                 </button>
+              </div>
+            </motion.div>
+
+            {/* Navegacion Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="bg-white dark:bg-[#1A2028] rounded-2xl p-6 border border-[#E8D9C8] dark:border-[#2D3748]"
+            >
+              <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-4">
+                Navegacion
+              </h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => navigate("/dashboard/calendar")}
+                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                >
+                  <Calendar className="w-5 h-5 text-[#E8850C]" />
+                  <div>
+                    <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                      Calendario
+                    </p>
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                      Ver reservaciones
+                    </p>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-[#B89A7A] ml-auto" />
+                </button>
                 <button
                   onClick={handleViewReports}
                   className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
@@ -602,6 +691,7 @@ export function ManagerDashboardPage() {
                       Analisis de rendimiento
                     </p>
                   </div>
+                  <ArrowUpRight className="w-4 h-4 text-[#B89A7A] ml-auto" />
                 </button>
                 <button
                   onClick={handleSettings}
@@ -616,6 +706,7 @@ export function ManagerDashboardPage() {
                       Ajustes de la cuenta
                     </p>
                   </div>
+                  <ArrowUpRight className="w-4 h-4 text-[#B89A7A] ml-auto" />
                 </button>
               </div>
             </motion.div>
