@@ -14,6 +14,7 @@ import { NewRoomPage } from "@/presentation/pages/NewRoomPage";
 import { NewRoomTypePage } from "@/presentation/pages/NewRoomTypePage";
 import { NewServicePage } from "@/presentation/pages/NewServicePage";
 import { CalendarPage } from "@/presentation/pages/CalendarPage";
+import { ReservationDetailPage } from "@/presentation/pages/ReservationDetailPage";
 
 function ProtectedRoute({
   children,
@@ -147,6 +148,14 @@ export function AppRouter() {
             element={
               <ProtectedRoute requireManager>
                 <CalendarPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/reservation/:id"
+            element={
+              <ProtectedRoute requireManager>
+                <ReservationDetailPage />
               </ProtectedRoute>
             }
           />
