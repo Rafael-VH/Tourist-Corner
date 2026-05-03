@@ -2,6 +2,7 @@ import { SupabaseAuthRepository } from '@/data/repositories/SupabaseAuthReposito
 import { SupabaseHotelRepository } from '@/data/repositories/SupabaseHotelRepository';
 import { SupabaseRoomRepository } from '@/data/repositories/SupabaseRoomRepository';
 import { SupabaseCommentRepository } from '@/data/repositories/SupabaseCommentRepository';
+import { SupabaseReservationRepository } from '@/data/repositories/SupabaseReservationRepository';
 
 import {
   SignInUseCase,
@@ -43,6 +44,14 @@ import {
   GetUserCommentsUseCase,
 } from '@/domain/usecases/CommentUseCases';
 
+import {
+  CreateReservationUseCase,
+  GetReservationByIdUseCase,
+  GetReservationsByUserUseCase,
+  UpdateReservationStatusUseCase,
+  CancelReservationUseCase,
+} from '@/domain/usecases/ReservationUseCases';
+
 let _container: ReturnType<typeof createContainer> | null = null;
 
 function createContainer() {
@@ -51,6 +60,7 @@ function createContainer() {
   const hotelRepository = new SupabaseHotelRepository();
   const roomRepository = new SupabaseRoomRepository();
   const commentRepository = new SupabaseCommentRepository();
+  const reservationRepository = new SupabaseReservationRepository();
 
   return {
     // Auth use cases
@@ -88,6 +98,13 @@ function createContainer() {
     deleteComment: new DeleteCommentUseCase(commentRepository),
     likeComment: new LikeCommentUseCase(commentRepository),
     getUserComments: new GetUserCommentsUseCase(commentRepository),
+
+    // Reservation use cases
+    createReservation: new CreateReservationUseCase(reservationRepository),
+    getReservationById: new GetReservationByIdUseCase(reservationRepository),
+    getReservationsByUser: new GetReservationsByUserUseCase(reservationRepository),
+    updateReservationStatus: new UpdateReservationStatusUseCase(reservationRepository),
+    cancelReservation: new CancelReservationUseCase(reservationRepository),
   };
 }
 

@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useCommentStore } from "@/presentation/providers/useCommentStore";
+import { useReservationStore } from "@/presentation/providers/useReservationStore";
+import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import {
   ArrowLeft,
   Users,
@@ -20,6 +22,10 @@ import {
   Lock,
   Wine,
   Check,
+  Calendar,
+  X,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 
 const amenityIcons: Record<string, React.ReactNode> = {
@@ -50,6 +56,20 @@ export function RoomDetailPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [commentText, setCommentText] = useState("");
   const [commentRating, setCommentRating] = useState(5);
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [reservationSuccess, setReservationSuccess] = useState(false);
+  const [reservationForm, setReservationForm] = useState({
+    checkIn: "",
+    checkOut: "",
+    guestName: "",
+    guestEmail: "",
+    guestPhone: "",
+    notes: "",
+  });
+
+  const { user } = useAuthStore();
+  const { createReservation } = useReservationStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (id) {
@@ -74,6 +94,41 @@ export function RoomDetailPage() {
     );
     setCommentText("");
     setCommentRating(5);
+  };
+
+  const calculateTotal = () => {
+    if (!reservationForm.checkIn || !reservationForm.checkOut || !room) return 0;
+    const start = new Date(reservationForm.checkIn);
+    const end = new Date(reservationForm.checkOut);
+    const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return nights > 0 ? nights * room.pricePerNight : 0;
+  };
+
+  const handleSubmitReservation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !reservationForm.checkIn || !reservationForm.checkOut) return;
+
+    const total = calculateTotal();
+    try {
+      await createReservation({
+        roomId: id,
+        userId: user?.id || null,
+        guestName: reservationForm.guestName || user?.name || "",
+        guestEmail: reservationForm.guestEmail || user?.email || "",
+        guestPhone: reservationForm.guestPhone || undefined,
+        checkIn: reservationForm.checkIn,
+        checkOut: reservationForm.checkOut,
+        notes: reservationForm.notes || undefined,
+      });
+      setReservationSuccess(true);
+      setTimeout(() => {
+        setShowReservationModal(false);
+        setReservationSuccess(false);
+        setReservationForm({ checkIn: "", checkOut: "", guestName: "", guestEmail: "", guestPhone: "", notes: "" });
+      }, 2000);
+    } catch {
+      // Error handled by store
+    }
   };
 
   if (roomLoading || !selectedRoom) {
@@ -301,12 +356,196 @@ export function RoomDetailPage() {
               >
                 Ver Hotel
               </Link>
-              <button className="px-6 py-3 bg-[#E8850C] hover:bg-[#C46A08] text-white font-medium rounded-xl transition-colors shadow-md shadow-[#E8850C]/20">
+              <button
+                onClick={() => setShowReservationModal(true)}
+                className="px-6 py-3 bg-[#E8850C] hover:bg-[#C46A08] text-white font-medium rounded-xl transition-colors shadow-md shadow-[#E8850C]/20"
+              >
                 Reservar Ahora
               </button>
             </div>
           </div>
         </motion.div>
+
+        {/* Reservation Modal */}
+        <AnimatePresence>
+          {showReservationModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-lg bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto"
+              >
+                {/* Modal Header */}
+                <div className="p-5 border-b border-[#F5EDE3] dark:border-[#2D3748] flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                        Reservar Habitacion
+                      </h3>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        {room.name}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowReservationModal(false);
+                      setReservationSuccess(false);
+                    }}
+                    className="p-1.5 hover:bg-[#FDF8F3] dark:hover:bg-[#242B35] rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4 text-[#96785A] dark:text-[#64748B]" />
+                  </button>
+                </div>
+
+                {reservationSuccess ? (
+                  <div className="p-8 text-center">
+                    <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-8 h-8 text-emerald-500" />
+                    </div>
+                    <h4 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-2">
+                      Reservacion Exitosa
+                    </h4>
+                    <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                      Tu solicitud ha sido enviada. Recibiras una confirmacion pronto.
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmitReservation} className="p-5 space-y-4">
+                    {/* Price Info */}
+                    <div className="p-3 bg-[#FFF8F1] dark:bg-[#242B35] rounded-xl flex items-center justify-between">
+                      <span className="text-sm text-[#5E4836] dark:text-[#94A3B8]">
+                        Precio por noche
+                      </span>
+                      <span className="text-lg font-bold text-[#E8850C]">
+                        ${room.pricePerNight}
+                      </span>
+                    </div>
+
+                    {/* Dates */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                          Check-in
+                        </label>
+                        <input
+                          type="date"
+                          value={reservationForm.checkIn}
+                          min={new Date().toISOString().split("T")[0]}
+                          onChange={(e) =>
+                            setReservationForm({ ...reservationForm, checkIn: e.target.value })
+                          }
+                          required
+                          className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                          Check-out
+                        </label>
+                        <input
+                          type="date"
+                          value={reservationForm.checkOut}
+                          min={reservationForm.checkIn || new Date().toISOString().split("T")[0]}
+                          onChange={(e) =>
+                            setReservationForm({ ...reservationForm, checkOut: e.target.value })
+                          }
+                          required
+                          className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Total */}
+                    {calculateTotal() > 0 && (
+                      <div className="p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl flex items-center justify-between border border-emerald-200 dark:border-emerald-800">
+                        <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                          Total ({Math.ceil((new Date(reservationForm.checkOut).getTime() - new Date(reservationForm.checkIn).getTime()) / (1000 * 60 * 60 * 24))} noches)
+                        </span>
+                        <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                          Bs {calculateTotal()}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Guest Info */}
+                    <div>
+                      <label className="block text-xs font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                        Nombre Completo
+                      </label>
+                      <input
+                        type="text"
+                        value={reservationForm.guestName}
+                        onChange={(e) =>
+                          setReservationForm({ ...reservationForm, guestName: e.target.value })
+                        }
+                        placeholder={user?.name || "Tu nombre"}
+                        className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={reservationForm.guestEmail}
+                        onChange={(e) =>
+                          setReservationForm({ ...reservationForm, guestEmail: e.target.value })
+                        }
+                        placeholder={user?.email || "tu@email.com"}
+                        required
+                        className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                        Telefono (opcional)
+                      </label>
+                      <input
+                        type="tel"
+                        value={reservationForm.guestPhone}
+                        onChange={(e) =>
+                          setReservationForm({ ...reservationForm, guestPhone: e.target.value })
+                        }
+                        placeholder="+591 77712345"
+                        className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                        Notas (opcional)
+                      </label>
+                      <textarea
+                        value={reservationForm.notes}
+                        onChange={(e) =>
+                          setReservationForm({ ...reservationForm, notes: e.target.value })
+                        }
+                        placeholder="Solicitudes especiales..."
+                        rows={2}
+                        className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm resize-none"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-[#E8850C] hover:bg-[#C46A08] text-white font-medium rounded-xl transition-colors shadow-md shadow-[#E8850C]/20"
+                    >
+                      Confirmar Reservacion
+                    </button>
+                  </form>
+                )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* Comments Section */}
         <motion.div
