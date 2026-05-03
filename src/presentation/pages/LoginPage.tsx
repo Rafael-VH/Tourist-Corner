@@ -6,7 +6,7 @@ import {
   MapPin,
   Mail,
   Lock,
-  User,
+  User as UserIcon,
   Phone,
   ArrowRight,
   Eye,
@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-type UserRole = "tourist" | "manager";
+type UserRole = "client" | "owner";
 type AuthTab = "login" | "register";
 
 export function LoginPage() {
@@ -27,7 +27,7 @@ export function LoginPage() {
   const [activeTab, setActiveTab] = useState<AuthTab>(
     searchParams.get("tab") === "register" ? "register" : "login",
   );
-  const [role, setRole] = useState<UserRole>("tourist");
+  const [role, setRole] = useState<UserRole>("client");
   const [showPassword, setShowPassword] = useState(false);
 
   // Form fields
@@ -35,6 +35,7 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [registrationCode, setRegistrationCode] = useState("");
   const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -45,8 +46,12 @@ export function LoginPage() {
       return;
     }
     try {
-      await signIn(email, password);
-      navigate("/");
+      const user = await signIn(email, password);
+      if (user?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err: unknown) {
       setError((err as Error).message || "Error al iniciar sesion");
     }
@@ -59,9 +64,17 @@ export function LoginPage() {
       setError("Por favor completa todos los campos obligatorios");
       return;
     }
+    if (role === "owner" && !registrationCode) {
+      setError("Codigo de registro requerido para dueños");
+      return;
+    }
     try {
-      await signUp(email, password, name, role);
-      navigate("/");
+      await signUp(email, password, name, role, role === "owner" ? registrationCode : undefined);
+      if (role === "owner") {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err: unknown) {
       setError((err as Error).message || "Error al registrarse");
     }
@@ -236,21 +249,21 @@ export function LoginPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
-                        onClick={() => setRole("tourist")}
+                        onClick={() => setRole("client")}
                         className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                          role === "tourist"
+                          role === "client"
                             ? "border-[#E8850C] bg-[#FFF8F1] dark:bg-[#242B35]"
                             : "border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]/50"
                         }`}
                       >
                         <Users
-                          className={`w-5 h-5 ${role === "tourist" ? "text-[#E8850C]" : "text-[#B89A7A]"}`}
+                          className={`w-5 h-5 ${role === "client" ? "text-[#E8850C]" : "text-[#B89A7A]"}`}
                         />
                         <div className="text-left">
                           <p
-                            className={`text-sm font-medium ${role === "tourist" ? "text-[#E8850C]" : "text-[#5E4836] dark:text-[#94A3B8]"}`}
+                            className={`text-sm font-medium ${role === "client" ? "text-[#E8850C]" : "text-[#5E4836] dark:text-[#94A3B8]"}`}
                           >
-                            Turista
+                            Turista/Cliente
                           </p>
                           <p className="text-xs text-[#96785A] dark:text-[#64748B]">
                             Explora hoteles
@@ -259,21 +272,21 @@ export function LoginPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setRole("manager")}
+                        onClick={() => setRole("owner")}
                         className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                          role === "manager"
+                          role === "owner"
                             ? "border-[#E8850C] bg-[#FFF8F1] dark:bg-[#242B35]"
                             : "border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]/50"
                         }`}
                       >
                         <Building2
-                          className={`w-5 h-5 ${role === "manager" ? "text-[#E8850C]" : "text-[#B89A7A]"}`}
+                          className={`w-5 h-5 ${role === "owner" ? "text-[#E8850C]" : "text-[#B89A7A]"}`}
                         />
                         <div className="text-left">
                           <p
-                            className={`text-sm font-medium ${role === "manager" ? "text-[#E8850C]" : "text-[#5E4836] dark:text-[#94A3B8]"}`}
+                            className={`text-sm font-medium ${role === "owner" ? "text-[#E8850C]" : "text-[#5E4836] dark:text-[#94A3B8]"}`}
                           >
-                            Gestion
+                            Dueño
                           </p>
                           <p className="text-xs text-[#96785A] dark:text-[#64748B]">
                             Administra hotel
@@ -283,13 +296,37 @@ export function LoginPage() {
                     </div>
                   </div>
 
+                  {/* Registration Code - only for owners */}
+                  {role === "owner" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mb-4"
+                    >
+                      <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1.5">
+                        Codigo de Registro *
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={registrationCode}
+                        onChange={(e) => setRegistrationCode(e.target.value.replace(/\D/g, ''))}
+                        placeholder="123456"
+                        required
+                        maxLength={6}
+                        className="w-full px-4 py-3 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 focus:border-[#E8850C] transition-all text-center text-lg tracking-widest"
+                      />
+                    </motion.div>
+                  )}
+
                   <form onSubmit={handleRegister} className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1.5">
                         Nombre Completo *
                       </label>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B89A7A]" />
+                          <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B89A7A]" />
                         <input
                           type="text"
                           value={name}
