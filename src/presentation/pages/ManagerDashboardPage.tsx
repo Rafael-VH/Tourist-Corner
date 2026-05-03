@@ -211,24 +211,6 @@ export function ManagerDashboardPage() {
     }
   };
 
-  const refreshRooms = async () => {
-    if (hotels.length === 0) return;
-    try {
-      const allRooms = await Promise.all(
-        hotels.map((hotel) =>
-          supabase
-            .from("rooms")
-            .select("*, custom_room_types(id, name)")
-            .eq("hotel_id", hotel.id)
-        )
-      );
-      const flatRooms = allRooms.flatMap((r) => r.data || []);
-      setRoomsFromAllHotels(flatRooms);
-    } catch {
-      setRoomsFromAllHotels([]);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
       {error && (
