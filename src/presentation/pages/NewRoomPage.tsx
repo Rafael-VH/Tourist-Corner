@@ -11,12 +11,21 @@ import {
   Save,
   AlertTriangle,
   Tag,
+  Wrench,
+  Check,
 } from "lucide-react";
 
 interface CustomRoomType {
   id: string;
   name: string;
   description: string | null;
+}
+
+interface CustomService {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
 }
 
 export function NewRoomPage() {
@@ -27,6 +36,8 @@ export function NewRoomPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [customTypes, setCustomTypes] = useState<CustomRoomType[]>([]);
+  const [customServices, setCustomServices] = useState<CustomService[]>([]);
+  const [selectedCustomServices, setSelectedCustomServices] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -56,6 +67,22 @@ export function NewRoomPage() {
     fetchCustomTypes();
   }, []);
 
+  useEffect(() => {
+    const fetchCustomServices = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("custom_services")
+          .select("id, name, description, icon")
+          .order("name");
+        if (error) throw error;
+        setCustomServices(data || []);
+      } catch (err: unknown) {
+        console.error("Error fetching custom services:", err);
+      }
+    };
+    fetchCustomServices();
+  }, []);
+
   const commonAmenities = [
     "WiFi",
     "Aire Acondicionado",
@@ -76,6 +103,14 @@ export function NewRoomPage() {
     }));
   };
 
+  const toggleCustomService = (serviceId: string) => {
+    setSelectedCustomServices((prev) =>
+      prev.includes(serviceId)
+        ? prev.filter((id) => id !== serviceId)
+        : [...prev, serviceId]
+    );
+  };
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hotelId) return;
@@ -85,7 +120,7 @@ export function NewRoomPage() {
     setSubmitError("");
 
     try {
-      const { error } = await supabase
+      const { data: roomData, error: roomError } = await supabase
         .from("rooms")
         .insert({
           hotel_id: hotelId,
@@ -105,14 +140,26 @@ export function NewRoomPage() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (roomError) throw roomError;
+
+      if (selectedCustomServices.length > 0 && roomData?.id) {
+        const { error: servicesError } = await supabase
+          .from("room_custom_services")
+          .insert(
+            selectedCustomServices.map((serviceId) => ({
+              room_id: roomData.id,
+              custom_service_id: serviceId,
+            }))
+          );
+        if (servicesError) throw servicesError;
+      }
 
       navigate(`/dashboard/hotel/${hotelId}`);
     } catch (err: unknown) {
       setSubmitError((err as Error).message || "Error al crear la habitacion");
       setIsSubmitting(false);
     }
-  }, [hotelId, form, navigate]);
+  }, [hotelId, form, navigate, customTypes, selectedCustomServices]);
 
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
@@ -353,6 +400,55 @@ export function NewRoomPage() {
                 ))}
               </div>
             </div>
+
+            {customServices.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-sm font-semibold text-[#5E4836] dark:text-[#94A3B8] uppercase tracking-wide">
+                  Servicios Personalizados
+                </h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {customServices.map((service) => (
+                    <button
+                      key={service.id}
+                      type="button"
+                      onClick={() => toggleCustomService(service.id)}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        selectedCustomServices.includes(service.id)
+                          ? "border-[#E8850C] bg-[#FFF8F1] dark:bg-[#242B35]"
+                          : "border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]/50"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                            selectedCustomServices.includes(service.id)
+                              ? "bg-[#E8850C] text-white"
+                              : "bg-[#FDF8F3] dark:bg-[#242B35] text-[#96785A] dark:text-[#64748B]"
+                          }`}
+                        >
+                          {selectedCustomServices.includes(service.id) ? (
+                            <Check className="w-4 h-4" />
+                          ) : (
+                            <Wrench className="w-4 h-4" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                            {service.name}
+                          </p>
+                          {service.description && (
+                            <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-0.5 line-clamp-1">
+                              {service.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#F5EDE3] dark:border-[#2D3748]">
               <Link

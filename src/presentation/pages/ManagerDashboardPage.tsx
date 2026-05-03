@@ -24,6 +24,14 @@ import {
   X,
 } from "lucide-react";
 
+interface CustomService {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  created_at: string;
+}
+
 export function ManagerDashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
@@ -34,6 +42,7 @@ export function ManagerDashboardPage() {
   );
 
   const [customRoomTypes, setCustomRoomTypes] = useState<{ id: string; name: string; description: string | null; created_at: string }[]>([]);
+  const [customServices, setCustomServices] = useState<CustomService[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -64,6 +73,22 @@ export function ManagerDashboardPage() {
       }
     };
     fetchCustomTypes();
+  }, []);
+
+  useEffect(() => {
+    const fetchCustomServices = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("custom_services")
+          .select("id, name, description, icon, created_at")
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        setCustomServices(data || []);
+      } catch (err: unknown) {
+        console.error("Error fetching custom services:", err);
+      }
+    };
+    fetchCustomServices();
   }, []);
 
   const mainHotels = hotels.filter((h) => h.isMain);
@@ -144,6 +169,20 @@ export function ManagerDashboardPage() {
       setCustomRoomTypes((prev) => prev.filter((t) => t.id !== id));
     } catch (err: unknown) {
       setError((err as Error).message || "Error al eliminar tipo");
+    }
+  };
+
+  const deleteCustomService = async (id: string) => {
+    if (!confirm("Eliminar este servicio personalizado?")) return;
+    try {
+      const { error } = await supabase
+        .from("custom_services")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      setCustomServices((prev) => prev.filter((s) => s.id !== id));
+    } catch (err: unknown) {
+      setError((err as Error).message || "Error al eliminar servicio");
     }
   };
 
@@ -634,6 +673,63 @@ export function ManagerDashboardPage() {
               ) : (
                 <p className="text-sm text-[#96785A] dark:text-[#64748B] text-center py-4">
                   No tienes tipos personalizados
+                </p>
+              )}
+            </motion.div>
+
+            {/* Custom Services */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.375 }}
+              className="bg-white dark:bg-[#1A2028] rounded-2xl p-6 border border-[#E8D9C8] dark:border-[#2D3748]"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
+                  <Wrench className="w-5 h-5 text-[#E8850C]" />
+                  Servicios Personalizados
+                </h3>
+                <button
+                  onClick={handleNewService}
+                  className="p-1.5 bg-[#FFF8F1] dark:bg-[#242B35] rounded-lg hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] transition-colors"
+                >
+                  <Plus className="w-4 h-4 text-[#E8850C]" />
+                </button>
+              </div>
+              {customServices.length > 0 ? (
+                <div className="space-y-2">
+                  {customServices.slice(0, 4).map((service) => (
+                    <div
+                      key={service.id}
+                      className="p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-lg flex items-center justify-between gap-2"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                          {service.name}
+                        </p>
+                        {service.description && (
+                          <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-0.5 line-clamp-1">
+                            {service.description}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => deleteCustomService(service.id)}
+                        className="p-1.5 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {customServices.length > 4 && (
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B] text-center">
+                      +{customServices.length - 4} mas
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-[#96785A] dark:text-[#64748B] text-center py-4">
+                  No tienes servicios personalizados
                 </p>
               )}
             </motion.div>
