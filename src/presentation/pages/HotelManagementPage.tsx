@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
+import { supabase } from "@/data/datasources/SupabaseClient";
 import {
   ArrowLeft,
   Plus,
@@ -17,6 +18,8 @@ import {
   Save,
   X,
   Image,
+  GitBranch,
+  ChevronRight,
 } from "lucide-react";
 
 export function HotelManagementPage() {
@@ -25,6 +28,7 @@ export function HotelManagementPage() {
   const { selectedHotel, fetchHotelById, isLoading, updateHotel } =
     useHotelStore();
   const { rooms, fetchRoomsByHotel } = useRoomStore();
+  const [branches, setBranches] = useState<{ id: string; name: string; city: string }[]>([]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -41,6 +45,20 @@ export function HotelManagementPage() {
       fetchRoomsByHotel(id);
     }
   }, [id, fetchHotelById, fetchRoomsByHotel]);
+
+  useEffect(() => {
+    if (selectedHotel?.isMain && id) {
+      fetchBranches(id);
+    }
+  }, [selectedHotel?.isMain, id]);
+
+  const fetchBranches = async (mainHotelId: string) => {
+    const { data } = await supabase
+      .from("hotels")
+      .select("id, name, city")
+      .eq("branch_of", mainHotelId);
+    setBranches(data || []);
+  };
 
   if (isLoading || !selectedHotel) {
     return (
@@ -279,6 +297,66 @@ export function HotelManagementPage() {
             )}
           </div>
         </motion.div>
+
+        {/* Branches Section */}
+        {hotel.isMain && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden mb-8"
+          >
+            <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <GitBranch className="w-5 h-5 text-[#E8850C]" />
+                  <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                    Sucursales
+                  </h2>
+                  <span className="text-sm text-[#96785A] dark:text-[#64748B]">
+                    ({branches.length})
+                  </span>
+                </div>
+                <button
+                  onClick={() => navigate("/dashboard/hotel/new")}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Nueva Sucursal
+                </button>
+              </div>
+            </div>
+            <div className="divide-y divide-[#F5EDE3] dark:divide-[#2D3748]">
+              {branches.map((branch) => (
+                <Link
+                  key={branch.id}
+                  to={`/dashboard/hotel/${branch.id}`}
+                  className="flex items-center justify-between p-5 hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-[#FFF8F1] dark:bg-[#242B35] flex items-center justify-center">
+                      <GitBranch className="w-5 h-5 text-[#E8850C]" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
+                        {branch.name}
+                      </h3>
+                      <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                        {branch.city}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-[#B89A7A] group-hover:text-[#E8850C] group-hover:translate-x-1 transition-all" />
+                </Link>
+              ))}
+              {branches.length === 0 && (
+                <div className="p-8 text-center text-sm text-[#96785A] dark:text-[#64748B]">
+                  No tienes sucursales aun
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         {/* Images Section */}
         <motion.div

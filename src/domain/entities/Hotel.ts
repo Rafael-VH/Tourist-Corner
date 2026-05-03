@@ -21,6 +21,9 @@ export interface Hotel {
     max: number;
   };
   managerId: string;
+  branchOf?: string | null;
+  isMain: boolean;
+  branches?: Hotel[];
   createdAt: Date;
   updatedAt: Date;
   isActive: boolean;

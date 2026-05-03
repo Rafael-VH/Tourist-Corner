@@ -18,6 +18,7 @@ import {
   Users,
   Wrench,
   Tag,
+  GitBranch,
 } from "lucide-react";
 
 export function ManagerDashboardPage() {
@@ -42,6 +43,14 @@ export function ManagerDashboardPage() {
       });
     }
   }, [hotels, fetchRoomsByHotel]);
+
+  const mainHotels = hotels.filter((h) => h.isMain);
+  const branchHotels = hotels.filter((h) => h.branchOf);
+
+  const mainHotelsWithBranches = mainHotels.map((main) => ({
+    ...main,
+    branches: branchHotels.filter((b) => b.branchOf === main.id),
+  }));
 
   const totalRooms = rooms.length;
   const totalRevenue = hotels.reduce(
@@ -164,27 +173,39 @@ export function ManagerDashboardPage() {
               className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden"
             >
               <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
-                      Mis Establecimientos
-                    </h2>
-                    <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                      Gestiona tus hoteles y habitaciones
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                        Mis Establecimientos
+                      </h2>
+                      <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                        {mainHotelsWithBranches.length > 0
+                          ? "Gestiona tu hotel y sucursales"
+                          : "Gestiona tu hotel"}
+                      </p>
+                    </div>
+                    {mainHotelsWithBranches.length > 0 ? (
+                      <button
+                        onClick={handleNewHotel}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
+                      >
+                        <GitBranch className="w-4 h-4" />
+                        Agregar Sucursal
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleNewHotel}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Agregar
+                      </button>
+                    )}
                   </div>
-                    <button
-                      onClick={handleNewHotel}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Agregar
-                    </button>
-                </div>
               </div>
 
               <div className="divide-y divide-[#F5EDE3] dark:divide-[#2D3748]">
-                {hotels.slice(0, 4).map((hotel) => (
+                {mainHotelsWithBranches.map((hotel) => (
                   <div
                     key={hotel.id}
                     className="p-5 hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors"
@@ -228,6 +249,28 @@ export function ManagerDashboardPage() {
                             ${hotel.priceRange.min} - ${hotel.priceRange.max}
                           </span>
                         </div>
+                        {hotel.branches.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-[#F5EDE3] dark:border-[#2D3748]">
+                            <p className="text-xs font-medium text-[#5E4836] dark:text-[#94A3B8] mb-2 flex items-center gap-1">
+                              <GitBranch className="w-3 h-3" />
+                              Sucursales ({hotel.branches.length})
+                            </p>
+                            <div className="space-y-2">
+                              {hotel.branches.map((branch) => (
+                                <Link
+                                  key={branch.id}
+                                  to={`/dashboard/hotel/${branch.id}`}
+                                  className="flex items-center justify-between p-2 bg-[#FDF8F3] dark:bg-[#242B35] rounded-lg hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors group"
+                                >
+                                  <span className="text-sm text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
+                                    {branch.name}
+                                  </span>
+                                  <ChevronRight className="w-4 h-4 text-[#B89A7A] group-hover:text-[#E8850C] group-hover:translate-x-1 transition-all" />
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <Link
                         to={`/dashboard/hotel/${hotel.id}`}
@@ -342,7 +385,7 @@ export function ManagerDashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F5EDE3] dark:divide-[#2D3748]">
-                    {hotels.map((hotel) => (
+                    {mainHotelsWithBranches.map((hotel) => (
                       <tr
                         key={hotel.id}
                         className="hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors"
@@ -375,7 +418,7 @@ export function ManagerDashboardPage() {
                         </td>
                       </tr>
                     ))}
-                    {hotels.length === 0 && !isLoading && (
+                    {mainHotelsWithBranches.length === 0 && !isLoading && (
                       <tr>
                         <td
                           colSpan={6}

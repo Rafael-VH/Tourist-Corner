@@ -21,6 +21,8 @@ interface HotelRecord {
   price_range_min: number;
   price_range_max: number;
   manager_id: string;
+  branch_of: string | null;
+  is_main: boolean;
   created_at: string;
   updated_at: string;
   is_active: boolean;
@@ -205,6 +207,8 @@ export class SupabaseHotelRepository implements HotelRepository {
       longitude: record.longitude,
       priceRange: { min: record.price_range_min, max: record.price_range_max },
       managerId: record.manager_id,
+      branchOf: record.branch_of,
+      isMain: record.is_main,
       createdAt: new Date(record.created_at),
       updatedAt: new Date(record.updated_at),
       isActive: record.is_active,
@@ -230,6 +234,8 @@ export class SupabaseHotelRepository implements HotelRepository {
       price_range_min: hotel.priceRange.min,
       price_range_max: hotel.priceRange.max,
       manager_id: hotel.managerId,
+      branch_of: (hotel as Hotel).branchOf,
+      is_main: (hotel as Hotel).isMain,
       is_active: hotel.isActive,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

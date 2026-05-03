@@ -12,6 +12,7 @@ import {
   DollarSign,
   Save,
   AlertTriangle,
+  GitBranch,
 } from "lucide-react";
 
 export function NewHotelPage() {
@@ -20,7 +21,8 @@ export function NewHotelPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [checkingHotel, setCheckingHotel] = useState(true);
-  const [hasExistingHotel, setHasExistingHotel] = useState(false);
+  const [isCreatingBranch, setIsCreatingBranch] = useState(false);
+  const [mainHotel, setMainHotel] = useState<{ id: string; name: string } | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -39,16 +41,18 @@ export function NewHotelPage() {
       if (!user?.id) return;
       const { data } = await supabase
         .from("hotels")
-        .select("id")
+        .select("id, name, is_main")
         .eq("manager_id", user.id)
+        .eq("is_main", true)
         .limit(1);
 
       if (data && data.length > 0) {
-        setHasExistingHotel(true);
-        navigate(`/dashboard/hotel/${data[0].id}`, { replace: true });
+        setMainHotel(data[0]);
+        setIsCreatingBranch(true);
       } else {
         setCheckingHotel(false);
       }
+      setCheckingHotel(false);
     };
 
     checkExistingHotel();
@@ -83,6 +87,8 @@ export function NewHotelPage() {
           price_range_min: Number(form.priceMin),
           price_range_max: Number(form.priceMax),
           manager_id: user.id,
+          is_main: !isCreatingBranch,
+          branch_of: isCreatingBranch ? mainHotel?.id : null,
           is_active: true,
         })
         .select()
@@ -95,7 +101,7 @@ export function NewHotelPage() {
       setSubmitError((err as Error).message || "Error al crear el hotel");
       setIsSubmitting(false);
     }
-  }, [user, form, navigate]);
+  }, [user, form, navigate, isCreatingBranch, mainHotel]);
 
   if (checkingHotel) {
     return (
@@ -103,10 +109,6 @@ export function NewHotelPage() {
         <div className="w-10 h-10 border-4 border-[#E8850C]/30 border-t-[#E8850C] rounded-full animate-spin" />
       </div>
     );
-  }
-
-  if (hasExistingHotel) {
-    return null;
   }
 
   return (
@@ -123,7 +125,7 @@ export function NewHotelPage() {
             </Link>
             <span className="text-[#D4BEA5]">/</span>
             <span className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
-              Nuevo Hotel
+              {isCreatingBranch ? "Nueva Sucursal" : "Nuevo Hotel"}
             </span>
           </div>
         </div>
@@ -147,19 +149,27 @@ export function NewHotelPage() {
           className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden"
         >
           <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
+                  {isCreatingBranch ? (
+                    <GitBranch className="w-5 h-5 text-white" />
+                  ) : (
+                    <Building2 className="w-5 h-5 text-white" />
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                    {isCreatingBranch
+                      ? `Nueva Sucursal de ${mainHotel?.name}`
+                      : "Registrar Nuevo Hotel"}
+                  </h1>
+                  <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                    {isCreatingBranch
+                      ? "Completa la informacion de la nueva sucursal"
+                      : "Completa la informacion basica de tu establecimiento"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
-                  Registrar Nuevo Hotel
-                </h1>
-                <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                  Completa la informacion basica de tu establecimiento
-                </p>
-              </div>
-            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -351,7 +361,7 @@ export function NewHotelPage() {
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    Registrar Hotel
+                    {isCreatingBranch ? "Registrar Sucursal" : "Registrar Hotel"}
                   </>
                 )}
               </button>
