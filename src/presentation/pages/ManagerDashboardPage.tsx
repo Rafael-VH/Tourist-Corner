@@ -24,7 +24,7 @@ export function ManagerDashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { hotels, fetchManagerHotels, isLoading } = useHotelStore();
-  const { rooms } = useRoomStore();
+  const { rooms, fetchRoomsByHotel } = useRoomStore();
   const [timeRange, setTimeRange] = useState<"week" | "month" | "year">(
     "month",
   );
@@ -34,6 +34,14 @@ export function ManagerDashboardPage() {
       fetchManagerHotels(user.id);
     }
   }, [user?.id, fetchManagerHotels]);
+
+  useEffect(() => {
+    if (hotels.length > 0) {
+      hotels.forEach((hotel) => {
+        fetchRoomsByHotel(hotel.id);
+      });
+    }
+  }, [hotels, fetchRoomsByHotel]);
 
   const totalRooms = rooms.length;
   const totalRevenue = hotels.reduce(
@@ -230,6 +238,70 @@ export function ManagerDashboardPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </motion.div>
+
+            {/* Rooms List */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden"
+            >
+              <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
+                      <Bed className="w-5 h-5 text-[#E8850C]" />
+                      Habitaciones
+                    </h2>
+                    <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                      {rooms.length} habitaciones registradas
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="divide-y divide-[#F5EDE3] dark:divide-[#2D3748]">
+                {rooms.map((room) => (
+                  <Link
+                    key={room.id}
+                    to={`/dashboard/room/${room.id}`}
+                    className="flex items-center gap-4 p-5 hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors group"
+                  >
+                    <img
+                      src={room.images[0]}
+                      alt={room.name}
+                      className="w-16 h-16 rounded-xl object-cover shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
+                        {room.name}
+                      </h3>
+                      <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                        {room.type} · {room.bedType} · {room.capacity} personas
+                      </p>
+                    </div>
+                    <span className="text-sm font-medium text-[#E8850C]">
+                      ${room.pricePerNight}
+                      <span className="text-xs text-[#96785A]">/noche</span>
+                    </span>
+                    <span
+                      className={`px-2 py-1 rounded-lg text-xs font-medium ${
+                        room.isAvailable
+                          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20"
+                          : "bg-red-50 text-red-600 dark:bg-red-900/20"
+                      }`}
+                    >
+                      {room.isAvailable ? "Disponible" : "Ocupada"}
+                    </span>
+                    <ChevronRight className="w-5 h-5 text-[#B89A7A] group-hover:text-[#E8850C] group-hover:translate-x-1 transition-all shrink-0" />
+                  </Link>
+                ))}
+                {rooms.length === 0 && !isLoading && (
+                  <div className="p-8 text-center text-sm text-[#96785A] dark:text-[#64748B]">
+                    No hay habitaciones registradas aun
+                  </div>
+                )}
               </div>
             </motion.div>
 
