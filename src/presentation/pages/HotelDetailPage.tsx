@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { useCommentStore } from "@/presentation/providers/useCommentStore";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
-import type { HotelType } from "@/domain/entities/Hotel";
+import { useReservationStore } from "@/presentation/providers/useReservationStore";
+import type { HotelType, Room } from "@/domain/entities/Hotel";
 import {
   MapPin,
   Star,
@@ -25,6 +26,9 @@ import {
   Send,
   ThumbsUp,
   MessageSquare,
+  Calendar,
+  X,
+  CheckCircle,
 } from "lucide-react";
 
 const hotelTypeLabels: Record<HotelType, string> = {
@@ -62,6 +66,14 @@ export function HotelDetailPage() {
   const [commentText, setCommentText] = useState("");
   const [commentRating, setCommentRating] = useState(5);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [selectedRoomForBooking, setSelectedRoomForBooking] = useState<Room | null>(null);
+  const [reservationSuccess, setReservationSuccess] = useState(false);
+  const [reservationForm, setReservationForm] = useState({
+    checkIn: "",
+    checkOut: "",
+    guests: "2",
+  });
 
   const isOwnerViewing = user?.role === "owner" && searchParams.get("from") === "management";
 
@@ -89,6 +101,44 @@ export function HotelDetailPage() {
     );
     setCommentText("");
     setCommentRating(5);
+  };
+
+  const calculateTotal = (room: Room) => {
+    if (!reservationForm.checkIn || !reservationForm.checkOut) return 0;
+    const start = new Date(reservationForm.checkIn);
+    const end = new Date(reservationForm.checkOut);
+    const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return nights > 0 ? nights * room.pricePerNight : 0;
+  };
+
+  const handleBookRoom = (room: Room) => {
+    setSelectedRoomForBooking(room);
+    setShowReservationModal(true);
+  };
+
+  const handleSubmitReservation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRoomForBooking || !reservationForm.checkIn || !reservationForm.checkOut) return;
+
+    try {
+      await createReservation({
+        roomId: selectedRoomForBooking.id,
+        userId: user?.id || null,
+        guestName: user?.name || "",
+        guestEmail: user?.email || "",
+        checkIn: reservationForm.checkIn,
+        checkOut: reservationForm.checkOut,
+      });
+      setReservationSuccess(true);
+      setTimeout(() => {
+        setShowReservationModal(false);
+        setReservationSuccess(false);
+        setSelectedRoomForBooking(null);
+        setReservationForm({ checkIn: "", checkOut: "", guests: "2" });
+      }, 2000);
+    } catch {
+      // Error handled by store
+    }
   };
 
   if (hotelLoading || !selectedHotel) {
@@ -299,6 +349,7 @@ export function HotelDetailPage() {
 
             {/* Rooms Section */}
             <motion.div
+              id="rooms-section"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
@@ -318,35 +369,37 @@ export function HotelDetailPage() {
               ) : rooms.length > 0 ? (
                 <div className="space-y-4">
                   {rooms.map((room) => (
-                    <Link
+                    <div
                       key={room.id}
-                      to={`/room/${room.id}`}
                       className="flex gap-4 bg-white dark:bg-[#1A2028] rounded-2xl overflow-hidden border border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]/30 hover:shadow-lg hover:shadow-[#E8850C]/10 transition-all group"
                     >
-                      <div className="w-32 md:w-48 shrink-0">
+                      <Link
+                        to={`/room/${room.id}`}
+                        className="w-32 md:w-48 shrink-0 relative overflow-hidden"
+                      >
                         <img
                           src={room.images[0]}
                           alt={room.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                      </div>
+                      </Link>
                       <div className="flex-1 py-4 pr-4">
                         <div className="flex items-start justify-between">
-                          <div>
+                          <Link to={`/room/${room.id}`}>
                             <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
                               {room.name}
                             </h3>
-                            <p className="text-sm text-[#96785A] dark:text-[#64748B] mt-0.5">
-                              {room.type}
-                            </p>
-                          </div>
-                          <span className="font-bold text-[#E8850C]">
+                          </Link>
+                          <span className="font-bold text-[#E8850C] ml-2 shrink-0">
                             ${room.pricePerNight}
                             <span className="text-xs text-[#96785A]">
                               /noche
                             </span>
                           </span>
                         </div>
+                        <Link to={`/room/${room.id}`} className="text-sm text-[#96785A] dark:text-[#64748B] mt-0.5 block hover:text-[#E8850C] transition-colors">
+                          {room.type}
+                        </Link>
                         <div className="flex items-center gap-4 mt-2 text-sm text-[#96785A] dark:text-[#64748B]">
                           <span className="flex items-center gap-1">
                             <Users className="w-4 h-4" /> {room.capacity}{" "}
@@ -366,11 +419,26 @@ export function HotelDetailPage() {
                             </span>
                           ))}
                         </div>
+                        <div className="flex gap-2 mt-3">
+                          <Link
+                            to={`/room/${room.id}`}
+                            className="px-4 py-2 border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] hover:border-[#E8850C] hover:text-[#E8850C] transition-colors"
+                          >
+                            Ver Detalle
+                          </Link>
+                          <button
+                            onClick={() => handleBookRoom(room)}
+                            disabled={!room.isAvailable}
+                            className="px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {room.isAvailable ? "Reservar" : "No Disponible"}
+                          </button>
+                        </div>
                       </div>
                       <div className="flex items-center pr-4">
                         <ChevronRight className="w-5 h-5 text-[#D4BEA5] group-hover:text-[#E8850C] group-hover:translate-x-1 transition-all" />
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -515,6 +583,11 @@ export function HotelDetailPage() {
                     </label>
                     <input
                       type="date"
+                      value={reservationForm.checkIn}
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={(e) =>
+                        setReservationForm({ ...reservationForm, checkIn: e.target.value })
+                      }
                       className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
                     />
                   </div>
@@ -524,6 +597,11 @@ export function HotelDetailPage() {
                     </label>
                     <input
                       type="date"
+                      value={reservationForm.checkOut}
+                      min={reservationForm.checkIn || new Date().toISOString().split("T")[0]}
+                      onChange={(e) =>
+                        setReservationForm({ ...reservationForm, checkOut: e.target.value })
+                      }
                       className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
                     />
                   </div>
@@ -531,15 +609,27 @@ export function HotelDetailPage() {
                     <label className="block text-xs font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
                       Huespedes
                     </label>
-                    <select className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm">
-                      <option>1 huesped</option>
-                      <option>2 huespedes</option>
-                      <option>3 huespedes</option>
-                      <option>4+ huespedes</option>
+                    <select
+                      value={reservationForm.guests}
+                      onChange={(e) =>
+                        setReservationForm({ ...reservationForm, guests: e.target.value })
+                      }
+                      className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
+                    >
+                      <option value="1">1 huesped</option>
+                      <option value="2">2 huespedes</option>
+                      <option value="3">3 huespedes</option>
+                      <option value="4">4+ huespedes</option>
                     </select>
                   </div>
-                  <button className="w-full py-3 bg-[#E8850C] hover:bg-[#C46A08] text-white font-medium rounded-xl transition-colors shadow-md shadow-[#E8850C]/20">
-                    Ver Disponibilidad
+                  <button
+                    onClick={() => {
+                      const el = document.getElementById("rooms-section");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="w-full py-3 bg-[#E8850C] hover:bg-[#C46A08] text-white font-medium rounded-xl transition-colors shadow-md shadow-[#E8850C]/20"
+                  >
+                    Ver Habitaciones
                   </button>
                 </div>
               </div>
@@ -578,6 +668,121 @@ export function HotelDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Reservation Modal */}
+      <AnimatePresence>
+        {showReservationModal && selectedRoomForBooking && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-lg bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto"
+            >
+              <div className="p-5 border-b border-[#F5EDE3] dark:border-[#2D3748] flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                      Reservar Habitacion
+                    </h3>
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                      {selectedRoomForBooking.name}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowReservationModal(false);
+                    setReservationSuccess(false);
+                  }}
+                  className="p-1.5 hover:bg-[#FDF8F3] dark:hover:bg-[#242B35] rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4 text-[#96785A] dark:text-[#64748B]" />
+                </button>
+              </div>
+
+              {reservationSuccess ? (
+                <div className="p-8 text-center">
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-emerald-500" />
+                  </div>
+                  <h4 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-2">
+                    Reservacion Exitosa
+                  </h4>
+                  <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                    Tu solicitud ha sido enviada. Recibiras una confirmacion pronto.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitReservation} className="p-5 space-y-4">
+                  <div className="p-3 bg-[#FFF8F1] dark:bg-[#242B35] rounded-xl flex items-center justify-between">
+                    <span className="text-sm text-[#5E4836] dark:text-[#94A3B8]">
+                      Precio por noche
+                    </span>
+                    <span className="text-lg font-bold text-[#E8850C]">
+                      ${selectedRoomForBooking.pricePerNight}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                        Check-in
+                      </label>
+                      <input
+                        type="date"
+                        value={reservationForm.checkIn}
+                        min={new Date().toISOString().split("T")[0]}
+                        onChange={(e) =>
+                          setReservationForm({ ...reservationForm, checkIn: e.target.value })
+                        }
+                        required
+                        className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                        Check-out
+                      </label>
+                      <input
+                        type="date"
+                        value={reservationForm.checkOut}
+                        min={reservationForm.checkIn || new Date().toISOString().split("T")[0]}
+                        onChange={(e) =>
+                          setReservationForm({ ...reservationForm, checkOut: e.target.value })
+                        }
+                        required
+                        className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {calculateTotal(selectedRoomForBooking) > 0 && (
+                    <div className="p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl flex items-center justify-between border border-emerald-200 dark:border-emerald-800">
+                      <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                        Total ({Math.ceil((new Date(reservationForm.checkOut).getTime() - new Date(reservationForm.checkIn).getTime()) / (1000 * 60 * 60 * 24))} noches)
+                      </span>
+                      <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                        Bs {calculateTotal(selectedRoomForBooking)}
+                      </span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-[#E8850C] hover:bg-[#C46A08] text-white font-medium rounded-xl transition-colors shadow-md shadow-[#E8850C]/20"
+                  >
+                    Confirmar Reservacion
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
