@@ -23,7 +23,29 @@ import {
   X,
   ArrowUpRight,
   Check,
+  Clock,
+  ChevronDown,
 } from "lucide-react";
+
+interface RoomData {
+  id: string;
+  name: string;
+  type: string;
+  price_per_night: number;
+  is_available: boolean;
+  status: string;
+  images: string[];
+  bed_type: string;
+  capacity: number;
+  hotel_id: string;
+  custom_room_types?: { name: string } | null;
+}
+
+interface HotelRoomGroup {
+  hotel: { id: string; name: string; isMain: boolean; branchOf?: string | null };
+  rooms: RoomData[];
+  reservationCounts: { pending: number; active: number };
+}
 
 interface CustomService {
   id: string;
@@ -37,7 +59,8 @@ export function ManagerDashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { hotels, fetchManagerHotels, isLoading } = useHotelStore();
-  const [roomsFromAllHotels, setRoomsFromAllHotels] = useState<{ id: string; name: string; type: string; price_per_night: number; is_available: boolean; images: string[]; bed_type: string; capacity: number; hotel_id: string; custom_room_types?: { name: string } | null }[]>([]);
+  const [roomsByHotel, setRoomsByHotel] = useState<HotelRoomGroup[]>([]);
+  const [expandedHotels, setExpandedHotels] = useState<Set<string>>(new Set());
   const [timeRange, setTimeRange] = useState<"week" | "month" | "year">(
     "month",
   );
@@ -65,10 +88,40 @@ export function ManagerDashboardPage() {
                 .eq("hotel_id", hotel.id)
             )
           );
-          const flatRooms = allRooms.flatMap((r) => r.data || []);
-          setRoomsFromAllHotels(flatRooms);
+
+          const flatRooms: RoomData[] = allRooms.flatMap((r) => r.data || []);
+
+          const reservations = await Promise.all(
+            hotels.map((hotel) =>
+              supabase
+                .from("reservations")
+                .select("room_id, status")
+                .eq("room_id", flatRooms.filter((r) => r.hotel_id === hotel.id).map((r) => r.id))
+            )
+          );
+
+          const flatReservations = reservations.flatMap((r) => r.data || []);
+          const resByHotel: Record<string, { pending: number; active: number }> = {};
+          hotels.forEach((h) => {
+            const hotelRoomIds = flatRooms.filter((r) => r.hotel_id === h.id).map((r) => r.id);
+            resByHotel[h.id] = {
+              pending: flatReservations.filter((r) => hotelRoomIds.includes(r.room_id) && r.status === "pending").length,
+              active: flatReservations.filter((r) => hotelRoomIds.includes(r.room_id) && (r.status === "pending" || r.status === "accepted")).length,
+            };
+          });
+
+          const groups: HotelRoomGroup[] = hotels.map((hotel) => ({
+            hotel,
+            rooms: flatRooms.filter((r) => r.hotel_id === hotel.id),
+            reservationCounts: resByHotel[hotel.id] || { pending: 0, active: 0 },
+          }));
+
+          setRoomsByHotel(groups);
+
+          const mainHotelIds = hotels.filter((h) => h.isMain).map((h) => h.id);
+          setExpandedHotels(new Set(mainHotelIds));
         } catch {
-          setRoomsFromAllHotels([]);
+          setRoomsByHotel([]);
         }
       };
       fetchAllRooms();
@@ -115,7 +168,7 @@ export function ManagerDashboardPage() {
     branches: branchHotels.filter((b) => b.branchOf === main.id),
   }));
 
-  const totalRooms = roomsFromAllHotels.length;
+  const totalRooms = roomsByHotel.reduce((sum, g) => sum + g.rooms.length, 0);
   const totalRevenue = hotels.reduce(
     (sum, h) => sum + h.priceRange.min * h.reviewCount,
     0,
@@ -215,7 +268,10 @@ export function ManagerDashboardPage() {
     try {
       const { error } = await supabase.from("rooms").delete().eq("id", id);
       if (error) throw error;
-      setRoomsFromAllHotels((prev) => prev.filter((r) => r.id !== id));
+      setRoomsByHotel((prev) => prev.map((group) => ({
+        ...group,
+        rooms: group.rooms.filter((r) => r.id !== id),
+      })));
     } catch (err: unknown) {
       setError((err as Error).message || "Error al eliminar habitacion");
     }
@@ -468,85 +524,192 @@ export function ManagerDashboardPage() {
               </div>
             </motion.div>
 
-            {/* Rooms List */}
+            {/* Rooms by Hotel */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 }}
-              className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden"
+              className="space-y-4"
             >
-              <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
-                      <Bed className="w-5 h-5 text-[#E8850C]" />
-                      Habitaciones
-                    </h2>
-                    <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                      {roomsFromAllHotels.length} habitaciones registradas
-                    </p>
-                  </div>
-                </div>
+              <div className="flex items-center gap-3">
+                <Bed className="w-5 h-5 text-[#E8850C]" />
+                <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                  Habitaciones
+                </h2>
+                <span className="text-sm text-[#96785A] dark:text-[#64748B]">
+                  {roomsByHotel.reduce((sum, g) => sum + g.rooms.length, 0)} en total
+                </span>
               </div>
-              <div className="divide-y divide-[#F5EDE3] dark:divide-[#2D3748]">
-                {roomsFromAllHotels.map((room) => (
-                  <div
-                    key={room.id}
-                    className="flex items-center gap-4 p-5 hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors group"
-                  >
-                    <Link
-                      to={`/dashboard/room/${room.id}`}
-                      className="flex items-center gap-4 flex-1 min-w-0"
-                    >
-                      <img
-                        src={room.images?.[0] || "/placeholder-room.jpg"}
-                        alt={room.name}
-                        className="w-16 h-16 rounded-xl object-cover shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
-                          {room.name}
-                        </h3>
-                        <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                          {room.custom_room_types?.name || room.type} · {room.bed_type} · {room.capacity} personas
-                        </p>
+
+              {roomsByHotel
+                .filter((group) => group.hotel.isMain)
+                .map((mainGroup) => {
+                  const allBranchGroups = roomsByHotel.filter(
+                    (g) => g.hotel.branchOf === mainGroup.hotel.id
+                  );
+                  const totalRooms = mainGroup.rooms.length + allBranchGroups.reduce((s, g) => s + g.rooms.length, 0);
+                  const totalAvailable = mainGroup.rooms.filter((r) => r.is_available).length + allBranchGroups.flatMap((g) => g.rooms).filter((r) => r.is_available).length;
+                  const totalPending = mainGroup.reservationCounts.pending + allBranchGroups.reduce((s, g) => s + g.reservationCounts.pending, 0);
+                  const totalActive = mainGroup.reservationCounts.active + allBranchGroups.reduce((s, g) => s + g.reservationCounts.active, 0);
+                  const isExpanded = expandedHotels.has(mainGroup.hotel.id);
+
+                  const renderHotelSection = (group: HotelRoomGroup, isBranch = false) => (
+                    <div key={group.hotel.id} className={`${isBranch ? "ml-4" : ""}`}>
+                      <div className={`rounded-xl border overflow-hidden ${isBranch ? "border-[#D4BEA5]/40 dark:border-[#2D3748]/60" : "border-[#E8D9C8] dark:border-[#2D3748]"}`}>
+                        <div className={`p-4 ${isBranch ? "bg-[#FDF8F3] dark:bg-[#1A2028]/80" : "bg-[#FFF8F1] dark:bg-[#242B35]"}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {isBranch && <GitBranch className="w-4 h-4 text-[#B89A7A]" />}
+                              <span className={`font-semibold ${isBranch ? "text-sm text-[#5E4836] dark:text-[#94A3B8]" : "text-[#2D1F14] dark:text-[#E2E8F0]"}`}>
+                                {group.hotel.name}
+                              </span>
+                              {!isBranch && (
+                                <span className="px-2 py-0.5 bg-[#E8850C]/10 text-[#E8850C] text-xs font-medium rounded-full">
+                                  Principal
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 text-xs">
+                              <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                                {group.rooms.filter((r) => r.is_available).length} disp.
+                              </span>
+                              <span className="text-red-500 dark:text-red-400 font-medium">
+                                {group.rooms.filter((r) => !r.is_available).length} ocup.
+                              </span>
+                              {group.reservationCounts.pending > 0 && (
+                                <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                                  <Clock className="w-3 h-3" />
+                                  {group.reservationCounts.pending}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="divide-y divide-[#F5EDE3] dark:divide-[#2D3748]">
+                          {group.rooms.map((room) => (
+                            <div
+                              key={room.id}
+                              className="flex items-center gap-3 p-4 hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors group"
+                            >
+                              <img
+                                src={room.images?.[0] || "/placeholder-room.jpg"}
+                                alt={room.name}
+                                className="w-14 h-14 rounded-lg object-cover shrink-0"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-medium text-[#2D1F14] dark:text-[#E2E8F0] text-sm group-hover:text-[#E8850C] transition-colors">
+                                  {room.name}
+                                </h4>
+                                <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                                  {room.custom_room_types?.name || room.type} · {room.bed_type} · {room.capacity} pers.
+                                </p>
+                              </div>
+                              <span className="text-sm font-semibold text-[#E8850C]">
+                                Bs {room.price_per_night}
+                              </span>
+                              <span
+                                className={`px-2 py-1 rounded-lg text-xs font-medium ${
+                                  room.is_available
+                                    ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20"
+                                    : room.status === "maintenance"
+                                    ? "bg-amber-50 text-amber-600 dark:bg-amber-900/20"
+                                    : "bg-red-50 text-red-600 dark:bg-red-900/20"
+                                }`}
+                              >
+                                {room.is_available ? "Disponible" : room.status === "maintenance" ? "Mantenimiento" : "Ocupada"}
+                              </span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <Link
+                                  to={`/dashboard/room/${room.id}`}
+                                  className="p-1.5 hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] rounded-lg transition-colors"
+                                >
+                                  <ChevronRight className="w-4 h-4 text-[#B89A7A]" />
+                                </Link>
+                                <button
+                                  onClick={() => deleteRoom(room.id)}
+                                  className="p-1.5 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                          {group.rooms.length === 0 && (
+                            <div className="p-4 text-center text-xs text-[#96785A] dark:text-[#64748B]">
+                              Sin habitaciones
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <span className="text-sm font-medium text-[#E8850C]">
-                        ${room.price_per_night}
-                        <span className="text-xs text-[#96785A]">/noche</span>
-                      </span>
-                      <span
-                        className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                          room.is_available
-                            ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20"
-                            : "bg-red-50 text-red-600 dark:bg-red-900/20"
-                        }`}
-                      >
-                        {room.is_available ? "Disponible" : "Ocupada"}
-                      </span>
-                    </Link>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Link
-                        to={`/dashboard/room/${room.id}`}
-                        className="p-2 hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] rounded-lg transition-colors"
-                      >
-                        <ChevronRight className="w-5 h-5 text-[#B89A7A]" />
-                      </Link>
-                      <button
-                        onClick={() => deleteRoom(room.id)}
-                        className="p-2 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
                     </div>
-                  </div>
-                ))}
-                {roomsFromAllHotels.length === 0 && !isLoading && (
-                  <div className="p-8 text-center text-sm text-[#96785A] dark:text-[#64748B]">
+                  );
+
+                  return (
+                    <div key={mainGroup.hotel.id} className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden">
+                      <button
+                        onClick={() => {
+                          setExpandedHotels((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(mainGroup.hotel.id)) next.delete(mainGroup.hotel.id);
+                            else next.add(mainGroup.hotel.id);
+                            return next;
+                          });
+                        }}
+                        className="w-full p-5 flex items-center justify-between hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
+                            <Hotel className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="text-left">
+                            <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                              {mainGroup.hotel.name}
+                            </h3>
+                            <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                              {totalRooms} habitaciones · {totalAvailable} disponibles
+                              {totalPending > 0 && ` · ${totalPending} pendientes`}
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronDown className={`w-5 h-5 text-[#B89A7A] transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                      </button>
+                      {isExpanded && (
+                        <div className="px-5 pb-5 space-y-3">
+                          {/* Summary Stats */}
+                          <div className="grid grid-cols-3 gap-3">
+                            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl text-center">
+                              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{totalAvailable}</p>
+                              <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">Disponibles</p>
+                            </div>
+                            <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-xl text-center">
+                              <p className="text-lg font-bold text-red-600 dark:text-red-400">{totalRooms - totalAvailable}</p>
+                              <p className="text-xs text-red-600/70 dark:text-red-400/70">Ocupadas</p>
+                            </div>
+                            <div className="p-3 bg-amber-50 dark:bg-amber-900/10 rounded-xl text-center">
+                              <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{totalActive}</p>
+                              <p className="text-xs text-amber-600/70 dark:text-amber-400/70">Reservaciones</p>
+                            </div>
+                          </div>
+
+                          {/* Main Hotel Rooms */}
+                          {renderHotelSection(mainGroup)}
+
+                          {/* Branch Hotels */}
+                          {allBranchGroups.map((branchGroup) => renderHotelSection(branchGroup, true))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+              {roomsByHotel.filter((g) => g.hotel.isMain).length === 0 && !isLoading && (
+                <div className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] p-8 text-center">
+                  <Bed className="w-10 h-10 text-[#D4BEA5] dark:text-[#2D3748] mx-auto mb-3" />
+                  <p className="text-sm text-[#96785A] dark:text-[#64748B]">
                     No hay habitaciones registradas aun
-                  </div>
-                )}
-              </div>
+                  </p>
+                </div>
+              )}
             </motion.div>
 
             {/* Hotel Summary Table */}

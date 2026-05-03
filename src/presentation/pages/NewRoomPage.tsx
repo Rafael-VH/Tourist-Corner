@@ -49,6 +49,7 @@ export function NewRoomPage() {
     bedType: "Queen",
     size: "",
     amenities: [] as string[],
+    quantity: "1",
   });
 
   useEffect(() => {
@@ -120,38 +121,47 @@ export function NewRoomPage() {
     setSubmitError("");
 
     try {
-      const { data: roomData, error: roomError } = await supabase
-        .from("rooms")
-        .insert({
-          hotel_id: hotelId,
-          name: form.name,
-          type: form.customRoomTypeId ? customTypes.find((t) => t.id === form.customRoomTypeId)?.name || form.type : form.type,
-          custom_room_type_id: form.customRoomTypeId || null,
-          description: form.description,
-          price_per_night: Number(form.pricePerNight),
-          capacity: Number(form.capacity),
-          bed_type: form.bedType,
-          size: form.size ? Number(form.size) : null,
-          images: [],
-          amenities: form.amenities,
-          status: "available",
-          is_available: true,
-        })
-        .select()
-        .single();
+      const quantity = parseInt(form.quantity) || 1;
+      const roomType = form.customRoomTypeId ? customTypes.find((t) => t.id === form.customRoomTypeId)?.name || form.type : form.type;
+      const insertedIds: string[] = [];
 
-      if (roomError) throw roomError;
+      for (let i = 0; i < quantity; i++) {
+        const roomName = quantity > 1 ? `${form.name} ${i + 1}` : form.name;
 
-      if (selectedCustomServices.length > 0 && roomData?.id) {
-        const { error: servicesError } = await supabase
-          .from("room_custom_services")
-          .insert(
-            selectedCustomServices.map((serviceId) => ({
-              room_id: roomData.id,
-              custom_service_id: serviceId,
-            }))
-          );
-        if (servicesError) throw servicesError;
+        const { data: roomData, error: roomError } = await supabase
+          .from("rooms")
+          .insert({
+            hotel_id: hotelId,
+            name: roomName,
+            type: roomType,
+            custom_room_type_id: form.customRoomTypeId || null,
+            description: form.description,
+            price_per_night: Number(form.pricePerNight),
+            capacity: Number(form.capacity),
+            bed_type: form.bedType,
+            size: form.size ? Number(form.size) : null,
+            images: [],
+            amenities: form.amenities,
+            status: "available",
+            is_available: true,
+          })
+          .select()
+          .single();
+
+        if (roomError) throw roomError;
+        insertedIds.push(roomData.id);
+
+        if (selectedCustomServices.length > 0 && roomData?.id) {
+          const { error: servicesError } = await supabase
+            .from("room_custom_services")
+            .insert(
+              selectedCustomServices.map((serviceId) => ({
+                room_id: roomData.id,
+                custom_service_id: serviceId,
+              }))
+            );
+          if (servicesError) throw servicesError;
+        }
       }
 
       navigate(`/dashboard/hotel/${hotelId}`);
@@ -363,6 +373,26 @@ export function NewRoomPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
+                    Cantidad de Habitaciones
+                  </label>
+                  <input
+                    type="number"
+                    value={form.quantity}
+                    onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+                    placeholder="1"
+                    min="1"
+                    max="50"
+                    className="w-full px-4 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 focus:border-[#E8850C] transition-all"
+                  />
+                  {parseInt(form.quantity) > 1 && (
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-1">
+                      Se crearan {form.quantity} habitaciones con nombres: {form.name} 1, {form.name} 2, ...
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-1">
                     <Maximize className="w-4 h-4 inline mr-1" />
                     Tamano (m²)
                   </label>
@@ -465,10 +495,12 @@ export function NewRoomPage() {
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    Registrar Habitacion
-                  </>
+                <>
+                  <Save className="w-4 h-4" />
+                  {parseInt(form.quantity) > 1
+                    ? `Registrar ${form.quantity} Habitaciones`
+                    : "Registrar Habitacion"}
+                </>
                 )}
               </button>
             </div>
