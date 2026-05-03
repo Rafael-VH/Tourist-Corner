@@ -36,7 +36,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user, isAuthenticated: true, isLoading: false });
       return user;
     } catch (error: unknown) {
-      set({ error: (error as Error).message, isLoading: false });
+      set({ error: (error as Error).message, isLoading: false, isAuthenticated: false });
+      throw error;
     }
   },
 
