@@ -32,6 +32,7 @@ interface Reservation {
   room: {
     id: string;
     name: string;
+    type: string | null;
     hotel: {
       id: string;
       name: string;
@@ -41,7 +42,7 @@ interface Reservation {
 
 function normalizeReservation(row: unknown): Reservation {
   const r = row as Record<string, unknown>;
-  const roomRaw = r.room as { id: string; name: string; hotel?: { id: string; name: string } | null } | null | undefined;
+  const roomRaw = r.room as { id: string; name: string; type?: string | null; hotel?: { id: string; name: string } | null } | null | undefined;
   return {
     id: r.id as string,
     guest_name: r.guest_name as string,
@@ -55,6 +56,7 @@ function normalizeReservation(row: unknown): Reservation {
       ? {
           id: roomRaw.id,
           name: roomRaw.name,
+          type: roomRaw.type ?? null,
           hotel: roomRaw.hotel ?? null,
         }
       : null,
@@ -86,14 +88,50 @@ export function CalendarPage() {
   const updateStatus = async (id: string, status: ReservationStatus) => {
     setActionLoading(id);
     try {
-      const { data } = await supabase
+      const reservation = reservations.find((r) => r.id === id);
+
+      await supabase
         .from("reservations")
         .update({ status, updated_at: new Date().toISOString() })
-        .eq("id", id)
+        .eq("id", id);
+
+      if (status === "accepted" && reservation?.room?.id) {
+        const { count } = await supabase
+          .from("rooms")
+          .select("*", { count: "exact", head: true })
+          .eq("hotel_id", reservation.room.hotel?.id)
+          .eq("type", reservation.room.type)
+          .eq("is_available", true);
+
+        if (count === 1) {
+          await supabase
+            .from("rooms")
+            .update({ is_available: false, status: "occupied", updated_at: new Date().toISOString() })
+            .eq("id", reservation.room.id);
+        }
+      }
+
+      if ((status === "cancelled" || status === "completed") && reservation?.room?.id) {
+        const { count } = await supabase
+          .from("reservations")
+          .select("*", { count: "exact", head: true })
+          .eq("room_id", reservation.room.id)
+          .in("status", ["pending", "accepted"]);
+
+        if (count === 0) {
+          await supabase
+            .from("rooms")
+            .update({ is_available: true, status: "available", updated_at: new Date().toISOString() })
+            .eq("id", reservation.room.id);
+        }
+      }
+
+      const { data } = await supabase
+        .from("reservations")
         .select(`
           id, guest_name, guest_email, check_in, check_out, status,
           total_price, created_at,
-          room:room_id (id, name, hotel:hotel_id (id, name))
+          room:room_id (id, name, type, hotel:hotel_id (id, name))
         `)
         .single();
 
@@ -136,6 +174,7 @@ export function CalendarPage() {
             room:room_id (
               id,
               name,
+              type,
               hotel:hotel_id (
                 id,
                 name
