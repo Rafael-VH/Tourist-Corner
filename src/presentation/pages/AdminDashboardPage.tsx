@@ -27,7 +27,9 @@ interface RegistrationCode {
   code: string;
   used: boolean;
   used_by: string | null;
+  used_at: string | null;
   created_at: string;
+  used_by_user: { name: string; email: string } | null;
 }
 
 interface Hotel {
@@ -71,7 +73,7 @@ export function AdminDashboardPage() {
         supabase.from("users").select("id", { count: "exact" }).eq("role", "client"),
         supabase.from("users").select("id", { count: "exact" }).eq("role", "owner"),
         supabase.from("hotels").select("id", { count: "exact" }),
-        supabase.from("registration_codes").select("*").order("created_at", { ascending: false }),
+        supabase.from("registration_codes").select("*, used_by_user:used_by(name, email)").order("created_at", { ascending: false }),
         supabase.from("users").select("id, email, name, role").order("created_at", { ascending: false }),
         supabase.from("featured_hotels").select("hotel_id, featured_order"),
       ]);
@@ -307,9 +309,9 @@ export function AdminDashboardPage() {
                     {codes.map((code) => (
                       <div
                         key={code.id}
-                        className="flex items-center justify-between p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl gap-2"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <span className="text-lg font-mono font-bold text-[#2D1F14] dark:text-[#E2E8F0] tracking-widest">
                             {code.code}
                           </span>
@@ -325,7 +327,13 @@ export function AdminDashboardPage() {
                             </span>
                           )}
                         </div>
-                        {!code.used && (
+                        {code.used && code.used_by_user ? (
+                          <div className="text-sm text-[#5E4836] dark:text-[#94A3B8]">
+                            <span className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">{code.used_by_user.name}</span>
+                            <span className="mx-1">—</span>
+                            <span>{code.used_by_user.email}</span>
+                          </div>
+                        ) : (
                           <button
                             onClick={() => deleteCode(code.id)}
                             className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
