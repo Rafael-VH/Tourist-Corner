@@ -35,6 +35,7 @@ export function Navbar() {
   };
 
   const isAdmin = isAuthenticated && user?.role === "admin";
+  const isOwner = isAuthenticated && user?.role === "owner";
 
   const handleSignOut = async () => {
     await signOut();
