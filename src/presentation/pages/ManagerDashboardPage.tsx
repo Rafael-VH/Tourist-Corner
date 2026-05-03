@@ -22,6 +22,7 @@ import {
   Trash2,
   X,
   ArrowUpRight,
+  Check,
 } from "lucide-react";
 
 interface CustomService {
@@ -44,6 +45,7 @@ export function ManagerDashboardPage() {
   const [customRoomTypes, setCustomRoomTypes] = useState<{ id: string; name: string; description: string | null; created_at: string }[]>([]);
   const [customServices, setCustomServices] = useState<CustomService[]>([]);
   const [error, setError] = useState("");
+  const [showRoomHotelPicker, setShowRoomHotelPicker] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -156,6 +158,14 @@ export function ManagerDashboardPage() {
     navigate(`/dashboard/room/new?hotelId=${hotelId}`);
   };
 
+  const handleNewRoomClick = () => {
+    if (hotels.length <= 1) {
+      handleNewRoom(mainHotels[0].id);
+    } else {
+      setShowRoomHotelPicker(true);
+    }
+  };
+
   const handleNewRoomType = () => {
     navigate("/dashboard/room-type/new");
   };
@@ -211,6 +221,13 @@ export function ManagerDashboardPage() {
     }
   };
 
+  const hasMainHotel = mainHotels.length > 0;
+
+  const allHotelsForPicker = [
+    ...mainHotels.map((h) => ({ id: h.id, name: h.name, isMain: true })),
+    ...branchHotels.map((h) => ({ id: h.id, name: h.name, isMain: false })),
+  ];
+
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
       {error && (
@@ -221,6 +238,63 @@ export function ManagerDashboardPage() {
               <X className="w-5 h-5" />
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Room Hotel Picker Modal */}
+      {showRoomHotelPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-sm bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden shadow-2xl"
+          >
+            <div className="p-5 border-b border-[#F5EDE3] dark:border-[#2D3748] flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                  Seleccionar Hotel
+                </h3>
+                <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-0.5">
+                  Donde deseas crear la habitacion?
+                </p>
+              </div>
+              <button
+                onClick={() => setShowRoomHotelPicker(false)}
+                className="p-1.5 hover:bg-[#FDF8F3] dark:hover:bg-[#242B35] rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4 text-[#96785A] dark:text-[#64748B]" />
+              </button>
+            </div>
+            <div className="p-3 max-h-64 overflow-y-auto">
+              {allHotelsForPicker.map((hotel) => (
+                <button
+                  key={hotel.id}
+                  onClick={() => {
+                    handleNewRoom(hotel.id);
+                    setShowRoomHotelPicker(false);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#FDF8F3] dark:hover:bg-[#242B35] transition-colors text-left group"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-[#FFF8F1] dark:bg-[#242B35] flex items-center justify-center shrink-0">
+                    {hotel.isMain ? (
+                      <Hotel className="w-4 h-4 text-[#E8850C]" />
+                    ) : (
+                      <GitBranch className="w-4 h-4 text-[#96785A]" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
+                      {hotel.name}
+                    </p>
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                      {hotel.isMain ? "Hotel Principal" : "Sucursal"}
+                    </p>
+                  </div>
+                  <Check className="w-4 h-4 text-[#B89A7A] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
         </div>
       )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -578,20 +652,26 @@ export function ManagerDashboardPage() {
                   onClick={handleNewHotel}
                   className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
                 >
-                  <Plus className="w-5 h-5 text-[#E8850C]" />
+                  {hasMainHotel ? (
+                    <GitBranch className="w-5 h-5 text-[#E8850C]" />
+                  ) : (
+                    <Plus className="w-5 h-5 text-[#E8850C]" />
+                  )}
                   <div>
                     <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
-                      Nuevo Hotel
+                      {hasMainHotel ? "Nueva Sucursal" : "Nuevo Hotel"}
                     </p>
                     <p className="text-xs text-[#96785A] dark:text-[#64748B]">
-                      Agregar establecimiento o sucursal
+                      {hasMainHotel
+                        ? "Agregar sucursal al hotel principal"
+                        : "Crear hotel principal"}
                     </p>
                   </div>
                 </button>
                 <button
-                  onClick={() => hotels[0] && handleNewRoom(hotels[0].id)}
-                  disabled={hotels.length === 0}
-                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors disabled:opacity-50"
+                  onClick={handleNewRoomClick}
+                  disabled={!hasMainHotel}
+                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Bed className="w-5 h-5 text-[#E8850C]" />
                   <div>
@@ -599,13 +679,16 @@ export function ManagerDashboardPage() {
                       Nueva Habitacion
                     </p>
                     <p className="text-xs text-[#96785A] dark:text-[#64748B]">
-                      Agregar habitacion a un hotel
+                      {hasMainHotel
+                        ? "Agregar habitacion a un hotel"
+                        : "Primero crea un hotel principal"}
                     </p>
                   </div>
                 </button>
                 <button
                   onClick={handleNewRoomType}
-                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                  disabled={!hasMainHotel}
+                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Tag className="w-5 h-5 text-[#E8850C]" />
                   <div>
@@ -613,13 +696,16 @@ export function ManagerDashboardPage() {
                       Nuevo Tipo de Habitacion
                     </p>
                     <p className="text-xs text-[#96785A] dark:text-[#64748B]">
-                      Crear tipo personalizado
+                      {hasMainHotel
+                        ? "Crear tipo personalizado"
+                        : "Primero crea un hotel principal"}
                     </p>
                   </div>
                 </button>
                 <button
                   onClick={handleNewService}
-                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                  disabled={!hasMainHotel}
+                  className="w-full flex items-center gap-3 p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl text-left hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Wrench className="w-5 h-5 text-[#E8850C]" />
                   <div>
@@ -627,7 +713,9 @@ export function ManagerDashboardPage() {
                       Nuevo Servicio
                     </p>
                     <p className="text-xs text-[#96785A] dark:text-[#64748B]">
-                      Crear servicio personalizado
+                      {hasMainHotel
+                        ? "Crear servicio personalizado"
+                        : "Primero crea un hotel principal"}
                     </p>
                   </div>
                 </button>
@@ -707,7 +795,8 @@ export function ManagerDashboardPage() {
                 </h3>
                 <button
                   onClick={handleNewRoomType}
-                  className="p-1.5 bg-[#FFF8F1] dark:bg-[#242B35] rounded-lg hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] transition-colors"
+                  disabled={!hasMainHotel}
+                  className="p-1.5 bg-[#FFF8F1] dark:bg-[#242B35] rounded-lg hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-4 h-4 text-[#E8850C]" />
                 </button>
@@ -764,7 +853,8 @@ export function ManagerDashboardPage() {
                 </h3>
                 <button
                   onClick={handleNewService}
-                  className="p-1.5 bg-[#FFF8F1] dark:bg-[#242B35] rounded-lg hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] transition-colors"
+                  disabled={!hasMainHotel}
+                  className="p-1.5 bg-[#FFF8F1] dark:bg-[#242B35] rounded-lg hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-4 h-4 text-[#E8850C]" />
                 </button>
