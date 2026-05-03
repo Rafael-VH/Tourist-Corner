@@ -27,7 +27,18 @@ export class SupabaseAuthRepository implements AuthRepository {
     return user;
   }
 
-  async signUp(email: string, password: string, name: string, role: UserRole): Promise<User> {
+  async signUp(email: string, password: string, name: string, role: UserRole, registrationCode?: string): Promise<User> {
+    if (role === 'owner') {
+      if (!registrationCode) throw new Error('Codigo de registro requerido para dueños');
+      const { data: codeData, error: codeError } = await supabase
+        .from('registration_codes')
+        .select('code, used')
+        .eq('code', registrationCode)
+        .single();
+      if (codeError || !codeData) throw new Error('Codigo de registro invalido');
+      if (codeData.used) throw new Error('Este codigo ya ha sido utilizado');
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -42,6 +53,14 @@ export class SupabaseAuthRepository implements AuthRepository {
     // Profile is auto-created by the handle_new_user trigger
     // Wait a moment for the trigger to complete
     await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Mark registration code as used if owner
+    if (role === 'owner' && registrationCode) {
+      await supabase
+        .from('registration_codes')
+        .update({ used: true, used_by: data.user.id })
+        .eq('code', registrationCode);
+    }
 
     // Auto sign-in after registration
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -114,7 +133,7 @@ export class SupabaseAuthRepository implements AuthRepository {
       id: authUser.id,
       email: profile?.email || authUser.email || '',
       name: profile?.name || (authUser.user_metadata?.name as string) || '',
-      role: (profile?.role || 'tourist') as UserRole,
+      role: (profile?.role || 'client') as UserRole,
       avatarUrl: profile?.avatar_url,
       phone: profile?.phone,
       createdAt: profile?.created_at ? new Date(profile.created_at) : new Date(),

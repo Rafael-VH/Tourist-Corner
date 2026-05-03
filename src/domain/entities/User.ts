@@ -1,4 +1,4 @@
-export type UserRole = 'tourist' | 'manager';
+export type UserRole = 'client' | 'owner' | 'admin';
 
 export interface User {
   id: string;
@@ -10,14 +10,14 @@ export interface User {
   createdAt: Date;
 }
 
-export interface TouristProfile extends User {
-  role: 'tourist';
+export interface ClientProfile extends User {
+  role: 'client';
   favoriteHotels?: string[];
   bookingsCount?: number;
 }
 
-export interface ManagerProfile extends User {
-  role: 'manager';
+export interface OwnerProfile extends User {
+  role: 'owner';
   hotelIds: string[];
   subscriptionPlan: 'free' | 'premium';
 }

@@ -11,8 +11,8 @@ interface AuthState {
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<User | undefined>;
+  signUp: (email: string, password: string, name: string, role: UserRole, registrationCode?: string) => Promise<void>;
   signOut: () => Promise<void>;
   clearError: () => void;
 }
@@ -34,16 +34,17 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { signIn } = getContainer();
       const user = await signIn.execute(email, password);
       set({ user, isAuthenticated: true, isLoading: false });
+      return user;
     } catch (error: unknown) {
       set({ error: (error as Error).message, isLoading: false });
     }
   },
 
-  signUp: async (email, password, name, role) => {
+  signUp: async (email, password, name, role, registrationCode) => {
     set({ isLoading: true, error: null });
     try {
       const { signUp } = getContainer();
-      const user = await signUp.execute(email, password, name, role);
+      const user = await signUp.execute(email, password, name, role, registrationCode);
       set({ user, isAuthenticated: true, isLoading: false });
     } catch (error: unknown) {
       set({ error: (error as Error).message, isLoading: false });

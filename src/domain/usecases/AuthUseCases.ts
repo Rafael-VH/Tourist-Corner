@@ -20,8 +20,8 @@ export class SignUpUseCase {
     this.authRepository = authRepository;
   }
 
-  async execute(email: string, password: string, name: string, role: UserRole): Promise<User> {
-    return this.authRepository.signUp(email, password, name, role);
+  async execute(email: string, password: string, name: string, role: UserRole, registrationCode?: string): Promise<User> {
+    return this.authRepository.signUp(email, password, name, role, registrationCode);
   }
 }
 
