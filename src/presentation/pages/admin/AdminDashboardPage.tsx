@@ -77,6 +77,8 @@ export function AdminDashboardPage() {
   const [featuredView, setFeaturedView] = useState<"grid" | "list">("grid");
   const [featuredSearch, setFeaturedSearch] = useState("");
   const [togglingHotel, setTogglingHotel] = useState<string | null>(null);
+  const [userFilter, setUserFilter] = useState<"all" | "client" | "owner" | "admin">("all");
+  const [userSearch, setUserSearch] = useState("");
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -783,43 +785,130 @@ export function AdminDashboardPage() {
               className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] shadow-sm"
             >
               <div className="p-6 border-b border-[#E8D9C8] dark:border-[#2D3748]">
-                <h2 className="text-xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
-                  <Users className="w-5 h-5 text-[#E8850C]" />
-                  Usuarios Registrados
-                </h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
+                      <Users className="w-5 h-5 text-[#E8850C]" />
+                      Usuarios Registrados
+                    </h2>
+                    <p className="text-sm text-[#96785A] dark:text-[#64748B] mt-1">
+                      {users.length} usuarios en total
+                    </p>
+                  </div>
+                  <div className="relative flex-1 sm:flex-none">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#96785A]" />
+                    <input
+                      type="text"
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      placeholder="Buscar por nombre o email..."
+                      className="pl-9 pr-3 py-2 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-lg text-sm text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#96785A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 w-full sm:w-56"
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="p-6">
-                <div className="space-y-3">
-                  {users.map((u) => (
-                    <div
-                      key={u.id}
-                      className="flex items-center justify-between p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl"
+
+              {/* Role Tabs */}
+              <div className="px-6 pt-4">
+                <div className="flex items-center gap-2 p-1 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-x-auto">
+                  {[
+                    { key: "all" as const, label: "Todos", count: users.length, color: "" },
+                    {
+                      key: "client" as const,
+                      label: "Clientes",
+                      count: users.filter((u) => u.role === "client").length,
+                      color: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+                    },
+                    {
+                      key: "owner" as const,
+                      label: "Dueños",
+                      count: users.filter((u) => u.role === "owner").length,
+                      color: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+                    },
+                    {
+                      key: "admin" as const,
+                      label: "Admins",
+                      count: users.filter((u) => u.role === "admin").length,
+                      color: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
+                    },
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setUserFilter(tab.key)}
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                        userFilter === tab.key
+                          ? "bg-[#E8850C] text-white"
+                          : "text-[#5E4836] dark:text-[#94A3B8] hover:text-[#2D1F14] dark:hover:text-[#E2E8F0]"
+                      }`}
                     >
-                      <div>
-                        <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
-                          {u.name}
-                        </p>
-                        <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                          {u.email}
-                        </p>
-                      </div>
+                      {tab.label}
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          u.role === "admin"
-                            ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                            : u.role === "owner"
-                              ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                              : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                        className={`px-1.5 py-0.5 text-xs rounded-md ${
+                          userFilter === tab.key
+                            ? "bg-white/20 text-white"
+                            : tab.color || "bg-[#E8D9C8] dark:bg-[#2D3748] text-[#96785A] dark:text-[#64748B]"
                         }`}
                       >
-                        {u.role === "admin"
-                          ? "Admin"
-                          : u.role === "owner"
-                            ? "Dueño"
-                            : "Cliente"}
+                        {tab.count}
                       </span>
-                    </div>
+                    </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Users List */}
+              <div className="p-6 pt-4">
+                <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                  {users
+                    .filter((u) => userFilter === "all" || u.role === userFilter)
+                    .filter(
+                      (u) =>
+                        u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+                        u.email.toLowerCase().includes(userSearch.toLowerCase())
+                    )
+                    .map((u) => (
+                      <div
+                        key={u.id}
+                        className="flex items-center justify-between p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl"
+                      >
+                        <div>
+                          <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                            {u.name}
+                          </p>
+                          <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                            {u.email}
+                          </p>
+                        </div>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            u.role === "admin"
+                              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                              : u.role === "owner"
+                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                                : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                          }`}
+                        >
+                          {u.role === "admin"
+                            ? "Admin"
+                            : u.role === "owner"
+                              ? "Dueño"
+                              : "Cliente"}
+                        </span>
+                      </div>
+                    ))}
+                  {users.filter(
+                    (u) =>
+                      (userFilter === "all" || u.role === userFilter) &&
+                      (u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+                        u.email.toLowerCase().includes(userSearch.toLowerCase()))
+                  ).length === 0 && (
+                    <div className="text-center py-8">
+                      <Users className="w-10 h-10 mx-auto text-[#D4BEA5] dark:text-[#2D3748] mb-2" />
+                      <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                        No se encontraron usuarios
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
