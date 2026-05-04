@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { supabase } from "@/data/datasources/SupabaseClient";
 import {
@@ -14,6 +14,10 @@ import {
   ArrowUp,
   ArrowDown,
   Shield,
+  GripVertical,
+  Search,
+  Sparkles,
+  Hotel,
 } from "lucide-react";
 
 interface DashboardStats {
@@ -68,6 +72,9 @@ export function AdminDashboardPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
+  const [featuredView, setFeaturedView] = useState<"grid" | "list">("grid");
+  const [featuredSearch, setFeaturedSearch] = useState("");
+  const [togglingHotel, setTogglingHotel] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -206,6 +213,7 @@ export function AdminDashboardPage() {
   };
 
   const toggleFeatured = async (hotelId: string, isFeatured: boolean) => {
+    setTogglingHotel(hotelId);
     try {
       if (isFeatured) {
         await supabase.from("featured_hotels").delete().eq("hotel_id", hotelId);
@@ -221,6 +229,8 @@ export function AdminDashboardPage() {
       await loadData();
     } catch (err: unknown) {
       setError((err as Error).message || "Error al actualizar destacado");
+    } finally {
+      setTogglingHotel(null);
     }
   };
 
@@ -288,7 +298,7 @@ export function AdminDashboardPage() {
         ) : (
           <>
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {[
                 {
                   label: "Total Clientes",
@@ -310,6 +320,13 @@ export function AdminDashboardPage() {
                   icon: Building2,
                   bg: "bg-purple-100 dark:bg-purple-900/30",
                   text: "text-purple-600 dark:text-purple-400",
+                },
+                {
+                  label: "Hoteles Destacados",
+                  value: hotels.filter((h) => h.is_featured).length,
+                  icon: Star,
+                  bg: "bg-amber-100 dark:bg-amber-900/30",
+                  text: "text-amber-600 dark:text-amber-400",
                 },
               ].map((stat, i) => (
                 <motion.div
@@ -422,58 +439,173 @@ export function AdminDashboardPage() {
               className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] shadow-sm mb-8"
             >
               <div className="p-6 border-b border-[#E8D9C8] dark:border-[#2D3748]">
-                <h2 className="text-xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
-                  <Star className="w-5 h-5 text-[#E8850C]" />
-                  Hoteles Destacados
-                </h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
+                      <Star className="w-5 h-5 text-[#E8850C]" />
+                      Hoteles Destacados
+                    </h2>
+                    <p className="text-sm text-[#96785A] dark:text-[#64748B] mt-1">
+                      {hotels.filter((h) => h.is_featured).length} de{" "}
+                      {hotels.length} hoteles destacados
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1 sm:flex-none">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#96785A]" />
+                      <input
+                        type="text"
+                        value={featuredSearch}
+                        onChange={(e) => setFeaturedSearch(e.target.value)}
+                        placeholder="Buscar hotel..."
+                        className="pl-9 pr-3 py-2 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-lg text-sm text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#96785A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 w-full sm:w-48"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="p-6">
-                <div className="space-y-3">
-                  {hotels.map((hotel) => (
-                    <div
-                      key={hotel.id}
-                      className="flex items-center justify-between p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl"
-                    >
-                      <div>
-                        <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
-                          {hotel.name}
-                        </p>
-                        <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                          {hotel.city}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {hotel.is_featured && (
-                          <div className="flex items-center gap-1 mr-2">
-                            <button
-                              onClick={() => moveFeatured(hotel.id, "up")}
-                              className="p-1 hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] rounded transition-colors"
-                            >
-                              <ArrowUp className="w-4 h-4 text-[#96785A]" />
-                            </button>
-                            <button
-                              onClick={() => moveFeatured(hotel.id, "down")}
-                              className="p-1 hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] rounded transition-colors"
-                            >
-                              <ArrowDown className="w-4 h-4 text-[#96785A]" />
-                            </button>
+
+              {/* Featured Hotels Preview */}
+              {hotels.filter((h) => h.is_featured).length > 0 && (
+                <div className="px-6 pt-6 pb-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="w-4 h-4 text-[#E8850C]" />
+                    <h3 className="text-sm font-semibold text-[#5E4836] dark:text-[#94A3B8] uppercase tracking-wide">
+                      Vista Previa del Orden Actual
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {hotels
+                      .filter((h) => h.is_featured)
+                      .sort((a, b) => a.featured_order - b.featured_order)
+                      .map((hotel, index) => (
+                        <div
+                          key={hotel.id}
+                          className="relative p-4 bg-gradient-to-br from-[#FFF8F1] to-[#FDF8F3] dark:from-[#2D3748] dark:to-[#242B35] rounded-xl border-2 border-[#E8850C]/30"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="flex items-center justify-center w-6 h-6 bg-[#E8850C] text-white text-xs font-bold rounded-full">
+                                  {index + 1}
+                                </span>
+                                <p className="font-semibold text-[#2D1F14] dark:text-[#E2E8F0] text-sm truncate">
+                                  {hotel.name}
+                                </p>
+                              </div>
+                              <p className="text-xs text-[#96785A] dark:text-[#64748B] ml-8">
+                                {hotel.city}
+                              </p>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <button
+                                onClick={() =>
+                                  moveFeatured(hotel.id, "up")
+                                }
+                                disabled={index === 0}
+                                className="p-1 hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5 text-[#96785A]" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  moveFeatured(hotel.id, "down")
+                                }
+                                disabled={
+                                  index ===
+                                  hotels.filter((h) => h.is_featured).length - 1
+                                }
+                                className="p-1 hover:bg-[#E8D9C8] dark:hover:bg-[#2D3748] rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5 text-[#96785A]" />
+                              </button>
+                            </div>
                           </div>
-                        )}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* All Hotels List */}
+              <div className="p-6 pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Hotel className="w-4 h-4 text-[#96785A]" />
+                  <h3 className="text-sm font-semibold text-[#5E4836] dark:text-[#94A3B8] uppercase tracking-wide">
+                    Todos los Hoteles
+                  </h3>
+                </div>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {hotels
+                    .filter(
+                      (h) =>
+                        h.name
+                          .toLowerCase()
+                          .includes(featuredSearch.toLowerCase()) ||
+                        h.city.toLowerCase().includes(featuredSearch.toLowerCase())
+                    )
+                    .map((hotel) => (
+                      <motion.div
+                        key={hotel.id}
+                        layout
+                        className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+                          hotel.is_featured
+                            ? "bg-[#FFF8F1] dark:bg-[#2D3748] border-[#E8850C]/40"
+                            : "bg-[#FDF8F3] dark:bg-[#242B35] border-[#E8D9C8] dark:border-[#2D3748]"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          {hotel.is_featured && (
+                            <GripVertical className="w-4 h-4 text-[#E8850C] flex-shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0] truncate">
+                                {hotel.name}
+                              </p>
+                              {hotel.is_featured && (
+                                <span className="px-2 py-0.5 bg-[#E8850C] text-white text-xs font-medium rounded-full flex items-center gap-1">
+                                  <Star className="w-3 h-3 fill-white" />
+                                  #{hotel.featured_order}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                              {hotel.city}
+                            </p>
+                          </div>
+                        </div>
                         <button
                           onClick={() =>
                             toggleFeatured(hotel.id, hotel.is_featured)
                           }
-                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                          disabled={togglingHotel === hotel.id}
+                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                            togglingHotel === hotel.id
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          } ${
                             hotel.is_featured
                               ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
                               : "bg-[#E8850C] hover:bg-[#C46A08] text-white"
                           }`}
                         >
-                          {hotel.is_featured ? "Quitar" : "Destacar"}
+                          {togglingHotel === hotel.id ? (
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          ) : hotel.is_featured ? (
+                            <>
+                              <X className="w-3.5 h-3.5" />
+                              Quitar
+                            </>
+                          ) : (
+                            <>
+                              <Star className="w-3.5 h-3.5" />
+                              Destacar
+                            </>
+                          )}
                         </button>
-                      </div>
-                    </div>
-                  ))}
+                      </motion.div>
+                    ))}
                 </div>
               </div>
             </motion.div>
