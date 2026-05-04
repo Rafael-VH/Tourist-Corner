@@ -96,3 +96,27 @@ export class UpdateRoomStatusUseCase {
     return this.roomRepository.updateRoomStatus(roomId, status);
   }
 }
+
+export class GetFeaturedRoomsUseCase {
+  private roomRepository: RoomRepository;
+
+  constructor(roomRepository: RoomRepository) {
+    this.roomRepository = roomRepository;
+  }
+
+  async execute(): Promise<Room[]> {
+    return this.roomRepository.getFeaturedRooms();
+  }
+}
+
+export class GetFeaturedRoomsByHotelUseCase {
+  private roomRepository: RoomRepository;
+
+  constructor(roomRepository: RoomRepository) {
+    this.roomRepository = roomRepository;
+  }
+
+  async execute(hotelId: string): Promise<Room[]> {
+    return this.roomRepository.getFeaturedRoomsByHotel(hotelId);
+  }
+}

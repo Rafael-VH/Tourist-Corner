@@ -14,6 +14,7 @@ export interface Room {
   amenities: string[];
   status: RoomStatus;
   isAvailable: boolean;
+  isFeatured: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

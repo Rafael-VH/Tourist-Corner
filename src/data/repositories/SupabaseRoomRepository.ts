@@ -35,7 +35,20 @@ export class SupabaseRoomRepository implements RoomRepository {
       .eq('hotel_id', hotelId);
 
     if (error) handleSupabaseError(error);
-    return (data || []).map(this.mapToRoom);
+
+    const rooms = (data || []).map(this.mapToRoom);
+
+    const { data: featuredData } = await supabase
+      .from('featured_rooms')
+      .select('room_id')
+      .eq('active', true);
+
+    const featuredSet = new Set((featuredData || []).map((f: { room_id: string }) => f.room_id));
+
+    return rooms.map((r) => ({
+      ...r,
+      isFeatured: featuredSet.has(r.id),
+    }));
   }
 
   async getRoomById(id: string): Promise<Room | null> {
@@ -141,6 +154,77 @@ export class SupabaseRoomRepository implements RoomRepository {
     return this.mapToRoom(data);
   }
 
+  async getFeaturedRooms(): Promise<Room[]> {
+    const { data: featuredData, error: featuredError } = await supabase
+      .from('featured_rooms')
+      .select('room_id')
+      .eq('active', true)
+      .order('featured_order', { ascending: true });
+
+    if (featuredError) handleSupabaseError(featuredError);
+
+    if (!featuredData || featuredData.length === 0) {
+      return [];
+    }
+
+    const roomIds = featuredData.map((f: { room_id: string }) => f.room_id);
+
+    const { data: roomsData, error: roomsError } = await supabase
+      .from('rooms')
+      .select('*')
+      .in('id', roomIds)
+      .eq('is_available', true);
+
+    if (roomsError) handleSupabaseError(roomsError);
+
+    const rooms = (roomsData || []).map(this.mapToRoom);
+    const featuredSet = new Set(roomIds);
+
+    return rooms
+      .map((r) => ({ ...r, isFeatured: featuredSet.has(r.id) }))
+      .sort((a, b) => {
+        const aIndex = roomIds.indexOf(a.id);
+        const bIndex = roomIds.indexOf(b.id);
+        return aIndex - bIndex;
+      });
+  }
+
+  async getFeaturedRoomsByHotel(hotelId: string): Promise<Room[]> {
+    const { data: featuredData, error: featuredError } = await supabase
+      .from('featured_rooms')
+      .select('room_id')
+      .eq('active', true)
+      .order('featured_order', { ascending: true });
+
+    if (featuredError) handleSupabaseError(featuredError);
+
+    if (!featuredData || featuredData.length === 0) {
+      return [];
+    }
+
+    const roomIds = featuredData.map((f: { room_id: string }) => f.room_id);
+
+    const { data: roomsData, error: roomsError } = await supabase
+      .from('rooms')
+      .select('*')
+      .in('id', roomIds)
+      .eq('hotel_id', hotelId)
+      .eq('is_available', true);
+
+    if (roomsError) handleSupabaseError(roomsError);
+
+    const rooms = (roomsData || []).map(this.mapToRoom);
+    const featuredSet = new Set(roomIds);
+
+    return rooms
+      .map((r) => ({ ...r, isFeatured: featuredSet.has(r.id) }))
+      .sort((a, b) => {
+        const aIndex = roomIds.indexOf(a.id);
+        const bIndex = roomIds.indexOf(b.id);
+        return aIndex - bIndex;
+      });
+  }
+
   private mapToRoom(record: RoomRecord): Room {
     return {
       id: record.id,
@@ -156,6 +240,7 @@ export class SupabaseRoomRepository implements RoomRepository {
       amenities: record.amenities,
       status: record.status,
       isAvailable: record.is_available,
+      isFeatured: false,
       createdAt: new Date(record.created_at),
       updatedAt: new Date(record.updated_at),
     };

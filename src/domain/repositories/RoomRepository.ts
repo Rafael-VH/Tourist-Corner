@@ -9,4 +9,6 @@ export interface RoomRepository {
   getRoomAvailability(roomId: string, startDate: Date, endDate: Date): Promise<RoomAvailability[]>;
   updateRoomAvailability(roomId: string, availability: RoomAvailability[]): Promise<void>;
   updateRoomStatus(roomId: string, status: string): Promise<Room>;
+  getFeaturedRooms(): Promise<Room[]>;
+  getFeaturedRoomsByHotel(hotelId: string): Promise<Room[]>;
 }

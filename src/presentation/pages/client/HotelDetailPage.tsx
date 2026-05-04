@@ -370,11 +370,11 @@ export function HotelDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-4">
-                Habitaciones Disponibles
-              </h2>
               {roomsLoading ? (
                 <div className="space-y-4">
+                  <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-4">
+                    Habitaciones Disponibles
+                  </h2>
                   {[1, 2].map((i) => (
                     <div
                       key={i}
@@ -383,82 +383,37 @@ export function HotelDetailPage() {
                   ))}
                 </div>
               ) : rooms.length > 0 ? (
-                <div className="space-y-4">
-                  {rooms.map((room) => (
-                    <div
-                      key={room.id}
-                      className="flex gap-4 bg-white dark:bg-[#1A2028] rounded-2xl overflow-hidden border border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]/30 hover:shadow-lg hover:shadow-[#E8850C]/10 transition-all group"
-                    >
-                      <Link
-                        to={`/room/${room.id}`}
-                        className="w-32 md:w-48 shrink-0 relative overflow-hidden"
-                      >
-                        <img
-                          src={room.images[0]}
-                          alt={room.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </Link>
-                      <div className="flex-1 py-4 pr-4">
-                        <div className="flex items-start justify-between">
-                          <Link to={`/room/${room.id}`}>
-                            <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
-                              {room.name}
-                            </h3>
-                          </Link>
-                          <span className="font-bold text-[#E8850C] ml-2 shrink-0">
-                            ${room.pricePerNight}
-                            <span className="text-xs text-[#96785A]">
-                              /noche
-                            </span>
-                          </span>
-                        </div>
-                        <Link
-                          to={`/room/${room.id}`}
-                          className="text-sm text-[#96785A] dark:text-[#64748B] mt-0.5 block hover:text-[#E8850C] transition-colors"
-                        >
-                          {room.type}
-                        </Link>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-[#96785A] dark:text-[#64748B]">
-                          <span className="flex items-center gap-1">
-                            <Users className="w-4 h-4" /> {room.capacity}{" "}
-                            personas
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Bed className="w-4 h-4" /> {room.bedType}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-3">
-                          {room.amenities.slice(0, 3).map((a) => (
-                            <span
-                              key={a}
-                              className="px-2 py-0.5 bg-[#FFF8F1] dark:bg-[#242B35] rounded text-xs text-[#5E4836] dark:text-[#94A3B8]"
-                            >
-                              {a}
-                            </span>
+                <div className="space-y-6">
+                  {/* Featured Rooms */}
+                  {rooms.filter((r) => r.isFeatured).length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-4 flex items-center gap-2">
+                        <Star className="w-5 h-5 text-[#E8850C]" />
+                        Habitaciones Destacadas
+                      </h2>
+                      <div className="space-y-4">
+                        {rooms
+                          .filter((r) => r.isFeatured)
+                          .map((room) => (
+                            <RoomCard key={room.id} room={room} isFeatured onBook={handleBookRoom} />
                           ))}
-                        </div>
-                        <div className="flex gap-2 mt-3">
-                          <Link
-                            to={`/room/${room.id}`}
-                            className="px-4 py-2 border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] hover:border-[#E8850C] hover:text-[#E8850C] transition-colors"
-                          >
-                            Ver Detalle
-                          </Link>
-                          <button
-                            onClick={() => handleBookRoom(room)}
-                            disabled={!room.isAvailable}
-                            className="px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {room.isAvailable ? "Reservar" : "No Disponible"}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex items-center pr-4">
-                        <ChevronRight className="w-5 h-5 text-[#D4BEA5] group-hover:text-[#E8850C] group-hover:translate-x-1 transition-all" />
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* All Rooms */}
+                  <div>
+                    <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-4">
+                      Todas las Habitaciones
+                    </h2>
+                    <div className="space-y-4">
+                      {rooms
+                        .filter((r) => !r.isFeatured)
+                        .map((room) => (
+                          <RoomCard key={room.id} room={room} onBook={handleBookRoom} />
+                        ))}
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8 bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748]">
@@ -833,6 +788,92 @@ export function HotelDetailPage() {
           </div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function RoomCard({ room, isFeatured, onBook }: { room: Room; isFeatured?: boolean; onBook?: (room: Room) => void }) {
+  return (
+    <div
+      className={`flex gap-4 bg-white dark:bg-[#1A2028] rounded-2xl overflow-hidden border transition-all group ${
+        isFeatured
+          ? "border-[#E8850C]/50 shadow-lg shadow-[#E8850C]/10"
+          : "border-[#E8D9C8] dark:border-[#2D3748] hover:border-[#E8850C]/30 hover:shadow-lg hover:shadow-[#E8850C]/10"
+      }`}
+    >
+      <Link
+        to={`/room/${room.id}`}
+        className="w-32 md:w-48 shrink-0 relative overflow-hidden"
+      >
+        <img
+          src={room.images[0] || "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"}
+          alt={room.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+        {isFeatured && (
+          <div className="absolute top-2 left-2">
+            <span className="px-2 py-1 bg-[#E8850C] rounded-md text-xs font-bold text-white flex items-center gap-1">
+              <Star className="w-3 h-3 fill-white" />
+              Destacada
+            </span>
+          </div>
+        )}
+      </Link>
+      <div className="flex-1 py-4 pr-4">
+        <div className="flex items-start justify-between">
+          <Link to={`/room/${room.id}`}>
+            <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
+              {room.name}
+            </h3>
+          </Link>
+          <span className="font-bold text-[#E8850C] ml-2 shrink-0">
+            ${room.pricePerNight}
+            <span className="text-xs text-[#96785A]">/noche</span>
+          </span>
+        </div>
+        <Link
+          to={`/room/${room.id}`}
+          className="text-sm text-[#96785A] dark:text-[#64748B] mt-0.5 block hover:text-[#E8850C] transition-colors"
+        >
+          {room.type}
+        </Link>
+        <div className="flex items-center gap-4 mt-2 text-sm text-[#96785A] dark:text-[#64748B]">
+          <span className="flex items-center gap-1">
+            <Users className="w-4 h-4" /> {room.capacity} personas
+          </span>
+          <span className="flex items-center gap-1">
+            <Bed className="w-4 h-4" /> {room.bedType}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 mt-3">
+          {room.amenities.slice(0, 3).map((a) => (
+            <span
+              key={a}
+              className="px-2 py-0.5 bg-[#FFF8F1] dark:bg-[#242B35] rounded text-xs text-[#5E4836] dark:text-[#94A3B8]"
+            >
+              {a}
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-2 mt-3">
+          <Link
+            to={`/room/${room.id}`}
+            className="px-4 py-2 border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] hover:border-[#E8850C] hover:text-[#E8850C] transition-colors"
+          >
+            Ver Detalle
+          </Link>
+          <button
+            onClick={() => onBook?.(room)}
+            disabled={!room.isAvailable}
+            className="px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {room.isAvailable ? "Reservar" : "No Disponible"}
+          </button>
+        </div>
+      </div>
+      <div className="flex items-center pr-4">
+        <ChevronRight className="w-5 h-5 text-[#D4BEA5] group-hover:text-[#E8850C] group-hover:translate-x-1 transition-all" />
+      </div>
     </div>
   );
 }

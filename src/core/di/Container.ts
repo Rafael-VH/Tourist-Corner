@@ -34,6 +34,8 @@ import {
   GetRoomAvailabilityUseCase,
   UpdateRoomAvailabilityUseCase,
   UpdateRoomStatusUseCase,
+  GetFeaturedRoomsUseCase,
+  GetFeaturedRoomsByHotelUseCase,
 } from '@/domain/usecases/RoomUseCases';
 
 import {
@@ -92,6 +94,8 @@ function createContainer() {
     getRoomAvailability: new GetRoomAvailabilityUseCase(roomRepository),
     updateRoomAvailability: new UpdateRoomAvailabilityUseCase(roomRepository),
     updateRoomStatus: new UpdateRoomStatusUseCase(roomRepository),
+    getFeaturedRooms: new GetFeaturedRoomsUseCase(roomRepository),
+    getFeaturedRoomsByHotel: new GetFeaturedRoomsByHotelUseCase(roomRepository),
 
     // Comment use cases
     getCommentsByTarget: new GetCommentsByTargetUseCase(commentRepository),
