@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { supabase } from "@/data/datasources/SupabaseClient";
 import {
@@ -18,6 +18,8 @@ import {
   Search,
   Sparkles,
   Hotel,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 
 interface DashboardStats {
@@ -529,84 +531,186 @@ export function AdminDashboardPage() {
 
               {/* All Hotels List */}
               <div className="p-6 pt-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Hotel className="w-4 h-4 text-[#96785A]" />
-                  <h3 className="text-sm font-semibold text-[#5E4836] dark:text-[#94A3B8] uppercase tracking-wide">
-                    Todos los Hoteles
-                  </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Hotel className="w-4 h-4 text-[#96785A]" />
+                    <h3 className="text-sm font-semibold text-[#5E4836] dark:text-[#94A3B8] uppercase tracking-wide">
+                      Todos los Hoteles
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-1 p-1 bg-[#FDF8F3] dark:bg-[#242B35] rounded-lg border border-[#E8D9C8] dark:border-[#2D3748]">
+                    <button
+                      onClick={() => setFeaturedView("list")}
+                      className={`p-1.5 rounded-md transition-colors ${
+                        featuredView === "list"
+                          ? "bg-[#E8850C] text-white"
+                          : "text-[#96785A] hover:text-[#5E4836] dark:hover:text-[#E2E8F0]"
+                      }`}
+                      title="Vista lista"
+                    >
+                      <List className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setFeaturedView("grid")}
+                      className={`p-1.5 rounded-md transition-colors ${
+                        featuredView === "grid"
+                          ? "bg-[#E8850C] text-white"
+                          : "text-[#96785A] hover:text-[#5E4836] dark:hover:text-[#E2E8F0]"
+                      }`}
+                      title="Vista cuadricula"
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {hotels
-                    .filter(
-                      (h) =>
-                        h.name
-                          .toLowerCase()
-                          .includes(featuredSearch.toLowerCase()) ||
-                        h.city.toLowerCase().includes(featuredSearch.toLowerCase())
-                    )
-                    .map((hotel) => (
-                      <motion.div
-                        key={hotel.id}
-                        layout
-                        className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-                          hotel.is_featured
-                            ? "bg-[#FFF8F1] dark:bg-[#2D3748] border-[#E8850C]/40"
-                            : "bg-[#FDF8F3] dark:bg-[#242B35] border-[#E8D9C8] dark:border-[#2D3748]"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          {hotel.is_featured && (
-                            <GripVertical className="w-4 h-4 text-[#E8850C] flex-shrink-0" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0] truncate">
-                                {hotel.name}
-                              </p>
-                              {hotel.is_featured && (
-                                <span className="px-2 py-0.5 bg-[#E8850C] text-white text-xs font-medium rounded-full flex items-center gap-1">
-                                  <Star className="w-3 h-3 fill-white" />
-                                  #{hotel.featured_order}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                              {hotel.city}
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() =>
-                            toggleFeatured(hotel.id, hotel.is_featured)
-                          }
-                          disabled={togglingHotel === hotel.id}
-                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
-                            togglingHotel === hotel.id
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          } ${
+
+                {featuredView === "list" ? (
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {hotels
+                      .filter(
+                        (h) =>
+                          h.name
+                            .toLowerCase()
+                            .includes(featuredSearch.toLowerCase()) ||
+                          h.city.toLowerCase().includes(featuredSearch.toLowerCase())
+                      )
+                      .map((hotel) => (
+                        <motion.div
+                          key={hotel.id}
+                          layout
+                          className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
                             hotel.is_featured
-                              ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
-                              : "bg-[#E8850C] hover:bg-[#C46A08] text-white"
+                              ? "bg-[#FFF8F1] dark:bg-[#2D3748] border-[#E8850C]/40"
+                              : "bg-[#FDF8F3] dark:bg-[#242B35] border-[#E8D9C8] dark:border-[#2D3748]"
                           }`}
                         >
-                          {togglingHotel === hotel.id ? (
-                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                          ) : hotel.is_featured ? (
-                            <>
-                              <X className="w-3.5 h-3.5" />
-                              Quitar
-                            </>
-                          ) : (
-                            <>
-                              <Star className="w-3.5 h-3.5" />
-                              Destacar
-                            </>
-                          )}
-                        </button>
-                      </motion.div>
-                    ))}
-                </div>
+                          <div className="flex items-center gap-3 flex-1">
+                            {hotel.is_featured && (
+                              <GripVertical className="w-4 h-4 text-[#E8850C] flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0] truncate">
+                                  {hotel.name}
+                                </p>
+                                {hotel.is_featured && (
+                                  <span className="px-2 py-0.5 bg-[#E8850C] text-white text-xs font-medium rounded-full flex items-center gap-1">
+                                    <Star className="w-3 h-3 fill-white" />
+                                    #{hotel.featured_order}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                                {hotel.city}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() =>
+                              toggleFeatured(hotel.id, hotel.is_featured)
+                            }
+                            disabled={togglingHotel === hotel.id}
+                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                              togglingHotel === hotel.id
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            } ${
+                              hotel.is_featured
+                                ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                                : "bg-[#E8850C] hover:bg-[#C46A08] text-white"
+                            }`}
+                          >
+                            {togglingHotel === hotel.id ? (
+                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            ) : hotel.is_featured ? (
+                              <>
+                                <X className="w-3.5 h-3.5" />
+                                Quitar
+                              </>
+                            ) : (
+                              <>
+                                <Star className="w-3.5 h-3.5" />
+                                Destacar
+                              </>
+                            )}
+                          </button>
+                        </motion.div>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
+                    {hotels
+                      .filter(
+                        (h) =>
+                          h.name
+                            .toLowerCase()
+                            .includes(featuredSearch.toLowerCase()) ||
+                          h.city.toLowerCase().includes(featuredSearch.toLowerCase())
+                      )
+                      .map((hotel) => (
+                        <motion.div
+                          key={hotel.id}
+                          layout
+                          className={`p-4 rounded-xl border transition-all ${
+                            hotel.is_featured
+                              ? "bg-[#FFF8F1] dark:bg-[#2D3748] border-[#E8850C]/40"
+                              : "bg-[#FDF8F3] dark:bg-[#242B35] border-[#E8D9C8] dark:border-[#2D3748]"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0] truncate">
+                                  {hotel.name}
+                                </p>
+                                {hotel.is_featured && (
+                                  <span className="px-2 py-0.5 bg-[#E8850C] text-white text-xs font-medium rounded-full flex items-center gap-1 flex-shrink-0">
+                                    <Star className="w-3 h-3 fill-white" />
+                                    #{hotel.featured_order}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                                {hotel.city}
+                              </p>
+                            </div>
+                            {hotel.is_featured && (
+                              <GripVertical className="w-4 h-4 text-[#E8850C] flex-shrink-0 ml-2" />
+                            )}
+                          </div>
+                          <button
+                            onClick={() =>
+                              toggleFeatured(hotel.id, hotel.is_featured)
+                            }
+                            disabled={togglingHotel === hotel.id}
+                            className={`w-full mt-2 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                              togglingHotel === hotel.id
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            } ${
+                              hotel.is_featured
+                                ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
+                                : "bg-[#E8850C] hover:bg-[#C46A08] text-white"
+                            }`}
+                          >
+                            {togglingHotel === hotel.id ? (
+                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            ) : hotel.is_featured ? (
+                              <>
+                                <X className="w-3.5 h-3.5" />
+                                Quitar
+                              </>
+                            ) : (
+                              <>
+                                <Star className="w-3.5 h-3.5" />
+                                Destacar
+                              </>
+                            )}
+                          </button>
+                        </motion.div>
+                      ))}
+                  </div>
+                )}
               </div>
             </motion.div>
 
