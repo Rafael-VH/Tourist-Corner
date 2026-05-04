@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
+import {
+  useParams,
+  Link,
+  useSearchParams,
+} from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { useCommentStore } from "@/presentation/providers/useCommentStore";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { useReservationStore } from "@/presentation/providers/useReservationStore";
-import type { HotelType, Room } from "@/domain/entities/Hotel";
+import type { HotelType } from "@/domain/entities/Hotel";
+import type { Room } from "@/domain/entities/Room";
 import {
   MapPin,
   Star,
@@ -62,12 +67,15 @@ export function HotelDetailPage() {
   const { rooms, fetchRoomsByHotel, isLoading: roomsLoading } = useRoomStore();
   const { comments, fetchCommentsByTarget, addComment } = useCommentStore();
 
+  const { createReservation } = useReservationStore();
+
   const [activeImage, setActiveImage] = useState(0);
   const [commentText, setCommentText] = useState("");
   const [commentRating, setCommentRating] = useState(5);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [showReservationModal, setShowReservationModal] = useState(false);
-  const [selectedRoomForBooking, setSelectedRoomForBooking] = useState<Room | null>(null);
+  const [selectedRoomForBooking, setSelectedRoomForBooking] =
+    useState<Room | null>(null);
   const [reservationSuccess, setReservationSuccess] = useState(false);
   const [reservationForm, setReservationForm] = useState({
     checkIn: "",
@@ -75,7 +83,8 @@ export function HotelDetailPage() {
     guests: "2",
   });
 
-  const isOwnerViewing = user?.role === "owner" && searchParams.get("from") === "management";
+  const isOwnerViewing =
+    user?.role === "owner" && searchParams.get("from") === "management";
 
   useEffect(() => {
     if (id) {
@@ -107,7 +116,9 @@ export function HotelDetailPage() {
     if (!reservationForm.checkIn || !reservationForm.checkOut) return 0;
     const start = new Date(reservationForm.checkIn);
     const end = new Date(reservationForm.checkOut);
-    const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const nights = Math.ceil(
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+    );
     return nights > 0 ? nights * room.pricePerNight : 0;
   };
 
@@ -118,7 +129,12 @@ export function HotelDetailPage() {
 
   const handleSubmitReservation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRoomForBooking || !reservationForm.checkIn || !reservationForm.checkOut) return;
+    if (
+      !selectedRoomForBooking ||
+      !reservationForm.checkIn ||
+      !reservationForm.checkOut
+    )
+      return;
 
     try {
       await createReservation({
@@ -397,7 +413,10 @@ export function HotelDetailPage() {
                             </span>
                           </span>
                         </div>
-                        <Link to={`/room/${room.id}`} className="text-sm text-[#96785A] dark:text-[#64748B] mt-0.5 block hover:text-[#E8850C] transition-colors">
+                        <Link
+                          to={`/room/${room.id}`}
+                          className="text-sm text-[#96785A] dark:text-[#64748B] mt-0.5 block hover:text-[#E8850C] transition-colors"
+                        >
                           {room.type}
                         </Link>
                         <div className="flex items-center gap-4 mt-2 text-sm text-[#96785A] dark:text-[#64748B]">
@@ -586,7 +605,10 @@ export function HotelDetailPage() {
                       value={reservationForm.checkIn}
                       min={new Date().toISOString().split("T")[0]}
                       onChange={(e) =>
-                        setReservationForm({ ...reservationForm, checkIn: e.target.value })
+                        setReservationForm({
+                          ...reservationForm,
+                          checkIn: e.target.value,
+                        })
                       }
                       className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
                     />
@@ -598,9 +620,15 @@ export function HotelDetailPage() {
                     <input
                       type="date"
                       value={reservationForm.checkOut}
-                      min={reservationForm.checkIn || new Date().toISOString().split("T")[0]}
+                      min={
+                        reservationForm.checkIn ||
+                        new Date().toISOString().split("T")[0]
+                      }
                       onChange={(e) =>
-                        setReservationForm({ ...reservationForm, checkOut: e.target.value })
+                        setReservationForm({
+                          ...reservationForm,
+                          checkOut: e.target.value,
+                        })
                       }
                       className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
                     />
@@ -612,7 +640,10 @@ export function HotelDetailPage() {
                     <select
                       value={reservationForm.guests}
                       onChange={(e) =>
-                        setReservationForm({ ...reservationForm, guests: e.target.value })
+                        setReservationForm({
+                          ...reservationForm,
+                          guests: e.target.value,
+                        })
                       }
                       className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
                     >
@@ -713,11 +744,15 @@ export function HotelDetailPage() {
                     Reservacion Exitosa
                   </h4>
                   <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                    Tu solicitud ha sido enviada. Recibiras una confirmacion pronto.
+                    Tu solicitud ha sido enviada. Recibiras una confirmacion
+                    pronto.
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmitReservation} className="p-5 space-y-4">
+                <form
+                  onSubmit={handleSubmitReservation}
+                  className="p-5 space-y-4"
+                >
                   <div className="p-3 bg-[#FFF8F1] dark:bg-[#242B35] rounded-xl flex items-center justify-between">
                     <span className="text-sm text-[#5E4836] dark:text-[#94A3B8]">
                       Precio por noche
@@ -737,7 +772,10 @@ export function HotelDetailPage() {
                         value={reservationForm.checkIn}
                         min={new Date().toISOString().split("T")[0]}
                         onChange={(e) =>
-                          setReservationForm({ ...reservationForm, checkIn: e.target.value })
+                          setReservationForm({
+                            ...reservationForm,
+                            checkIn: e.target.value,
+                          })
                         }
                         required
                         className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
@@ -750,9 +788,15 @@ export function HotelDetailPage() {
                       <input
                         type="date"
                         value={reservationForm.checkOut}
-                        min={reservationForm.checkIn || new Date().toISOString().split("T")[0]}
+                        min={
+                          reservationForm.checkIn ||
+                          new Date().toISOString().split("T")[0]
+                        }
                         onChange={(e) =>
-                          setReservationForm({ ...reservationForm, checkOut: e.target.value })
+                          setReservationForm({
+                            ...reservationForm,
+                            checkOut: e.target.value,
+                          })
                         }
                         required
                         className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
@@ -763,7 +807,13 @@ export function HotelDetailPage() {
                   {calculateTotal(selectedRoomForBooking) > 0 && (
                     <div className="p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl flex items-center justify-between border border-emerald-200 dark:border-emerald-800">
                       <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                        Total ({Math.ceil((new Date(reservationForm.checkOut).getTime() - new Date(reservationForm.checkIn).getTime()) / (1000 * 60 * 60 * 24))} noches)
+                        Total (
+                        {Math.ceil(
+                          (new Date(reservationForm.checkOut).getTime() -
+                            new Date(reservationForm.checkIn).getTime()) /
+                            (1000 * 60 * 60 * 24),
+                        )}{" "}
+                        noches)
                       </span>
                       <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                         Bs {calculateTotal(selectedRoomForBooking)}
