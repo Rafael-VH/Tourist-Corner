@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
@@ -24,7 +24,6 @@ import {
   Check,
   Calendar,
   X,
-  AlertCircle,
   CheckCircle,
 } from "lucide-react";
 
@@ -69,7 +68,6 @@ export function RoomDetailPage() {
 
   const { user } = useAuthStore();
   const { createReservation } = useReservationStore();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (id) {
@@ -97,10 +95,13 @@ export function RoomDetailPage() {
   };
 
   const calculateTotal = () => {
-    if (!reservationForm.checkIn || !reservationForm.checkOut || !room) return 0;
+    if (!reservationForm.checkIn || !reservationForm.checkOut || !room)
+      return 0;
     const start = new Date(reservationForm.checkIn);
     const end = new Date(reservationForm.checkOut);
-    const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const nights = Math.ceil(
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+    );
     return nights > 0 ? nights * room.pricePerNight : 0;
   };
 
@@ -108,7 +109,6 @@ export function RoomDetailPage() {
     e.preventDefault();
     if (!id || !reservationForm.checkIn || !reservationForm.checkOut) return;
 
-    const total = calculateTotal();
     try {
       await createReservation({
         roomId: id,
@@ -124,7 +124,14 @@ export function RoomDetailPage() {
       setTimeout(() => {
         setShowReservationModal(false);
         setReservationSuccess(false);
-        setReservationForm({ checkIn: "", checkOut: "", guestName: "", guestEmail: "", guestPhone: "", notes: "" });
+        setReservationForm({
+          checkIn: "",
+          checkOut: "",
+          guestName: "",
+          guestEmail: "",
+          guestPhone: "",
+          notes: "",
+        });
       }, 2000);
     } catch {
       // Error handled by store
@@ -411,11 +418,15 @@ export function RoomDetailPage() {
                       Reservacion Exitosa
                     </h4>
                     <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                      Tu solicitud ha sido enviada. Recibiras una confirmacion pronto.
+                      Tu solicitud ha sido enviada. Recibiras una confirmacion
+                      pronto.
                     </p>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmitReservation} className="p-5 space-y-4">
+                  <form
+                    onSubmit={handleSubmitReservation}
+                    className="p-5 space-y-4"
+                  >
                     {/* Price Info */}
                     <div className="p-3 bg-[#FFF8F1] dark:bg-[#242B35] rounded-xl flex items-center justify-between">
                       <span className="text-sm text-[#5E4836] dark:text-[#94A3B8]">
@@ -437,7 +448,10 @@ export function RoomDetailPage() {
                           value={reservationForm.checkIn}
                           min={new Date().toISOString().split("T")[0]}
                           onChange={(e) =>
-                            setReservationForm({ ...reservationForm, checkIn: e.target.value })
+                            setReservationForm({
+                              ...reservationForm,
+                              checkIn: e.target.value,
+                            })
                           }
                           required
                           className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
@@ -450,9 +464,15 @@ export function RoomDetailPage() {
                         <input
                           type="date"
                           value={reservationForm.checkOut}
-                          min={reservationForm.checkIn || new Date().toISOString().split("T")[0]}
+                          min={
+                            reservationForm.checkIn ||
+                            new Date().toISOString().split("T")[0]
+                          }
                           onChange={(e) =>
-                            setReservationForm({ ...reservationForm, checkOut: e.target.value })
+                            setReservationForm({
+                              ...reservationForm,
+                              checkOut: e.target.value,
+                            })
                           }
                           required
                           className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
@@ -464,7 +484,13 @@ export function RoomDetailPage() {
                     {calculateTotal() > 0 && (
                       <div className="p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl flex items-center justify-between border border-emerald-200 dark:border-emerald-800">
                         <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                          Total ({Math.ceil((new Date(reservationForm.checkOut).getTime() - new Date(reservationForm.checkIn).getTime()) / (1000 * 60 * 60 * 24))} noches)
+                          Total (
+                          {Math.ceil(
+                            (new Date(reservationForm.checkOut).getTime() -
+                              new Date(reservationForm.checkIn).getTime()) /
+                              (1000 * 60 * 60 * 24),
+                          )}{" "}
+                          noches)
                         </span>
                         <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                           Bs {calculateTotal()}
@@ -481,7 +507,10 @@ export function RoomDetailPage() {
                         type="text"
                         value={reservationForm.guestName}
                         onChange={(e) =>
-                          setReservationForm({ ...reservationForm, guestName: e.target.value })
+                          setReservationForm({
+                            ...reservationForm,
+                            guestName: e.target.value,
+                          })
                         }
                         placeholder={user?.name || "Tu nombre"}
                         className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
@@ -496,7 +525,10 @@ export function RoomDetailPage() {
                         type="email"
                         value={reservationForm.guestEmail}
                         onChange={(e) =>
-                          setReservationForm({ ...reservationForm, guestEmail: e.target.value })
+                          setReservationForm({
+                            ...reservationForm,
+                            guestEmail: e.target.value,
+                          })
                         }
                         placeholder={user?.email || "tu@email.com"}
                         required
@@ -512,7 +544,10 @@ export function RoomDetailPage() {
                         type="tel"
                         value={reservationForm.guestPhone}
                         onChange={(e) =>
-                          setReservationForm({ ...reservationForm, guestPhone: e.target.value })
+                          setReservationForm({
+                            ...reservationForm,
+                            guestPhone: e.target.value,
+                          })
                         }
                         placeholder="+591 77712345"
                         className="w-full px-3 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 text-sm"
@@ -526,7 +561,10 @@ export function RoomDetailPage() {
                       <textarea
                         value={reservationForm.notes}
                         onChange={(e) =>
-                          setReservationForm({ ...reservationForm, notes: e.target.value })
+                          setReservationForm({
+                            ...reservationForm,
+                            notes: e.target.value,
+                          })
                         }
                         placeholder="Solicitudes especiales..."
                         rows={2}
