@@ -3,6 +3,7 @@ import { SupabaseHotelRepository } from '@/data/repositories/SupabaseHotelReposi
 import { SupabaseRoomRepository } from '@/data/repositories/SupabaseRoomRepository';
 import { SupabaseCommentRepository } from '@/data/repositories/SupabaseCommentRepository';
 import { SupabaseReservationRepository } from '@/data/repositories/SupabaseReservationRepository';
+import { SupabaseImageRepository } from '@/data/repositories/SupabaseImageRepository';
 
 import {
   SignInUseCase,
@@ -64,6 +65,7 @@ function createContainer() {
   const roomRepository = new SupabaseRoomRepository();
   const commentRepository = new SupabaseCommentRepository();
   const reservationRepository = new SupabaseReservationRepository();
+  const imageRepository = new SupabaseImageRepository();
 
   return {
     // Auth use cases
@@ -111,6 +113,9 @@ function createContainer() {
     getReservationsByUser: new GetReservationsByUserUseCase(reservationRepository),
     updateReservationStatus: new UpdateReservationStatusUseCase(reservationRepository),
     cancelReservation: new CancelReservationUseCase(reservationRepository),
+
+    // Image repository (used directly, no use case needed)
+    imageRepository,
   };
 }
 

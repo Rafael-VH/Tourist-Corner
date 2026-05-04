@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
+import { supabase } from "@/data/datasources/SupabaseClient";
+import { ImageUpload } from "@/presentation/components/ImageUpload";
+import { getContainer } from "@/core/di/Container";
 import type { RoomStatus } from "@/domain/entities/Room";
 import {
   ArrowLeft,
@@ -11,7 +14,7 @@ import {
   Users,
   DollarSign,
   Maximize,
-  Image,
+  Image as ImageIcon,
   Plus,
   Trash2,
   ToggleLeft,
@@ -20,9 +23,11 @@ import {
 
 export function RoomManagementPage() {
   const { id } = useParams<{ id: string }>();
+  const container = getContainer();
   const { rooms, fetchRoomById, isLoading, updateRoomStatus, updateRoom } =
     useRoomStore();
   const selectedRoom = rooms.find((r) => r.id === id) || null;
+  const [roomImages, setRoomImages] = useState<string[]>([]);
 
   const [isEditing, setIsEditing] = useState(true);
   const [editForm, setEditForm] = useState({
@@ -40,6 +45,12 @@ export function RoomManagementPage() {
       fetchRoomById(id);
     }
   }, [id, fetchRoomById]);
+
+  useEffect(() => {
+    if (selectedRoom) {
+      setRoomImages(selectedRoom.images || []);
+    }
+  }, [selectedRoom]);
 
   if (isLoading || !selectedRoom) {
     return (
@@ -70,6 +81,27 @@ export function RoomManagementPage() {
       isAvailable: editForm.status === "available",
     });
     setIsEditing(false);
+  };
+
+  const handleUploadImages = async (files: File[]) => {
+    if (!id) return [];
+    const urls: string[] = [];
+    for (const file of files) {
+      const url = await container.imageRepository.uploadRoomImage(id, file);
+      urls.push(url);
+    }
+    return urls;
+  };
+
+  const handleDeleteImage = async (imageUrl: string) => {
+    await container.imageRepository.deleteRoomImage(imageUrl);
+  };
+
+  const handleImagesChange = async (images: string[]) => {
+    setRoomImages(images);
+    if (id) {
+      await supabase.from("rooms").update({ images }).eq("id", id);
+    }
   };
 
   return (
@@ -240,38 +272,19 @@ export function RoomManagementPage() {
 
             {/* Images */}
             <div className="bg-white dark:bg-[#1A2028] rounded-2xl p-6 border border-[#E8D9C8] dark:border-[#2D3748]">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 mb-4">
+                <ImageIcon className="w-5 h-5 text-[#E8850C]" />
                 <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
                   Imagenes
                 </h2>
-                <button className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors">
-                  <Plus className="w-4 h-4" />
-                  Agregar
-                </button>
               </div>
-              <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
-                {room.images.map((img, index) => (
-                  <div
-                    key={index}
-                    className="relative group rounded-xl overflow-hidden aspect-square"
-                  >
-                    <img
-                      src={img}
-                      alt={`${room.name} ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <button className="p-2 bg-white/90 rounded-lg text-red-500 hover:bg-white transition-colors">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                <button className="border-2 border-dashed border-[#E8D9C8] dark:border-[#2D3748] rounded-xl aspect-square flex flex-col items-center justify-center gap-2 text-[#96785A] dark:text-[#64748B] hover:border-[#E8850C] hover:text-[#E8850C] transition-colors">
-                  <Image className="w-8 h-8" />
-                  <span className="text-xs font-medium">Subir</span>
-                </button>
-              </div>
+              <ImageUpload
+                images={roomImages}
+                onImagesChange={handleImagesChange}
+                onCoverChange={() => {}}
+                onUpload={handleUploadImages}
+                onDelete={handleDeleteImage}
+              />
             </div>
           </motion.div>
 

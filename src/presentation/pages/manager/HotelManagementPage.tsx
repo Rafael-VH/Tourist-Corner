@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { supabase } from "@/data/datasources/SupabaseClient";
+import { ImageUpload } from "@/presentation/components/ImageUpload";
+import { getContainer } from "@/core/di/Container";
 import {
   ArrowLeft,
   Plus,
@@ -25,12 +27,15 @@ import {
 export function HotelManagementPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const container = getContainer();
   const { selectedHotel, fetchHotelById, isLoading, updateHotel } =
     useHotelStore();
   const { rooms, fetchRoomsByHotel } = useRoomStore();
   const [branches, setBranches] = useState<
     { id: string; name: string; city: string }[]
   >([]);
+  const [hotelImages, setHotelImages] = useState<string[]>([]);
+  const [coverImage, setCoverImage] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -68,6 +73,13 @@ export function HotelManagementPage() {
   }, [id, fetchHotelById, fetchRoomsByHotel]);
 
   useEffect(() => {
+    if (selectedHotel) {
+      setHotelImages(selectedHotel.images || []);
+      setCoverImage(selectedHotel.coverImage || "");
+    }
+  }, [selectedHotel]);
+
+  useEffect(() => {
     if (selectedHotel?.isMain && id) {
       fetchBranches(id);
     }
@@ -101,6 +113,34 @@ export function HotelManagementPage() {
       address: editForm.address,
     });
     setIsEditing(false);
+  };
+
+  const handleUploadImages = async (files: File[]) => {
+    if (!id) return [];
+    const urls: string[] = [];
+    for (const file of files) {
+      const url = await container.imageRepository.uploadHotelImage(id, file);
+      urls.push(url);
+    }
+    return urls;
+  };
+
+  const handleDeleteImage = async (imageUrl: string) => {
+    await container.imageRepository.deleteHotelImage(imageUrl);
+  };
+
+  const handleImagesChange = async (images: string[]) => {
+    setHotelImages(images);
+    if (id) {
+      await supabase.from("hotels").update({ images }).eq("id", id);
+    }
+  };
+
+  const handleCoverChange = async (cover: string) => {
+    setCoverImage(cover);
+    if (id) {
+      await supabase.from("hotels").update({ cover_image: cover }).eq("id", id);
+    }
   };
 
   return (
@@ -171,12 +211,12 @@ export function HotelManagementPage() {
           className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden mb-8"
         >
           {/* Cover */}
-          <div className="relative h-48 md:h-64">
-            <img
-              src={hotel.coverImage || hotel.images[0]}
-              alt={hotel.name}
-              className="w-full h-full object-cover"
-            />
+            <div className="relative h-48 md:h-64">
+              <img
+                src={coverImage || hotelImages[0] || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400' fill='%23333'%3E%3Crect width='800' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='24'%3ESin imagen%3C/text%3E%3C/svg%3E"}
+                alt={hotel.name}
+                className="w-full h-full object-cover"
+              />
             <div className="absolute inset-0 bg-[#2D1F14]/30" />
             <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
               <div>
@@ -401,38 +441,20 @@ export function HotelManagementPage() {
           transition={{ delay: 0.1 }}
           className="bg-white dark:bg-[#1A2028] rounded-2xl p-6 border border-[#E8D9C8] dark:border-[#2D3748] mb-8"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Image className="w-5 h-5 text-[#E8850C]" />
             <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
               Galeria de Imagenes
             </h2>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors">
-              <Plus className="w-4 h-4" />
-              Agregar
-            </button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {hotel.images.map((img, index) => (
-              <div
-                key={index}
-                className="relative group rounded-xl overflow-hidden aspect-square"
-              >
-                <img
-                  src={img}
-                  alt={`${hotel.name} ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <button className="p-2 bg-white/90 rounded-lg text-red-500 hover:bg-white transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-            <button className="border-2 border-dashed border-[#E8D9C8] dark:border-[#2D3748] rounded-xl aspect-square flex flex-col items-center justify-center gap-2 text-[#96785A] dark:text-[#64748B] hover:border-[#E8850C] hover:text-[#E8850C] transition-colors">
-              <Image className="w-8 h-8" />
-              <span className="text-xs font-medium">Subir Imagen</span>
-            </button>
-          </div>
+          <ImageUpload
+            images={hotelImages}
+            coverImage={coverImage}
+            onImagesChange={handleImagesChange}
+            onCoverChange={handleCoverChange}
+            onUpload={handleUploadImages}
+            onDelete={handleDeleteImage}
+          />
         </motion.div>
 
         {/* Rooms Section */}

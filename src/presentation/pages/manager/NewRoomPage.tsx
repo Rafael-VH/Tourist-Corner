@@ -13,6 +13,7 @@ import {
   Tag,
   Wrench,
   Check,
+  Image,
 } from "lucide-react";
 
 interface CustomRoomType {
@@ -220,7 +221,7 @@ export function NewRoomPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden"
         >
-          <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
+            <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
                 <Bed className="w-5 h-5 text-white" />
@@ -233,6 +234,10 @@ export function NewRoomPage() {
                   Agrega una habitacion a tu hotel
                 </p>
               </div>
+            </div>
+            <div className="mt-3 p-3 bg-[#FFF8F1] dark:bg-[#242B35] rounded-xl flex items-center gap-2 text-sm text-[#5E4836] dark:text-[#94A3B8]">
+              <Image className="w-4 h-4 text-[#E8850C] flex-shrink-0" />
+              Podras agregar imagenes despues de crear la habitacion
             </div>
           </div>
 
