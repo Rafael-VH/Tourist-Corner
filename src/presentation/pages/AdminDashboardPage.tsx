@@ -56,7 +56,11 @@ interface UserRow {
 
 export function AdminDashboardPage() {
   const { user } = useAuthStore();
-  const [stats, setStats] = useState<DashboardStats>({ totalClients: 0, totalOwners: 0, totalHotels: 0 });
+  const [stats, setStats] = useState<DashboardStats>({
+    totalClients: 0,
+    totalOwners: 0,
+    totalHotels: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [codes, setCodes] = useState<RegistrationCode[]>([]);
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -69,12 +73,31 @@ export function AdminDashboardPage() {
     setLoading(true);
     setError("");
     try {
-      const [clientsRes, ownersRes, hotelsRes, codesRes, allUsersRes, featuredRes] = await Promise.all([
-        supabase.from("users").select("id", { count: "exact" }).eq("role", "client"),
-        supabase.from("users").select("id", { count: "exact" }).eq("role", "owner"),
+      const [
+        clientsRes,
+        ownersRes,
+        hotelsRes,
+        codesRes,
+        allUsersRes,
+        featuredRes,
+      ] = await Promise.all([
+        supabase
+          .from("users")
+          .select("id", { count: "exact" })
+          .eq("role", "client"),
+        supabase
+          .from("users")
+          .select("id", { count: "exact" })
+          .eq("role", "owner"),
         supabase.from("hotels").select("id", { count: "exact" }),
-        supabase.from("registration_codes").select("*, used_by_user:used_by(name, email)").order("created_at", { ascending: false }),
-        supabase.from("users").select("id, email, name, role").order("created_at", { ascending: false }),
+        supabase
+          .from("registration_codes")
+          .select("*, used_by_user:used_by(name, email)")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("users")
+          .select("id, email, name, role")
+          .order("created_at", { ascending: false }),
         supabase.from("featured_hotels").select("hotel_id, featured_order"),
       ]);
 
@@ -88,7 +111,10 @@ export function AdminDashboardPage() {
       setUsers(allUsersRes.data || []);
 
       const featuredMap = new Map(
-        (featuredRes.data || []).map((f) => [f.hotel_id, { order: f.featured_order }])
+        (featuredRes.data || []).map((f) => [
+          f.hotel_id,
+          { order: f.featured_order },
+        ]),
       );
 
       const { data: hotelsData } = await supabase
@@ -101,7 +127,7 @@ export function AdminDashboardPage() {
           ...h,
           is_featured: featuredMap.has(h.id),
           featured_order: featuredMap.get(h.id)?.order || 0,
-        }))
+        })),
       );
 
       const { data: orphanData } = await supabase
@@ -149,7 +175,10 @@ export function AdminDashboardPage() {
 
   const deleteCode = async (id: string) => {
     try {
-      const { error } = await supabase.from("registration_codes").delete().eq("id", id);
+      const { error } = await supabase
+        .from("registration_codes")
+        .delete()
+        .eq("id", id);
       if (error) throw error;
       await loadData();
     } catch (err: unknown) {
@@ -181,8 +210,13 @@ export function AdminDashboardPage() {
       if (isFeatured) {
         await supabase.from("featured_hotels").delete().eq("hotel_id", hotelId);
       } else {
-        const maxOrder = Math.max(...hotels.filter((h) => h.is_featured).map((h) => h.featured_order), 0);
-        await supabase.from("featured_hotels").insert({ hotel_id: hotelId, featured_order: maxOrder + 1 });
+        const maxOrder = Math.max(
+          ...hotels.filter((h) => h.is_featured).map((h) => h.featured_order),
+          0,
+        );
+        await supabase
+          .from("featured_hotels")
+          .insert({ hotel_id: hotelId, featured_order: maxOrder + 1 });
       }
       await loadData();
     } catch (err: unknown) {
@@ -191,7 +225,9 @@ export function AdminDashboardPage() {
   };
 
   const moveFeatured = async (hotelId: string, direction: "up" | "down") => {
-    const sorted = hotels.filter((h) => h.is_featured).sort((a, b) => a.featured_order - b.featured_order);
+    const sorted = hotels
+      .filter((h) => h.is_featured)
+      .sort((a, b) => a.featured_order - b.featured_order);
     const idx = sorted.findIndex((h) => h.id === hotelId);
     if (idx < 0) return;
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
@@ -202,8 +238,14 @@ export function AdminDashboardPage() {
 
     try {
       await Promise.all([
-        supabase.from("featured_hotels").update({ featured_order: b.featured_order }).eq("hotel_id", a.id),
-        supabase.from("featured_hotels").update({ featured_order: a.featured_order }).eq("hotel_id", b.id),
+        supabase
+          .from("featured_hotels")
+          .update({ featured_order: b.featured_order })
+          .eq("hotel_id", a.id),
+        supabase
+          .from("featured_hotels")
+          .update({ featured_order: a.featured_order })
+          .eq("hotel_id", b.id),
       ]);
       await loadData();
     } catch (err: unknown) {
@@ -248,9 +290,27 @@ export function AdminDashboardPage() {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               {[
-                { label: "Total Clientes", value: stats.totalClients, icon: Users, bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-600 dark:text-blue-400" },
-                { label: "Total Dueños", value: stats.totalOwners, icon: Building2, bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-600 dark:text-green-400" },
-                { label: "Total Hoteles", value: stats.totalHotels, icon: Building2, bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-600 dark:text-purple-400" },
+                {
+                  label: "Total Clientes",
+                  value: stats.totalClients,
+                  icon: Users,
+                  bg: "bg-blue-100 dark:bg-blue-900/30",
+                  text: "text-blue-600 dark:text-blue-400",
+                },
+                {
+                  label: "Total Dueños",
+                  value: stats.totalOwners,
+                  icon: Building2,
+                  bg: "bg-green-100 dark:bg-green-900/30",
+                  text: "text-green-600 dark:text-green-400",
+                },
+                {
+                  label: "Total Hoteles",
+                  value: stats.totalHotels,
+                  icon: Building2,
+                  bg: "bg-purple-100 dark:bg-purple-900/30",
+                  text: "text-purple-600 dark:text-purple-400",
+                },
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}
@@ -261,12 +321,16 @@ export function AdminDashboardPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-[#96785A] dark:text-[#64748B]">{stat.label}</p>
+                      <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                        {stat.label}
+                      </p>
                       <p className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] mt-1">
                         {stat.value}
                       </p>
                     </div>
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.bg}`}>
+                    <div
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.bg}`}
+                    >
                       <stat.icon className={`w-6 h-6 ${stat.text}`} />
                     </div>
                   </div>
@@ -329,7 +393,9 @@ export function AdminDashboardPage() {
                         </div>
                         {code.used && code.used_by_user ? (
                           <div className="text-sm text-[#5E4836] dark:text-[#94A3B8]">
-                            <span className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">{code.used_by_user.name}</span>
+                            <span className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                              {code.used_by_user.name}
+                            </span>
                             <span className="mx-1">—</span>
                             <span>{code.used_by_user.email}</span>
                           </div>
@@ -369,8 +435,12 @@ export function AdminDashboardPage() {
                       className="flex items-center justify-between p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl"
                     >
                       <div>
-                        <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">{hotel.name}</p>
-                        <p className="text-sm text-[#96785A] dark:text-[#64748B]">{hotel.city}</p>
+                        <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                          {hotel.name}
+                        </p>
+                        <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                          {hotel.city}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
                         {hotel.is_featured && (
@@ -390,7 +460,9 @@ export function AdminDashboardPage() {
                           </div>
                         )}
                         <button
-                          onClick={() => toggleFeatured(hotel.id, hotel.is_featured)}
+                          onClick={() =>
+                            toggleFeatured(hotel.id, hotel.is_featured)
+                          }
                           className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                             hotel.is_featured
                               ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50"
@@ -420,7 +492,8 @@ export function AdminDashboardPage() {
                     Hoteles sin Dueño
                   </h2>
                   <p className="text-sm text-[#96785A] dark:text-[#64748B] mt-1">
-                    Estos hoteles no tienen un dueño asignado y pueden ser eliminados
+                    Estos hoteles no tienen un dueño asignado y pueden ser
+                    eliminados
                   </p>
                 </div>
                 <div className="p-6">
@@ -432,12 +505,19 @@ export function AdminDashboardPage() {
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">{hotel.name}</p>
-                            <p className="text-sm text-[#96785A] dark:text-[#64748B]">{hotel.city}</p>
+                            <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                              {hotel.name}
+                            </p>
+                            <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                              {hotel.city}
+                            </p>
                             {hotel.rooms.length > 0 && (
                               <div className="mt-2 space-y-1">
                                 {hotel.rooms.map((room) => (
-                                  <p key={room.id} className="text-xs text-[#5E4836] dark:text-[#94A3B8] pl-2">
+                                  <p
+                                    key={room.id}
+                                    className="text-xs text-[#5E4836] dark:text-[#94A3B8] pl-2"
+                                  >
                                     • {room.name}
                                   </p>
                                 ))}
@@ -480,19 +560,27 @@ export function AdminDashboardPage() {
                       className="flex items-center justify-between p-3 bg-[#FDF8F3] dark:bg-[#242B35] rounded-xl"
                     >
                       <div>
-                        <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">{u.name}</p>
-                        <p className="text-sm text-[#96785A] dark:text-[#64748B]">{u.email}</p>
+                        <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                          {u.name}
+                        </p>
+                        <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                          {u.email}
+                        </p>
                       </div>
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
                           u.role === "admin"
                             ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
                             : u.role === "owner"
-                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                            : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                              ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                              : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
                         }`}
                       >
-                        {u.role === "admin" ? "Admin" : u.role === "owner" ? "Dueño" : "Cliente"}
+                        {u.role === "admin"
+                          ? "Admin"
+                          : u.role === "owner"
+                            ? "Dueño"
+                            : "Cliente"}
                       </span>
                     </div>
                   ))}

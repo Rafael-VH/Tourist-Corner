@@ -37,7 +37,9 @@ export function NewRoomPage() {
   const [submitError, setSubmitError] = useState("");
   const [customTypes, setCustomTypes] = useState<CustomRoomType[]>([]);
   const [customServices, setCustomServices] = useState<CustomService[]>([]);
-  const [selectedCustomServices, setSelectedCustomServices] = useState<string[]>([]);
+  const [selectedCustomServices, setSelectedCustomServices] = useState<
+    string[]
+  >([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -108,68 +110,76 @@ export function NewRoomPage() {
     setSelectedCustomServices((prev) =>
       prev.includes(serviceId)
         ? prev.filter((id) => id !== serviceId)
-        : [...prev, serviceId]
+        : [...prev, serviceId],
     );
   };
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!hotelId) return;
-    if (!form.name || !form.pricePerNight || !form.capacity) return;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!hotelId) return;
+      if (!form.name || !form.pricePerNight || !form.capacity) return;
 
-    setIsSubmitting(true);
-    setSubmitError("");
+      setIsSubmitting(true);
+      setSubmitError("");
 
-    try {
-      const quantity = parseInt(form.quantity) || 1;
-      const roomType = form.customRoomTypeId ? customTypes.find((t) => t.id === form.customRoomTypeId)?.name || form.type : form.type;
-      const insertedIds: string[] = [];
+      try {
+        const quantity = parseInt(form.quantity) || 1;
+        const roomType = form.customRoomTypeId
+          ? customTypes.find((t) => t.id === form.customRoomTypeId)?.name ||
+            form.type
+          : form.type;
+        const insertedIds: string[] = [];
 
-      for (let i = 0; i < quantity; i++) {
-        const roomName = quantity > 1 ? `${form.name} ${i + 1}` : form.name;
+        for (let i = 0; i < quantity; i++) {
+          const roomName = quantity > 1 ? `${form.name} ${i + 1}` : form.name;
 
-        const { data: roomData, error: roomError } = await supabase
-          .from("rooms")
-          .insert({
-            hotel_id: hotelId,
-            name: roomName,
-            type: roomType,
-            custom_room_type_id: form.customRoomTypeId || null,
-            description: form.description,
-            price_per_night: Number(form.pricePerNight),
-            capacity: Number(form.capacity),
-            bed_type: form.bedType,
-            size: form.size ? Number(form.size) : null,
-            images: [],
-            amenities: form.amenities,
-            status: "available",
-            is_available: true,
-          })
-          .select()
-          .single();
+          const { data: roomData, error: roomError } = await supabase
+            .from("rooms")
+            .insert({
+              hotel_id: hotelId,
+              name: roomName,
+              type: roomType,
+              custom_room_type_id: form.customRoomTypeId || null,
+              description: form.description,
+              price_per_night: Number(form.pricePerNight),
+              capacity: Number(form.capacity),
+              bed_type: form.bedType,
+              size: form.size ? Number(form.size) : null,
+              images: [],
+              amenities: form.amenities,
+              status: "available",
+              is_available: true,
+            })
+            .select()
+            .single();
 
-        if (roomError) throw roomError;
-        insertedIds.push(roomData.id);
+          if (roomError) throw roomError;
+          insertedIds.push(roomData.id);
 
-        if (selectedCustomServices.length > 0 && roomData?.id) {
-          const { error: servicesError } = await supabase
-            .from("room_custom_services")
-            .insert(
-              selectedCustomServices.map((serviceId) => ({
-                room_id: roomData.id,
-                custom_service_id: serviceId,
-              }))
-            );
-          if (servicesError) throw servicesError;
+          if (selectedCustomServices.length > 0 && roomData?.id) {
+            const { error: servicesError } = await supabase
+              .from("room_custom_services")
+              .insert(
+                selectedCustomServices.map((serviceId) => ({
+                  room_id: roomData.id,
+                  custom_service_id: serviceId,
+                })),
+              );
+            if (servicesError) throw servicesError;
+          }
         }
-      }
 
-      navigate(`/dashboard/hotel/${hotelId}`);
-    } catch (err: unknown) {
-      setSubmitError((err as Error).message || "Error al crear la habitacion");
-      setIsSubmitting(false);
-    }
-  }, [hotelId, form, navigate, customTypes, selectedCustomServices]);
+        navigate(`/dashboard/hotel/${hotelId}`);
+      } catch (err: unknown) {
+        setSubmitError(
+          (err as Error).message || "Error al crear la habitacion",
+        );
+        setIsSubmitting(false);
+      }
+    },
+    [hotelId, form, navigate, customTypes, selectedCustomServices],
+  );
 
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
@@ -199,7 +209,9 @@ export function NewRoomPage() {
             className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3"
           >
             <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-            <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {submitError}
+            </p>
           </motion.div>
         )}
 
@@ -266,7 +278,9 @@ export function NewRoomPage() {
                   <select
                     value={form.customRoomTypeId}
                     onChange={(e) => {
-                      const selected = customTypes.find((t) => t.id === e.target.value);
+                      const selected = customTypes.find(
+                        (t) => t.id === e.target.value,
+                      );
                       if (selected) {
                         setForm({
                           ...form,
@@ -286,7 +300,10 @@ export function NewRoomPage() {
                   </select>
                   {form.customRoomTypeId && (
                     <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-1">
-                      {customTypes.find((t) => t.id === form.customRoomTypeId)?.description}
+                      {
+                        customTypes.find((t) => t.id === form.customRoomTypeId)
+                          ?.description
+                      }
                     </p>
                   )}
                 </div>
@@ -378,7 +395,9 @@ export function NewRoomPage() {
                   <input
                     type="number"
                     value={form.quantity}
-                    onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, quantity: e.target.value })
+                    }
                     placeholder="1"
                     min="1"
                     max="50"
@@ -386,7 +405,8 @@ export function NewRoomPage() {
                   />
                   {parseInt(form.quantity) > 1 && (
                     <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-1">
-                      Se crearan {form.quantity} habitaciones con nombres: {form.name} 1, {form.name} 2, ...
+                      Se crearan {form.quantity} habitaciones con nombres:{" "}
+                      {form.name} 1, {form.name} 2, ...
                     </p>
                   )}
                 </div>
@@ -495,12 +515,12 @@ export function NewRoomPage() {
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  {parseInt(form.quantity) > 1
-                    ? `Registrar ${form.quantity} Habitaciones`
-                    : "Registrar Habitacion"}
-                </>
+                  <>
+                    <Save className="w-4 h-4" />
+                    {parseInt(form.quantity) > 1
+                      ? `Registrar ${form.quantity} Habitaciones`
+                      : "Registrar Habitacion"}
+                  </>
                 )}
               </button>
             </div>

@@ -69,7 +69,13 @@ export function LoginPage() {
       return;
     }
     try {
-      await signUp(email, password, name, role, role === "owner" ? registrationCode : undefined);
+      await signUp(
+        email,
+        password,
+        name,
+        role,
+        role === "owner" ? registrationCode : undefined,
+      );
       if (role === "owner") {
         navigate("/dashboard");
       } else {
@@ -311,7 +317,9 @@ export function LoginPage() {
                         type="text"
                         inputMode="numeric"
                         value={registrationCode}
-                        onChange={(e) => setRegistrationCode(e.target.value.replace(/\D/g, ''))}
+                        onChange={(e) =>
+                          setRegistrationCode(e.target.value.replace(/\D/g, ""))
+                        }
                         placeholder="123456"
                         required
                         maxLength={6}
@@ -326,7 +334,7 @@ export function LoginPage() {
                         Nombre Completo *
                       </label>
                       <div className="relative">
-                          <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B89A7A]" />
+                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B89A7A]" />
                         <input
                           type="text"
                           value={name}

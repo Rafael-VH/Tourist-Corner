@@ -22,7 +22,10 @@ export function NewHotelPage() {
   const [submitError, setSubmitError] = useState("");
   const [checkingHotel, setCheckingHotel] = useState(true);
   const [isCreatingBranch, setIsCreatingBranch] = useState(false);
-  const [mainHotel, setMainHotel] = useState<{ id: string; name: string } | null>(null);
+  const [mainHotel, setMainHotel] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -58,50 +61,53 @@ export function NewHotelPage() {
     checkExistingHotel();
   }, [user?.id, navigate]);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    if (!form.name || !form.city || !form.priceMin || !form.priceMax) return;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!user) return;
+      if (!form.name || !form.city || !form.priceMin || !form.priceMax) return;
 
-    setIsSubmitting(true);
-    setSubmitError("");
+      setIsSubmitting(true);
+      setSubmitError("");
 
-    try {
-      const { data, error } = await supabase
-        .from("hotels")
-        .insert({
-          name: form.name,
-          type: form.type,
-          description: form.description,
-          address: form.address,
-          city: form.city,
-          phone: form.phone,
-          email: form.email,
-          images: [],
-          cover_image: "",
-          rating: 0,
-          review_count: 0,
-          amenities: [],
-          latitude: 0,
-          longitude: 0,
-          price_range_min: Number(form.priceMin),
-          price_range_max: Number(form.priceMax),
-          manager_id: user.id,
-          is_main: !isCreatingBranch,
-          branch_of: isCreatingBranch ? mainHotel?.id : null,
-          is_active: true,
-        })
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("hotels")
+          .insert({
+            name: form.name,
+            type: form.type,
+            description: form.description,
+            address: form.address,
+            city: form.city,
+            phone: form.phone,
+            email: form.email,
+            images: [],
+            cover_image: "",
+            rating: 0,
+            review_count: 0,
+            amenities: [],
+            latitude: 0,
+            longitude: 0,
+            price_range_min: Number(form.priceMin),
+            price_range_max: Number(form.priceMax),
+            manager_id: user.id,
+            is_main: !isCreatingBranch,
+            branch_of: isCreatingBranch ? mainHotel?.id : null,
+            is_active: true,
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      navigate(`/dashboard/hotel/${data.id}`);
-    } catch (err: unknown) {
-      setSubmitError((err as Error).message || "Error al crear el hotel");
-      setIsSubmitting(false);
-    }
-  }, [user, form, navigate, isCreatingBranch, mainHotel]);
+        navigate(`/dashboard/hotel/${data.id}`);
+      } catch (err: unknown) {
+        setSubmitError((err as Error).message || "Error al crear el hotel");
+        setIsSubmitting(false);
+      }
+    },
+    [user, form, navigate, isCreatingBranch, mainHotel],
+  );
 
   if (checkingHotel) {
     return (
@@ -139,7 +145,9 @@ export function NewHotelPage() {
             className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3"
           >
             <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-            <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {submitError}
+            </p>
           </motion.div>
         )}
 
@@ -149,27 +157,27 @@ export function NewHotelPage() {
           className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden"
         >
           <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
-                  {isCreatingBranch ? (
-                    <GitBranch className="w-5 h-5 text-white" />
-                  ) : (
-                    <Building2 className="w-5 h-5 text-white" />
-                  )}
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
-                    {isCreatingBranch
-                      ? `Nueva Sucursal de ${mainHotel?.name}`
-                      : "Registrar Nuevo Hotel"}
-                  </h1>
-                  <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                    {isCreatingBranch
-                      ? "Completa la informacion de la nueva sucursal"
-                      : "Completa la informacion basica de tu establecimiento"}
-                  </p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
+                {isCreatingBranch ? (
+                  <GitBranch className="w-5 h-5 text-white" />
+                ) : (
+                  <Building2 className="w-5 h-5 text-white" />
+                )}
               </div>
+              <div>
+                <h1 className="text-xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                  {isCreatingBranch
+                    ? `Nueva Sucursal de ${mainHotel?.name}`
+                    : "Registrar Nuevo Hotel"}
+                </h1>
+                <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                  {isCreatingBranch
+                    ? "Completa la informacion de la nueva sucursal"
+                    : "Completa la informacion basica de tu establecimiento"}
+                </p>
+              </div>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -278,7 +286,9 @@ export function NewHotelPage() {
                   <input
                     type="tel"
                     value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, phone: e.target.value })
+                    }
                     placeholder="+591 77712345"
                     className="w-full px-4 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 focus:border-[#E8850C] transition-all"
                   />
@@ -292,7 +302,9 @@ export function NewHotelPage() {
                   <input
                     type="email"
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
                     placeholder="contacto@hotel.com"
                     className="w-full px-4 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 focus:border-[#E8850C] transition-all"
                   />
@@ -361,7 +373,9 @@ export function NewHotelPage() {
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    {isCreatingBranch ? "Registrar Sucursal" : "Registrar Hotel"}
+                    {isCreatingBranch
+                      ? "Registrar Sucursal"
+                      : "Registrar Hotel"}
                   </>
                 )}
               </button>

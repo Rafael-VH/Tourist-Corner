@@ -42,7 +42,12 @@ interface RoomData {
 }
 
 interface HotelRoomGroup {
-  hotel: { id: string; name: string; isMain: boolean; branchOf?: string | null };
+  hotel: {
+    id: string;
+    name: string;
+    isMain: boolean;
+    branchOf?: string | null;
+  };
   rooms: RoomData[];
   reservationCounts: { pending: number; active: number };
 }
@@ -65,7 +70,14 @@ export function ManagerDashboardPage() {
     "month",
   );
 
-  const [customRoomTypes, setCustomRoomTypes] = useState<{ id: string; name: string; description: string | null; created_at: string }[]>([]);
+  const [customRoomTypes, setCustomRoomTypes] = useState<
+    {
+      id: string;
+      name: string;
+      description: string | null;
+      created_at: string;
+    }[]
+  >([]);
   const [customServices, setCustomServices] = useState<CustomService[]>([]);
   const [error, setError] = useState("");
   const [showRoomHotelPicker, setShowRoomHotelPicker] = useState(false);
@@ -85,8 +97,8 @@ export function ManagerDashboardPage() {
               supabase
                 .from("rooms")
                 .select("*, custom_room_types(id, name)")
-                .eq("hotel_id", hotel.id)
-            )
+                .eq("hotel_id", hotel.id),
+            ),
           );
 
           const flatRooms: RoomData[] = allRooms.flatMap((r) => r.data || []);
@@ -96,24 +108,44 @@ export function ManagerDashboardPage() {
               supabase
                 .from("reservations")
                 .select("room_id, status")
-                .eq("room_id", flatRooms.filter((r) => r.hotel_id === hotel.id).map((r) => r.id))
-            )
+                .eq(
+                  "room_id",
+                  flatRooms
+                    .filter((r) => r.hotel_id === hotel.id)
+                    .map((r) => r.id),
+                ),
+            ),
           );
 
           const flatReservations = reservations.flatMap((r) => r.data || []);
-          const resByHotel: Record<string, { pending: number; active: number }> = {};
+          const resByHotel: Record<
+            string,
+            { pending: number; active: number }
+          > = {};
           hotels.forEach((h) => {
-            const hotelRoomIds = flatRooms.filter((r) => r.hotel_id === h.id).map((r) => r.id);
+            const hotelRoomIds = flatRooms
+              .filter((r) => r.hotel_id === h.id)
+              .map((r) => r.id);
             resByHotel[h.id] = {
-              pending: flatReservations.filter((r) => hotelRoomIds.includes(r.room_id) && r.status === "pending").length,
-              active: flatReservations.filter((r) => hotelRoomIds.includes(r.room_id) && (r.status === "pending" || r.status === "accepted")).length,
+              pending: flatReservations.filter(
+                (r) =>
+                  hotelRoomIds.includes(r.room_id) && r.status === "pending",
+              ).length,
+              active: flatReservations.filter(
+                (r) =>
+                  hotelRoomIds.includes(r.room_id) &&
+                  (r.status === "pending" || r.status === "accepted"),
+              ).length,
             };
           });
 
           const groups: HotelRoomGroup[] = hotels.map((hotel) => ({
             hotel,
             rooms: flatRooms.filter((r) => r.hotel_id === hotel.id),
-            reservationCounts: resByHotel[hotel.id] || { pending: 0, active: 0 },
+            reservationCounts: resByHotel[hotel.id] || {
+              pending: 0,
+              active: 0,
+            },
           }));
 
           setRoomsByHotel(groups);
@@ -189,9 +221,7 @@ export function ManagerDashboardPage() {
     },
     {
       label: "Resenas",
-      value: String(
-        hotels.reduce((sum, h) => sum + h.reviewCount, 0),
-      ),
+      value: String(hotels.reduce((sum, h) => sum + h.reviewCount, 0)),
       icon: <Calendar className="w-5 h-5" />,
       color: "bg-emerald-500",
     },
@@ -264,14 +294,17 @@ export function ManagerDashboardPage() {
   };
 
   const deleteRoom = async (id: string) => {
-    if (!confirm("Eliminar esta habitacion? Esta accion no se puede deshacer.")) return;
+    if (!confirm("Eliminar esta habitacion? Esta accion no se puede deshacer."))
+      return;
     try {
       const { error } = await supabase.from("rooms").delete().eq("id", id);
       if (error) throw error;
-      setRoomsByHotel((prev) => prev.map((group) => ({
-        ...group,
-        rooms: group.rooms.filter((r) => r.id !== id),
-      })));
+      setRoomsByHotel((prev) =>
+        prev.map((group) => ({
+          ...group,
+          rooms: group.rooms.filter((r) => r.id !== id),
+        })),
+      );
     } catch (err: unknown) {
       setError((err as Error).message || "Error al eliminar habitacion");
     }
@@ -290,7 +323,10 @@ export function ManagerDashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
           <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-between">
             <span>{error}</span>
-            <button onClick={() => setError("")} className="text-red-400 hover:text-red-500">
+            <button
+              onClick={() => setError("")}
+              className="text-red-400 hover:text-red-500"
+            >
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -413,35 +449,35 @@ export function ManagerDashboardPage() {
               className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden"
             >
               <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
-                        Mis Establecimientos
-                      </h2>
-                      <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                        {mainHotelsWithBranches.length > 0
-                          ? "Gestiona tu hotel y sucursales"
-                          : "Gestiona tu hotel"}
-                      </p>
-                    </div>
-                    {mainHotelsWithBranches.length > 0 ? (
-                      <button
-                        onClick={handleNewHotel}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
-                      >
-                        <GitBranch className="w-4 h-4" />
-                        Agregar Sucursal
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleNewHotel}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Agregar
-                      </button>
-                    )}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                      Mis Establecimientos
+                    </h2>
+                    <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                      {mainHotelsWithBranches.length > 0
+                        ? "Gestiona tu hotel y sucursales"
+                        : "Gestiona tu hotel"}
+                    </p>
                   </div>
+                  {mainHotelsWithBranches.length > 0 ? (
+                    <button
+                      onClick={handleNewHotel}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
+                    >
+                      <GitBranch className="w-4 h-4" />
+                      Agregar Sucursal
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleNewHotel}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Agregar
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="divide-y divide-[#F5EDE3] dark:divide-[#2D3748]">
@@ -537,7 +573,8 @@ export function ManagerDashboardPage() {
                   Habitaciones
                 </h2>
                 <span className="text-sm text-[#96785A] dark:text-[#64748B]">
-                  {roomsByHotel.reduce((sum, g) => sum + g.rooms.length, 0)} en total
+                  {roomsByHotel.reduce((sum, g) => sum + g.rooms.length, 0)} en
+                  total
                 </span>
               </div>
 
@@ -545,22 +582,52 @@ export function ManagerDashboardPage() {
                 .filter((group) => group.hotel.isMain)
                 .map((mainGroup) => {
                   const allBranchGroups = roomsByHotel.filter(
-                    (g) => g.hotel.branchOf === mainGroup.hotel.id
+                    (g) => g.hotel.branchOf === mainGroup.hotel.id,
                   );
-                  const totalRooms = mainGroup.rooms.length + allBranchGroups.reduce((s, g) => s + g.rooms.length, 0);
-                  const totalAvailable = mainGroup.rooms.filter((r) => r.is_available).length + allBranchGroups.flatMap((g) => g.rooms).filter((r) => r.is_available).length;
-                  const totalPending = mainGroup.reservationCounts.pending + allBranchGroups.reduce((s, g) => s + g.reservationCounts.pending, 0);
-                  const totalActive = mainGroup.reservationCounts.active + allBranchGroups.reduce((s, g) => s + g.reservationCounts.active, 0);
+                  const totalRooms =
+                    mainGroup.rooms.length +
+                    allBranchGroups.reduce((s, g) => s + g.rooms.length, 0);
+                  const totalAvailable =
+                    mainGroup.rooms.filter((r) => r.is_available).length +
+                    allBranchGroups
+                      .flatMap((g) => g.rooms)
+                      .filter((r) => r.is_available).length;
+                  const totalPending =
+                    mainGroup.reservationCounts.pending +
+                    allBranchGroups.reduce(
+                      (s, g) => s + g.reservationCounts.pending,
+                      0,
+                    );
+                  const totalActive =
+                    mainGroup.reservationCounts.active +
+                    allBranchGroups.reduce(
+                      (s, g) => s + g.reservationCounts.active,
+                      0,
+                    );
                   const isExpanded = expandedHotels.has(mainGroup.hotel.id);
 
-                  const renderHotelSection = (group: HotelRoomGroup, isBranch = false) => (
-                    <div key={group.hotel.id} className={`${isBranch ? "ml-4" : ""}`}>
-                      <div className={`rounded-xl border overflow-hidden ${isBranch ? "border-[#D4BEA5]/40 dark:border-[#2D3748]/60" : "border-[#E8D9C8] dark:border-[#2D3748]"}`}>
-                        <div className={`p-4 ${isBranch ? "bg-[#FDF8F3] dark:bg-[#1A2028]/80" : "bg-[#FFF8F1] dark:bg-[#242B35]"}`}>
+                  const renderHotelSection = (
+                    group: HotelRoomGroup,
+                    isBranch = false,
+                  ) => (
+                    <div
+                      key={group.hotel.id}
+                      className={`${isBranch ? "ml-4" : ""}`}
+                    >
+                      <div
+                        className={`rounded-xl border overflow-hidden ${isBranch ? "border-[#D4BEA5]/40 dark:border-[#2D3748]/60" : "border-[#E8D9C8] dark:border-[#2D3748]"}`}
+                      >
+                        <div
+                          className={`p-4 ${isBranch ? "bg-[#FDF8F3] dark:bg-[#1A2028]/80" : "bg-[#FFF8F1] dark:bg-[#242B35]"}`}
+                        >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              {isBranch && <GitBranch className="w-4 h-4 text-[#B89A7A]" />}
-                              <span className={`font-semibold ${isBranch ? "text-sm text-[#5E4836] dark:text-[#94A3B8]" : "text-[#2D1F14] dark:text-[#E2E8F0]"}`}>
+                              {isBranch && (
+                                <GitBranch className="w-4 h-4 text-[#B89A7A]" />
+                              )}
+                              <span
+                                className={`font-semibold ${isBranch ? "text-sm text-[#5E4836] dark:text-[#94A3B8]" : "text-[#2D1F14] dark:text-[#E2E8F0]"}`}
+                              >
                                 {group.hotel.name}
                               </span>
                               {!isBranch && (
@@ -571,10 +638,18 @@ export function ManagerDashboardPage() {
                             </div>
                             <div className="flex items-center gap-3 text-xs">
                               <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                                {group.rooms.filter((r) => r.is_available).length} disp.
+                                {
+                                  group.rooms.filter((r) => r.is_available)
+                                    .length
+                                }{" "}
+                                disp.
                               </span>
                               <span className="text-red-500 dark:text-red-400 font-medium">
-                                {group.rooms.filter((r) => !r.is_available).length} ocup.
+                                {
+                                  group.rooms.filter((r) => !r.is_available)
+                                    .length
+                                }{" "}
+                                ocup.
                               </span>
                               {group.reservationCounts.pending > 0 && (
                                 <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
@@ -592,7 +667,9 @@ export function ManagerDashboardPage() {
                               className="flex items-center gap-3 p-4 hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors group"
                             >
                               <img
-                                src={room.images?.[0] || "/placeholder-room.jpg"}
+                                src={
+                                  room.images?.[0] || "/placeholder-room.jpg"
+                                }
                                 alt={room.name}
                                 className="w-14 h-14 rounded-lg object-cover shrink-0"
                               />
@@ -601,7 +678,8 @@ export function ManagerDashboardPage() {
                                   {room.name}
                                 </h4>
                                 <p className="text-xs text-[#96785A] dark:text-[#64748B]">
-                                  {room.custom_room_types?.name || room.type} · {room.bed_type} · {room.capacity} pers.
+                                  {room.custom_room_types?.name || room.type} ·{" "}
+                                  {room.bed_type} · {room.capacity} pers.
                                 </p>
                               </div>
                               <span className="text-sm font-semibold text-[#E8850C]">
@@ -612,11 +690,15 @@ export function ManagerDashboardPage() {
                                   room.is_available
                                     ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20"
                                     : room.status === "maintenance"
-                                    ? "bg-amber-50 text-amber-600 dark:bg-amber-900/20"
-                                    : "bg-red-50 text-red-600 dark:bg-red-900/20"
+                                      ? "bg-amber-50 text-amber-600 dark:bg-amber-900/20"
+                                      : "bg-red-50 text-red-600 dark:bg-red-900/20"
                                 }`}
                               >
-                                {room.is_available ? "Disponible" : room.status === "maintenance" ? "Mantenimiento" : "Ocupada"}
+                                {room.is_available
+                                  ? "Disponible"
+                                  : room.status === "maintenance"
+                                    ? "Mantenimiento"
+                                    : "Ocupada"}
                               </span>
                               <div className="flex items-center gap-1 shrink-0">
                                 <Link
@@ -645,12 +727,16 @@ export function ManagerDashboardPage() {
                   );
 
                   return (
-                    <div key={mainGroup.hotel.id} className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden">
+                    <div
+                      key={mainGroup.hotel.id}
+                      className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden"
+                    >
                       <button
                         onClick={() => {
                           setExpandedHotels((prev) => {
                             const next = new Set(prev);
-                            if (next.has(mainGroup.hotel.id)) next.delete(mainGroup.hotel.id);
+                            if (next.has(mainGroup.hotel.id))
+                              next.delete(mainGroup.hotel.id);
                             else next.add(mainGroup.hotel.id);
                             return next;
                           });
@@ -666,28 +752,44 @@ export function ManagerDashboardPage() {
                               {mainGroup.hotel.name}
                             </h3>
                             <p className="text-xs text-[#96785A] dark:text-[#64748B]">
-                              {totalRooms} habitaciones · {totalAvailable} disponibles
-                              {totalPending > 0 && ` · ${totalPending} pendientes`}
+                              {totalRooms} habitaciones · {totalAvailable}{" "}
+                              disponibles
+                              {totalPending > 0 &&
+                                ` · ${totalPending} pendientes`}
                             </p>
                           </div>
                         </div>
-                        <ChevronDown className={`w-5 h-5 text-[#B89A7A] transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                        <ChevronDown
+                          className={`w-5 h-5 text-[#B89A7A] transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                        />
                       </button>
                       {isExpanded && (
                         <div className="px-5 pb-5 space-y-3">
                           {/* Summary Stats */}
                           <div className="grid grid-cols-3 gap-3">
                             <div className="p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl text-center">
-                              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{totalAvailable}</p>
-                              <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">Disponibles</p>
+                              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                                {totalAvailable}
+                              </p>
+                              <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">
+                                Disponibles
+                              </p>
                             </div>
                             <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-xl text-center">
-                              <p className="text-lg font-bold text-red-600 dark:text-red-400">{totalRooms - totalAvailable}</p>
-                              <p className="text-xs text-red-600/70 dark:text-red-400/70">Ocupadas</p>
+                              <p className="text-lg font-bold text-red-600 dark:text-red-400">
+                                {totalRooms - totalAvailable}
+                              </p>
+                              <p className="text-xs text-red-600/70 dark:text-red-400/70">
+                                Ocupadas
+                              </p>
                             </div>
                             <div className="p-3 bg-amber-50 dark:bg-amber-900/10 rounded-xl text-center">
-                              <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{totalActive}</p>
-                              <p className="text-xs text-amber-600/70 dark:text-amber-400/70">Reservaciones</p>
+                              <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                                {totalActive}
+                              </p>
+                              <p className="text-xs text-amber-600/70 dark:text-amber-400/70">
+                                Reservaciones
+                              </p>
                             </div>
                           </div>
 
@@ -695,21 +797,24 @@ export function ManagerDashboardPage() {
                           {renderHotelSection(mainGroup)}
 
                           {/* Branch Hotels */}
-                          {allBranchGroups.map((branchGroup) => renderHotelSection(branchGroup, true))}
+                          {allBranchGroups.map((branchGroup) =>
+                            renderHotelSection(branchGroup, true),
+                          )}
                         </div>
                       )}
                     </div>
                   );
                 })}
 
-              {roomsByHotel.filter((g) => g.hotel.isMain).length === 0 && !isLoading && (
-                <div className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] p-8 text-center">
-                  <Bed className="w-10 h-10 text-[#D4BEA5] dark:text-[#2D3748] mx-auto mb-3" />
-                  <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                    No hay habitaciones registradas aun
-                  </p>
-                </div>
-              )}
+              {roomsByHotel.filter((g) => g.hotel.isMain).length === 0 &&
+                !isLoading && (
+                  <div className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] p-8 text-center">
+                    <Bed className="w-10 h-10 text-[#D4BEA5] dark:text-[#2D3748] mx-auto mb-3" />
+                    <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                      No hay habitaciones registradas aun
+                    </p>
+                  </div>
+                )}
             </motion.div>
 
             {/* Hotel Summary Table */}

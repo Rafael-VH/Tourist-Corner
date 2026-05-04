@@ -22,11 +22,34 @@ import {
 
 type ReservationStatus = "pending" | "accepted" | "completed" | "cancelled";
 
-const statusConfig: Record<ReservationStatus, { label: string; color: string; bg: string; icon: typeof Clock }> = {
-  pending: { label: "Solicitada", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800", icon: Clock },
-  accepted: { label: "Aceptada", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800", icon: CheckCircle },
-  completed: { label: "Finalizada", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800", icon: AlertCircle },
-  cancelled: { label: "Cancelada", color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800", icon: XCircle },
+const statusConfig: Record<
+  ReservationStatus,
+  { label: string; color: string; bg: string; icon: typeof Clock }
+> = {
+  pending: {
+    label: "Solicitada",
+    color: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800",
+    icon: Clock,
+  },
+  accepted: {
+    label: "Aceptada",
+    color: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800",
+    icon: CheckCircle,
+  },
+  completed: {
+    label: "Finalizada",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800",
+    icon: AlertCircle,
+  },
+  cancelled: {
+    label: "Cancelada",
+    color: "text-red-600 dark:text-red-400",
+    bg: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800",
+    icon: XCircle,
+  },
 };
 
 interface RoomInfo {
@@ -36,7 +59,12 @@ interface RoomInfo {
 
 export function ReservationDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { getReservationById, selectedReservation, updateReservationStatus, isLoading } = useReservationStore();
+  const {
+    getReservationById,
+    selectedReservation,
+    updateReservationStatus,
+    isLoading,
+  } = useReservationStore();
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
@@ -85,7 +113,9 @@ export function ReservationDetailPage() {
 
   if (!id) return null;
 
-  const config = selectedReservation ? statusConfig[selectedReservation.status] : null;
+  const config = selectedReservation
+    ? statusConfig[selectedReservation.status]
+    : null;
   const Icon = config?.icon ?? Clock;
 
   const formatDate = (date: Date) => {
@@ -107,7 +137,11 @@ export function ReservationDetailPage() {
   };
 
   const nights = selectedReservation
-    ? Math.ceil((new Date(selectedReservation.checkOut).getTime() - new Date(selectedReservation.checkIn).getTime()) / (1000 * 60 * 60 * 24))
+    ? Math.ceil(
+        (new Date(selectedReservation.checkOut).getTime() -
+          new Date(selectedReservation.checkIn).getTime()) /
+          (1000 * 60 * 60 * 24),
+      )
     : 0;
 
   return (
@@ -134,12 +168,16 @@ export function ReservationDetailPage() {
         {isLoading && !selectedReservation ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-[#E8850C] animate-spin mb-4" />
-            <p className="text-sm text-[#96785A] dark:text-[#64748B]">Cargando reservación...</p>
+            <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+              Cargando reservación...
+            </p>
           </div>
         ) : !selectedReservation ? (
           <div className="text-center py-20">
             <Calendar className="w-12 h-12 text-[#D4BEA5] dark:text-[#2D3748] mx-auto mb-4" />
-            <p className="text-sm text-[#96785A] dark:text-[#64748B] mb-4">Reservación no encontrada</p>
+            <p className="text-sm text-[#96785A] dark:text-[#64748B] mb-4">
+              Reservación no encontrada
+            </p>
             <Link
               to="/dashboard/calendar"
               className="text-[#E8850C] text-sm font-medium hover:underline"
@@ -157,7 +195,9 @@ export function ReservationDetailPage() {
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${config?.bg}`}>
+                  <div
+                    className={`w-12 h-12 rounded-xl border flex items-center justify-center ${config?.bg}`}
+                  >
                     <Icon className={`w-6 h-6 ${config?.color}`} />
                   </div>
                   <div>
@@ -223,7 +263,9 @@ export function ReservationDetailPage() {
                       <Hotel className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Hotel</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Hotel
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {roomInfo?.hotel?.name ?? "—"}
                       </p>
@@ -234,7 +276,9 @@ export function ReservationDetailPage() {
                       <Bed className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Habitación</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Habitación
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {roomInfo?.name ?? "—"}
                       </p>
@@ -254,7 +298,9 @@ export function ReservationDetailPage() {
                       <Calendar className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Check-in</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Check-in
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {formatDate(selectedReservation.checkIn)}
                       </p>
@@ -265,14 +311,18 @@ export function ReservationDetailPage() {
                       <Calendar className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Check-out</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Check-out
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {formatDate(selectedReservation.checkOut)}
                       </p>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-[#F5EDE3] dark:border-[#2D3748]">
-                    <p className="text-sm font-medium text-[#E8850C]">{nights} noche{nights !== 1 ? "s" : ""}</p>
+                    <p className="text-sm font-medium text-[#E8850C]">
+                      {nights} noche{nights !== 1 ? "s" : ""}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -288,7 +338,9 @@ export function ReservationDetailPage() {
                       <User className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Nombre</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Nombre
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {selectedReservation.guestName}
                       </p>
@@ -299,7 +351,9 @@ export function ReservationDetailPage() {
                       <Mail className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Email</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Email
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {selectedReservation.guestEmail}
                       </p>
@@ -311,7 +365,9 @@ export function ReservationDetailPage() {
                         <Phone className="w-4 h-4 text-[#E8850C]" />
                       </div>
                       <div>
-                        <p className="text-xs text-[#96785A] dark:text-[#64748B]">Teléfono</p>
+                        <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                          Teléfono
+                        </p>
                         <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                           {selectedReservation.guestPhone}
                         </p>
@@ -331,7 +387,9 @@ export function ReservationDetailPage() {
                     <DollarSign className="w-4 h-4 text-[#E8850C]" />
                   </div>
                   <div>
-                    <p className="text-xs text-[#96785A] dark:text-[#64748B]">Total</p>
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                      Total
+                    </p>
                     <p className="text-xl font-bold text-[#E8850C]">
                       Bs {selectedReservation.totalPrice}
                     </p>
@@ -360,8 +418,12 @@ export function ReservationDetailPage() {
               transition={{ delay: 0.15 }}
               className="mt-6 flex flex-wrap gap-4 text-xs text-[#96785A] dark:text-[#64748B]"
             >
-              <span>Creada: {formatDateTime(selectedReservation.createdAt)}</span>
-              <span>Actualizada: {formatDateTime(selectedReservation.updatedAt)}</span>
+              <span>
+                Creada: {formatDateTime(selectedReservation.createdAt)}
+              </span>
+              <span>
+                Actualizada: {formatDateTime(selectedReservation.updatedAt)}
+              </span>
             </motion.div>
           </>
         )}

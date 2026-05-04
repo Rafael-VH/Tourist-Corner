@@ -55,32 +55,33 @@ export function NewServicePage() {
     }
   }, [user, navigate]);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    if (!form.name) return;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!user) return;
+      if (!form.name) return;
 
-    setIsSubmitting(true);
-    setSubmitError("");
+      setIsSubmitting(true);
+      setSubmitError("");
 
-    try {
-      const { error } = await supabase
-        .from("custom_services")
-        .insert({
+      try {
+        const { error } = await supabase.from("custom_services").insert({
           name: form.name,
           description: form.description,
           icon: form.icon,
           created_by: user.id,
         });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      navigate("/dashboard");
-    } catch (err: unknown) {
-      setSubmitError((err as Error).message || "Error al crear servicio");
-      setIsSubmitting(false);
-    }
-  }, [user, form, navigate]);
+        navigate("/dashboard");
+      } catch (err: unknown) {
+        setSubmitError((err as Error).message || "Error al crear servicio");
+        setIsSubmitting(false);
+      }
+    },
+    [user, form, navigate],
+  );
 
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419] p-4 md:p-8">
@@ -144,7 +145,9 @@ export function NewServicePage() {
             </label>
             <textarea
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               placeholder="Describe las caracteristicas de este servicio..."
               rows={4}
               className="w-full px-4 py-3 bg-[#FDF8F3] dark:bg-[#242B35] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#2D1F14] dark:text-[#E2E8F0] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C]/50 focus:border-[#E8850C] transition-all resize-none"

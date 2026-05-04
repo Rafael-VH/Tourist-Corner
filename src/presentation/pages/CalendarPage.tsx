@@ -42,7 +42,15 @@ interface Reservation {
 
 function normalizeReservation(row: unknown): Reservation {
   const r = row as Record<string, unknown>;
-  const roomRaw = r.room as { id: string; name: string; type?: string | null; hotel?: { id: string; name: string } | null } | null | undefined;
+  const roomRaw = r.room as
+    | {
+        id: string;
+        name: string;
+        type?: string | null;
+        hotel?: { id: string; name: string } | null;
+      }
+    | null
+    | undefined;
   return {
     id: r.id as string,
     guest_name: r.guest_name as string,
@@ -63,19 +71,58 @@ function normalizeReservation(row: unknown): Reservation {
   };
 }
 
-const statusConfig: Record<ReservationStatus, { label: string; color: string; bg: string; icon: typeof Clock }> = {
-  pending: { label: "Solicitada", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20", icon: Clock },
-  accepted: { label: "Aceptada", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/20", icon: CheckCircle },
-  completed: { label: "Finalizada", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20", icon: AlertCircle },
-  cancelled: { label: "Cancelada", color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/20", icon: XCircle },
+const statusConfig: Record<
+  ReservationStatus,
+  { label: string; color: string; bg: string; icon: typeof Clock }
+> = {
+  pending: {
+    label: "Solicitada",
+    color: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-900/20",
+    icon: Clock,
+  },
+  accepted: {
+    label: "Aceptada",
+    color: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-50 dark:bg-blue-900/20",
+    icon: CheckCircle,
+  },
+  completed: {
+    label: "Finalizada",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-50 dark:bg-emerald-900/20",
+    icon: AlertCircle,
+  },
+  cancelled: {
+    label: "Cancelada",
+    color: "text-red-600 dark:text-red-400",
+    bg: "bg-red-50 dark:bg-red-900/20",
+    icon: XCircle,
+  },
 };
 
 const filterTabs = [
   { key: "all" as const, label: "Todas" },
-  { key: "pending" as const, label: statusConfig.pending.label, icon: statusConfig.pending.icon },
-  { key: "accepted" as const, label: statusConfig.accepted.label, icon: statusConfig.accepted.icon },
-  { key: "completed" as const, label: statusConfig.completed.label, icon: statusConfig.completed.icon },
-  { key: "cancelled" as const, label: statusConfig.cancelled.label, icon: statusConfig.cancelled.icon },
+  {
+    key: "pending" as const,
+    label: statusConfig.pending.label,
+    icon: statusConfig.pending.icon,
+  },
+  {
+    key: "accepted" as const,
+    label: statusConfig.accepted.label,
+    icon: statusConfig.accepted.icon,
+  },
+  {
+    key: "completed" as const,
+    label: statusConfig.completed.label,
+    icon: statusConfig.completed.icon,
+  },
+  {
+    key: "cancelled" as const,
+    label: statusConfig.cancelled.label,
+    icon: statusConfig.cancelled.icon,
+  },
 ] as const;
 
 export function CalendarPage() {
@@ -106,12 +153,19 @@ export function CalendarPage() {
         if (count === 1) {
           await supabase
             .from("rooms")
-            .update({ is_available: false, status: "occupied", updated_at: new Date().toISOString() })
+            .update({
+              is_available: false,
+              status: "occupied",
+              updated_at: new Date().toISOString(),
+            })
             .eq("id", reservation.room.id);
         }
       }
 
-      if ((status === "cancelled" || status === "completed") && reservation?.room?.id) {
+      if (
+        (status === "cancelled" || status === "completed") &&
+        reservation?.room?.id
+      ) {
         const { count } = await supabase
           .from("reservations")
           .select("*", { count: "exact", head: true })
@@ -121,22 +175,30 @@ export function CalendarPage() {
         if (count === 0) {
           await supabase
             .from("rooms")
-            .update({ is_available: true, status: "available", updated_at: new Date().toISOString() })
+            .update({
+              is_available: true,
+              status: "available",
+              updated_at: new Date().toISOString(),
+            })
             .eq("id", reservation.room.id);
         }
       }
 
       const { data } = await supabase
         .from("reservations")
-        .select(`
+        .select(
+          `
           id, guest_name, guest_email, check_in, check_out, status,
           total_price, created_at,
           room:room_id (id, name, type, hotel:hotel_id (id, name))
-        `)
+        `,
+        )
         .single();
 
       if (data) {
-        setReservations((prev) => prev.map((r) => (r.id === id ? normalizeReservation(data) : r)));
+        setReservations((prev) =>
+          prev.map((r) => (r.id === id ? normalizeReservation(data) : r)),
+        );
       }
     } finally {
       setActionLoading(null);
@@ -162,7 +224,8 @@ export function CalendarPage() {
 
         const { data } = await supabase
           .from("reservations")
-          .select(`
+          .select(
+            `
             id,
             guest_name,
             guest_email,
@@ -180,7 +243,8 @@ export function CalendarPage() {
                 name
               )
             )
-          `)
+          `,
+          )
           .in("room.hotel_id", hotelIds)
           .order("check_in", { ascending: false });
 
@@ -196,7 +260,10 @@ export function CalendarPage() {
     fetchReservations();
   }, [user?.id]);
 
-  const filtered = filter === "all" ? reservations : reservations.filter((r) => r.status === filter);
+  const filtered =
+    filter === "all"
+      ? reservations
+      : reservations.filter((r) => r.status === filter);
 
   const counts = {
     all: reservations.length,
@@ -274,15 +341,15 @@ export function CalendarPage() {
                     : "border-[#E8D9C8] dark:border-[#2D3748] bg-white dark:bg-[#1A2028] text-[#5E4836] dark:text-[#94A3B8] hover:border-[#E8850C]/50"
                 }`}
               >
-                {tab.key !== "all" && (
-                  <tab.icon className="w-4 h-4" />
-                )}
+                {tab.key !== "all" && <tab.icon className="w-4 h-4" />}
                 {tab.label}
-                <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
-                  filter === tab.key
-                    ? "bg-[#E8850C]/20 text-[#E8850C]"
-                    : "bg-[#FDF8F3] dark:bg-[#242B35] text-[#96785A] dark:text-[#64748B]"
-                }`}>
+                <span
+                  className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
+                    filter === tab.key
+                      ? "bg-[#E8850C]/20 text-[#E8850C]"
+                      : "bg-[#FDF8F3] dark:bg-[#242B35] text-[#96785A] dark:text-[#64748B]"
+                  }`}
+                >
                   {counts[tab.key]}
                 </span>
               </button>
@@ -309,7 +376,9 @@ export function CalendarPage() {
                   className="p-5 hover:bg-[#FFF8F1] dark:hover:bg-[#242B35]/50 transition-colors"
                 >
                   <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg}`}>
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${config.bg}`}
+                    >
                       <Icon className={`w-5 h-5 ${config.color}`} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -349,7 +418,8 @@ export function CalendarPage() {
                       </div>
                       <div className="flex flex-wrap items-center gap-4 mt-2">
                         <span className="text-sm text-[#96785A] dark:text-[#64748B]">
-                          {formatDate(reservation.check_in)} → {formatDate(reservation.check_out)}
+                          {formatDate(reservation.check_in)} →{" "}
+                          {formatDate(reservation.check_out)}
                         </span>
                         <span className="text-sm font-medium text-[#E8850C]">
                           Bs {reservation.total_price}
@@ -358,19 +428,31 @@ export function CalendarPage() {
                       {isPending && (
                         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#F5EDE3] dark:border-[#2D3748]">
                           <button
-                            onClick={() => updateStatus(reservation.id, "accepted")}
+                            onClick={() =>
+                              updateStatus(reservation.id, "accepted")
+                            }
                             disabled={isActing}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {isActing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                            {isActing ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Check className="w-3 h-3" />
+                            )}
                             Aceptar
                           </button>
                           <button
-                            onClick={() => updateStatus(reservation.id, "cancelled")}
+                            onClick={() =>
+                              updateStatus(reservation.id, "cancelled")
+                            }
                             disabled={isActing}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {isActing ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
+                            {isActing ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <X className="w-3 h-3" />
+                            )}
                             Cancelar
                           </button>
                         </div>

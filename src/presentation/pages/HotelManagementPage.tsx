@@ -28,7 +28,9 @@ export function HotelManagementPage() {
   const { selectedHotel, fetchHotelById, isLoading, updateHotel } =
     useHotelStore();
   const { rooms, fetchRoomsByHotel } = useRoomStore();
-  const [branches, setBranches] = useState<{ id: string; name: string; city: string }[]>([]);
+  const [branches, setBranches] = useState<
+    { id: string; name: string; city: string }[]
+  >([]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -40,9 +42,17 @@ export function HotelManagementPage() {
   });
 
   const deleteBranch = async (branchId: string, branchName: string) => {
-    if (!confirm(`Eliminar la sucursal "${branchName}"? Esta accion no se puede deshacer.`)) return;
+    if (
+      !confirm(
+        `Eliminar la sucursal "${branchName}"? Esta accion no se puede deshacer.`,
+      )
+    )
+      return;
     try {
-      const { error } = await supabase.from("hotels").delete().eq("id", branchId);
+      const { error } = await supabase
+        .from("hotels")
+        .delete()
+        .eq("id", branchId);
       if (error) throw error;
       setBranches((prev) => prev.filter((b) => b.id !== branchId));
     } catch (err: unknown) {
