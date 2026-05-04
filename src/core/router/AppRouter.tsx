@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { Layout } from "@/presentation/widgets/Layout";
-import { LoginPage } from "@/presentation/pages/LoginPage";
+import { LoginPage } from "@/presentation/pages/auth/LoginPage";
 import { HomePage } from "@/presentation/pages/client/HomePage";
 import { HotelDetailPage } from "@/presentation/pages/client/HotelDetailPage";
 import { RoomDetailPage } from "@/presentation/pages/client/RoomDetailPage";
@@ -64,18 +64,24 @@ export function AppRouter() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route element={<Layout />}>
-          <Route path="/" element={
-            <AdminRedirect>
+          <Route
+            path="/"
+            element={
+              <AdminRedirect>
+                <OwnerRedirect>
+                  <HomePage />
+                </OwnerRedirect>
+              </AdminRedirect>
+            }
+          />
+          <Route
+            path="/hotel/:id"
+            element={
               <OwnerRedirect>
-                <HomePage />
+                <HotelDetailPage />
               </OwnerRedirect>
-            </AdminRedirect>
-          } />
-          <Route path="/hotel/:id" element={
-            <OwnerRedirect>
-              <HotelDetailPage />
-            </OwnerRedirect>
-          } />
+            }
+          />
           <Route path="/room/:id" element={<RoomDetailPage />} />
 
           <Route
@@ -165,8 +171,12 @@ export function AppRouter() {
               <ProtectedRoute requireManager>
                 <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419] p-8">
                   <div className="max-w-7xl mx-auto">
-                    <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">Reportes</h1>
-                    <p className="text-[#96785A] dark:text-[#64748B] mt-2">Esta pagina esta en construccion</p>
+                    <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                      Reportes
+                    </h1>
+                    <p className="text-[#96785A] dark:text-[#64748B] mt-2">
+                      Esta pagina esta en construccion
+                    </p>
                   </div>
                 </div>
               </ProtectedRoute>
@@ -178,8 +188,12 @@ export function AppRouter() {
               <ProtectedRoute requireManager>
                 <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419] p-8">
                   <div className="max-w-7xl mx-auto">
-                    <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">Configuracion</h1>
-                    <p className="text-[#96785A] dark:text-[#64748B] mt-2">Esta pagina esta en construccion</p>
+                    <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                      Configuracion
+                    </h1>
+                    <p className="text-[#96785A] dark:text-[#64748B] mt-2">
+                      Esta pagina esta en construccion
+                    </p>
                   </div>
                 </div>
               </ProtectedRoute>
