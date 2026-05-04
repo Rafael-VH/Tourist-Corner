@@ -1,12 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { Layout } from "@/presentation/widgets/Layout";
+import { AdminLayout } from "@/presentation/widgets/AdminLayout";
 import { LoginPage } from "@/presentation/pages/auth/LoginPage";
 import { HomePage } from "@/presentation/pages/client/HomePage";
 import { HotelDetailPage } from "@/presentation/pages/client/HotelDetailPage";
 import { RoomDetailPage } from "@/presentation/pages/client/RoomDetailPage";
 import { ManagerDashboardPage } from "@/presentation/pages/manager/ManagerDashboardPage";
 import { AdminDashboardPage } from "@/presentation/pages/admin/AdminDashboardPage";
+import { AdminCodesPage } from "@/presentation/pages/admin/AdminCodesPage";
+import { AdminHotelsPage } from "@/presentation/pages/admin/AdminHotelsPage";
+import { AdminUsersPage } from "@/presentation/pages/admin/AdminUsersPage";
 import { HotelManagementPage } from "@/presentation/pages/manager/HotelManagementPage";
 import { RoomManagementPage } from "@/presentation/pages/manager/RoomManagementPage";
 import { NewHotelPage } from "@/presentation/pages/manager/NewHotelPage";
@@ -88,10 +92,15 @@ export function AppRouter() {
             path="/admin"
             element={
               <ProtectedRoute requireAdmin>
-                <AdminDashboardPage />
+                <AdminLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="codes" element={<AdminCodesPage />} />
+            <Route path="hotels" element={<AdminHotelsPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+          </Route>
 
           <Route
             path="/dashboard"
