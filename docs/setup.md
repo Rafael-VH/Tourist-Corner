@@ -3,7 +3,7 @@
 ## Requisitos
 
 | Herramienta | Versión mínima |
-|-------------|---------------|
+| ------------- | --------------- |
 | Node.js | 20.x |
 | npm | 10.x |
 | Git | 2.x |
@@ -60,7 +60,7 @@ Para que el proyecto funcione correctamente, la base de datos de Supabase debe t
 ### `users`
 
 | Columna | Tipo | Nullable | Default | Descripción |
-|---------|------|----------|---------|-------------|
+| --------- | ------ | ---------- | --------- | ------------- |
 | `id` | `uuid` | NO | `gen_random_uuid()` | PK, referencia auth.users |
 | `email` | `text` | NO | — | Email del usuario |
 | `name` | `text` | NO | — | Nombre completo |
@@ -72,7 +72,7 @@ Para que el proyecto funcione correctamente, la base de datos de Supabase debe t
 ### `hotels`
 
 | Columna | Tipo | Nullable | Descripción |
-|---------|------|----------|-------------|
+| --------- | ------ | ---------- | ------------- |
 | `id` | `uuid` | NO | PK |
 | `name` | `text` | NO | Nombre del hotel |
 | `type` | `text` | NO | `'hotel'`, `'resort'`, `'motel'`, `'residential'` |
@@ -98,7 +98,7 @@ Para que el proyecto funcione correctamente, la base de datos de Supabase debe t
 ### `rooms`
 
 | Columna | Tipo | Nullable | Descripción |
-|---------|------|----------|-------------|
+| --------- | ------ | ---------- | ------------- |
 | `id` | `uuid` | NO | PK |
 | `hotel_id` | `uuid` | NO | FK → hotels |
 | `name` | `text` | NO | Nombre de la habitación |
@@ -118,7 +118,7 @@ Para que el proyecto funcione correctamente, la base de datos de Supabase debe t
 ### `room_availability`
 
 | Columna | Tipo | Nullable | Descripción |
-|---------|------|----------|-------------|
+| --------- | ------ | ---------- | ------------- |
 | `room_id` | `uuid` | NO | FK → rooms |
 | `date` | `date` | NO | Fecha de disponibilidad |
 | `is_available` | `boolean` | NO | Disponible o no |
@@ -127,7 +127,7 @@ Para que el proyecto funcione correctamente, la base de datos de Supabase debe t
 ### `comments`
 
 | Columna | Tipo | Nullable | Descripción |
-|---------|------|----------|-------------|
+| --------- | ------ | ---------- | ------------- |
 | `id` | `uuid` | NO | PK |
 | `target_id` | `uuid` | NO | ID del hotel o habitación |
 | `target_type` | `text` | NO | `'hotel'` o `'room'` |
@@ -150,19 +150,23 @@ Crear un bucket llamado `avatars` con política pública de lectura para almacen
 Se recomienda configurar las siguientes políticas:
 
 ### Tabla `users`
+
 - SELECT: autenticados pueden ver todos los perfiles
 - INSERT: solo durante registro
 - UPDATE: solo el propio usuario
 
 ### Tabla `hotels`
+
 - SELECT: todos pueden ver hoteles activos
 - INSERT/UPDATE/DELETE: solo managers
 
 ### Tabla `rooms`
+
 - SELECT: todos pueden ver
 - INSERT/UPDATE/DELETE: solo el manager del hotel padre
 
 ### Tabla `comments`
+
 - SELECT: todos pueden ver
 - INSERT: usuarios autenticados
 - UPDATE/DELETE: solo el autor

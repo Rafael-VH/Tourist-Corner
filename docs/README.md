@@ -5,7 +5,7 @@ Plataforma web de descubrimiento y gestión de alojamientos turísticos (hoteles
 ## Tecnologías
 
 | Categoría | Tecnología |
-|-----------|-----------|
+| ----------- | ----------- |
 | Framework | React 19 + TypeScript |
 | Build | Vite 7 |
 | Routing | React Router v7 |
@@ -17,7 +17,7 @@ Plataforma web de descubrimiento y gestión de alojamientos turísticos (hoteles
 
 ## Estructura de Carpetas
 
-```
+```text
 Tourist-Corner/
 ├── docs/                       # Documentación del proyecto (esta carpeta)
 │   ├── README.md               # Índice general
@@ -58,7 +58,7 @@ Tourist-Corner/
 
 El proyecto sigue **Clean Architecture** (Arquitectura Limpia) con separación estricta de capas:
 
-```
+```text
 Presentation  →  Core  →  Data  →  Domain
 (UI/Stores)      (DI)     (Supabase)  (Entities/Contracts)
 ```
@@ -66,7 +66,7 @@ Presentation  →  Core  →  Data  →  Domain
 **Regla de dependencia**: Las capas internas NO conocen las capas externas. El Domain es completamente independiente.
 
 | Capa | Responsabilidad | Depende de |
-|------|----------------|------------|
+| ------ | ---------------- | ------------ |
 | **Domain** | Entidades, interfaces de repositorio, casos de uso | Nada (capa más interna) |
 | **Data** | Implementaciones de repositorios con Supabase | Domain |
 | **Core** | DI Container, Router, Theme | Data + Domain |
@@ -84,7 +84,7 @@ Presentation  →  Core  →  Data  →  Domain
 
 ## Flujo de una petición típica
 
-```
+```text
 Usuario hace clic en "Iniciar Sesión"
   ↓
 LoginPage (presentation/pages)

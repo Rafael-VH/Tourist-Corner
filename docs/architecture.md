@@ -7,7 +7,7 @@
 Cada capa tiene una responsabilidad única y no debe mezclar conceptos de otras capas:
 
 | Capa | Qué hace | Qué NO hace |
-|------|----------|-------------|
+| ------ | ---------- | ------------- |
 | **Domain** | Define qué es el negocio (entidades, reglas, contratos) | No sabe nada de Supabase, React, ni UI |
 | **Data** | Implementa cómo se persisten/recuperan los datos | No tiene lógica de negocio, solo traduce |
 | **Core** | Orquesta dependencias y configura la app | No tiene lógica de negocio ni UI |
@@ -15,7 +15,7 @@ Cada capa tiene una responsabilidad única y no debe mezclar conceptos de otras 
 
 ### 2. Regla de Dependencia (Dependency Rule)
 
-```
+```text
 Presentation  →  Core  →  Data  →  Domain
     ↓              ↓         ↓        ↓
   solo importa  solo importa  solo importa  NO importa nada
@@ -23,6 +23,7 @@ Presentation  →  Core  →  Data  →  Domain
 ```
 
 **Prohibido**:
+
 - `domain/` NO importa de `data/`, `core/`, ni `presentation/`
 - `data/` NO importa de `core/` ni `presentation/`
 - `core/` NO importa de `presentation/`
@@ -31,7 +32,7 @@ Presentation  →  Core  →  Data  →  Domain
 
 El **Domain** define interfaces (contratos). El **Data** las implementa. El **Core** inyecta las implementaciones en los casos de uso.
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │  Domain (define contratos)                   │
 │  interface HotelRepository { ... }           │
@@ -63,7 +64,7 @@ El **Domain** define interfaces (contratos). El **Data** las implementa. El **Co
 Cada entidad tiene un repositorio definido en el domain y una implementación en data:
 
 | Entidad | Interfaz (domain) | Implementación (data) |
-|---------|-------------------|----------------------|
+| --------- | ------------------- | ---------------------- |
 | User/Auth | `AuthRepository` | `SupabaseAuthRepository` |
 | Hotel | `HotelRepository` | `SupabaseHotelRepository` |
 | Room | `RoomRepository` | `SupabaseRoomRepository` |

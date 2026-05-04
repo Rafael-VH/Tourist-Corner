@@ -400,19 +400,23 @@ npm run dev
 ## Qué Hacer Si Algo No Funciona
 
 ### Error "relation does not exist"
+
 - Verificar que las tablas estén creadas en Supabase
 - Ejecutar los scripts SQL del Paso 3
 
 ### Error de autenticación
+
 - Verificar que el trigger `handle_new_user` esté creado
 - Revisar que `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` sean correctos
 
 ### Error "permission denied" (RLS)
+
 - Verificar que RLS esté habilitado en cada tabla
 - Revisar las políticas del Paso 4
 - Para debug temporal: `ALTER TABLE users DISABLE ROW LEVEL SECURITY;` (SOLO en desarrollo)
 
 ### Error "bucket not found" para avatares
+
 - Crear el bucket `avatars` en Storage (Paso 5)
 - Verificar las políticas del bucket
 
