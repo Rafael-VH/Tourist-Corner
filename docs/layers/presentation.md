@@ -4,7 +4,7 @@ UI de la aplicación: componentes React, stores Zustand y widgets reutilizables.
 
 ## Estructura
 
-```
+```text
 src/presentation/
 ├── pages/           # Vistas completas (7 páginas)
 │   ├── HomePage.tsx
@@ -32,6 +32,7 @@ src/presentation/
 ### `useAuthStore.ts` — Estado de autenticación
 
 **State**:
+
 ```typescript
 {
   user: User | null;
@@ -44,7 +45,7 @@ src/presentation/
 **Actions**:
 
 | Action | Params | Descripción |
-|--------|--------|-------------|
+| -------- | -------- | ------------- |
 | `setUser` | user | Setea usuario + actualiza isAuthenticated |
 | `setLoading` | boolean | Controla loading state |
 | `setError` | string | Setea mensaje de error |
@@ -56,6 +57,7 @@ src/presentation/
 ### `useHotelStore.ts` — Estado de hoteles
 
 **State**:
+
 ```typescript
 {
   hotels: Hotel[];
@@ -69,7 +71,7 @@ src/presentation/
 **Actions**:
 
 | Action | Params | Descripción |
-|--------|--------|-------------|
+| -------- | -------- | ------------- |
 | `fetchHotels` | filters? | Lista todos los hoteles |
 | `fetchHotelById` | id | Obtiene hotel y lo setea como selected |
 | `fetchManagerHotels` | managerId | Lista hoteles de un manager |
@@ -82,6 +84,7 @@ src/presentation/
 ### `useRoomStore.ts` — Estado de habitaciones
 
 **State**:
+
 ```typescript
 {
   rooms: Room[];
@@ -94,7 +97,7 @@ src/presentation/
 **Actions**:
 
 | Action | Params | Descripción |
-|--------|--------|-------------|
+| -------- | -------- | ------------- |
 | `fetchRoomsByHotel` | hotelId | Lista habitaciones de un hotel |
 | `fetchRoomById` | id | Obtiene habitación |
 | `updateRoom` | roomId, room | Actualiza habitación |
@@ -105,6 +108,7 @@ src/presentation/
 ### `useCommentStore.ts` — Estado de comentarios
 
 **State**:
+
 ```typescript
 {
   comments: Comment[];
@@ -116,7 +120,7 @@ src/presentation/
 **Actions**:
 
 | Action | Params | Descripción |
-|--------|--------|-------------|
+| -------- | -------- | ------------- |
 | `fetchCommentsByTarget` | targetId, targetType | Carga comentarios de hotel o room |
 | `addComment` | input, userId, userName, userAvatar? | Crea comentario y lo agrega a la lista |
 | `likeComment` | commentId | Incrementa likes en el comentario |
@@ -128,6 +132,7 @@ src/presentation/
 ### `HomePage.tsx` — Página principal
 
 **Funcionalidad**:
+
 - Hero con barra de búsqueda
 - Estadísticas (hoteles, resorts, ciudades, opiniones)
 - Grid de hoteles con filtros por tipo y ciudad
@@ -140,6 +145,7 @@ src/presentation/
 ### `LoginPage.tsx` — Login y Registro
 
 **Funcionalidad**:
+
 - Tabs para login/registro
 - Selector de rol (turista/manager)
 - Formulario de login con email + password
@@ -153,6 +159,7 @@ src/presentation/
 ### `HotelDetailPage.tsx` — Detalle de Hotel
 
 **Funcionalidad**:
+
 - Galería de imágenes con thumbnails
 - Info del hotel (nombre, dirección, rating, precio)
 - Descripción completa
@@ -166,6 +173,7 @@ src/presentation/
 ### `RoomDetailPage.tsx` — Detalle de Habitación
 
 **Funcionalidad**:
+
 - Galería de imágenes
 - Info de la habitación (nombre, capacidad, cama, precio)
 - Amenities de la habitación
@@ -177,6 +185,7 @@ src/presentation/
 ### `ManagerDashboardPage.tsx` — Panel del Manager
 
 **Funcionalidad**:
+
 - Stats dinámicos (hoteles, habitaciones, reseñas, ingreso estimado)
 - Lista de establecimientos del manager
 - Tabla resumen con info de cada hotel
@@ -189,6 +198,7 @@ src/presentation/
 ### `HotelManagementPage.tsx` — Gestión de Hotel
 
 **Funcionalidad**:
+
 - Info del hotel con modo edición inline
 - Galería de imágenes con botón para eliminar
 - Lista de habitaciones con links a edición
@@ -200,6 +210,7 @@ src/presentation/
 ### `RoomManagementPage.tsx` — Gestión de Habitación
 
 **Funcionalidad**:
+
 - Formulario de edición (nombre, descripción, precio, capacidad, cama, tamaño)
 - Galería de imágenes
 - Toggle de disponibilidad (status)
@@ -215,6 +226,7 @@ src/presentation/
 ### `Layout.tsx`
 
 Wrapper de la aplicación. Envuelve todas las rutas protegidas con:
+
 - `Navbar` en la parte superior
 - `<main>` con `<Outlet />` (contenido de la ruta activa)
 - `Footer` en la parte inferior
@@ -222,6 +234,7 @@ Wrapper de la aplicación. Envuelve todas las rutas protegidas con:
 ### `Navbar.tsx`
 
 Barra de navegación sticky con:
+
 - Logo con link a home
 - Links de navegación (Inicio, Explorar, Destacados)
 - Link al Panel (solo para managers)
@@ -234,6 +247,7 @@ Barra de navegación sticky con:
 ### `Footer.tsx`
 
 Footer con 4 columnas:
+
 - Brand (logo + descripción)
 - Links de exploración
 - Links para negocios
@@ -247,7 +261,7 @@ Footer con 4 columnas:
 55 componentes de shadcn/ui pre-instalados. Son componentes base reutilizables que no tienen lógica de negocio. Se importan en las páginas y widgets según necesidad.
 
 | Categoría | Componentes |
-|-----------|------------|
+| ----------- | ------------ |
 | Formularios | `input`, `form`, `label`, `checkbox`, `select`, `radio-group`, `slider`, `switch`, `textarea`, `calendar`, `input-otp` |
 | Layout | `card`, `separator`, `tabs`, `collapsible`, `accordion`, `resizable`, `scroll-area` |
 | Navegación | `breadcrumb`, `pagination`, `navigation-menu`, `sidebar`, `menubar`, `dropdown-menu`, `command` |

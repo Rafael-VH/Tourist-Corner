@@ -4,7 +4,7 @@ Implementa las interfaces del Domain conectándose a Supabase. Traduce entre el 
 
 ## Estructura
 
-```
+```text
 src/data/
 ├── datasources/
 │   └── SupabaseClient.ts    # Cliente de Supabase + manejo de errores
@@ -30,10 +30,12 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 ```
 
 **Exports**:
+
 - `supabase` — Cliente configurado con persistencia de sesión y auto-refresh de tokens
 - `handleSupabaseError(error)` — Función que lanza una excepción con el mensaje del error
 
 **Variables de entorno requeridas** (ver `.env.example`):
+
 - `VITE_SUPABASE_URL` — URL del proyecto Supabase
 - `VITE_SUPABASE_ANON_KEY` — Clave pública anon
 
@@ -42,6 +44,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 ## Repositorios (`data/repositories/`)
 
 Cada repositorio implementa la interfaz correspondiente del domain y traduce entre:
+
 - **Entidades del dominio** (camelCase, tipos TypeScript)
 - **Registros de Supabase** (snake_case, tipos de PostgreSQL)
 
@@ -52,7 +55,7 @@ Implementa `AuthRepository`.
 **Métodos**:
 
 | Método | Operación Supabase | Notas |
-|--------|-------------------|-------|
+| -------- | ------------------- | ------- |
 | `signIn()` | `auth.signInWithPassword()` + `getCurrentUser()` | Obtiene perfil de tabla `users` después del login |
 | `signUp()` | `auth.signUp()` + insert en tabla `users` | Crea registro en `users` con `id`, `email`, `name`, `role` |
 | `signOut()` | `auth.signOut()` | — |
@@ -67,13 +70,14 @@ Implementa `AuthRepository`.
 Implementa `HotelRepository`.
 
 **Mappers**:
+
 - `mapToHotel(record)` → `Hotel` — snake_case → camelCase
 - `mapToRecord(hotel)` → `Partial<HotelRecord>` — camelCase → snake_case para insert/update
 
 **Métodos clave**:
 
 | Método | Lógica |
-|--------|--------|
+| -------- | -------- |
 | `getAllHotels()` | Query dinámica con filtros opcionales (city, type, price, rating, search). Siempre filtra `is_active = true` |
 | `getHotelById()` | Select single por ID |
 | `getHotelsByManager()` | Filtra por `manager_id` |
@@ -90,6 +94,7 @@ Implementa `HotelRepository`.
 Implementa `RoomRepository`.
 
 **Mappers**:
+
 - `mapToRoom(record)` → `Room`
 - `mapToRecord(room)` → `Partial<RoomRecord>`
 - `mapToAvailability(record)` → `RoomAvailability`
@@ -97,7 +102,7 @@ Implementa `RoomRepository`.
 **Métodos clave**:
 
 | Método | Lógica |
-|--------|--------|
+| -------- | -------- |
 | `getRoomsByHotel()` | Filtra por `hotel_id` |
 | `getRoomById()` | Select single por ID |
 | `createRoom()` | Insert + select returning |
@@ -116,7 +121,7 @@ Implementa `CommentRepository`.
 **Métodos clave**:
 
 | Método | Lógica |
-|--------|--------|
+| -------- | -------- |
 | `getCommentsByTarget()` | Filtra por `target_id` + `target_type`, ordena por `created_at DESC` |
 | `createComment()` | Insert con todos los campos + `likes: 0` + timestamps |
 | `updateComment()` | Actualiza `content`, `rating`, `updated_at` |

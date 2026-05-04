@@ -6,7 +6,7 @@ La capa más interna de la arquitectura. Define **qué** es el negocio sin impor
 
 ## Estructura
 
-```
+```text
 src/domain/
 ├── entities/        # Modelos de datos (interfaces puras)
 │   ├── User.ts
@@ -49,6 +49,7 @@ interface User {
 ```
 
 También define perfiles especializados:
+
 - `TouristProfile` — Usuario turista con `favoriteHotels?` y `bookingsCount?`
 - `ManagerProfile` — Usuario manager con `hotelIds[]` y `subscriptionPlan`
 
@@ -141,7 +142,7 @@ Interfaces que definen **qué operaciones** se pueden realizar sobre cada entida
 ### `AuthRepository.ts`
 
 | Método | Descripción |
-|--------|-------------|
+| -------- | ------------- |
 | `signIn(email, password)` | Iniciar sesión |
 | `signUp(email, password, name, role)` | Registrar usuario |
 | `signOut()` | Cerrar sesión |
@@ -152,7 +153,7 @@ Interfaces que definen **qué operaciones** se pueden realizar sobre cada entida
 ### `HotelRepository.ts`
 
 | Método | Descripción |
-|--------|-------------|
+| -------- | ------------- |
 | `getAllHotels(filters?)` | Listar hoteles con filtros opcionales |
 | `getHotelById(id)` | Obtener hotel por ID |
 | `getHotelsByManager(managerId)` | Hoteles de un manager |
@@ -167,7 +168,7 @@ Interfaces que definen **qué operaciones** se pueden realizar sobre cada entida
 ### `RoomRepository.ts`
 
 | Método | Descripción |
-|--------|-------------|
+| -------- | ------------- |
 | `getRoomsByHotel(hotelId)` | Habitaciones de un hotel |
 | `getRoomById(id)` | Obtener habitación por ID |
 | `createRoom(room)` | Crear habitación |
@@ -180,7 +181,7 @@ Interfaces que definen **qué operaciones** se pueden realizar sobre cada entida
 ### `CommentRepository.ts`
 
 | Método | Descripción |
-|--------|-------------|
+| -------- | ------------- |
 | `getCommentsByTarget(targetId, targetType)` | Comentarios de hotel o habitación |
 | `createComment(input, userId, userName, userAvatar?)` | Crear comentario |
 | `updateComment(id, content, rating)` | Editar comentario |
@@ -197,7 +198,7 @@ Cada caso de uso es una clase que envuelve una operación del repositorio. Tiene
 ### `AuthUseCases.ts`
 
 | Clase | `execute()` params | Retorna |
-|-------|-------------------|---------|
+| ------- | ------------------- | --------- |
 | `SignInUseCase` | email, password | `User` |
 | `SignUpUseCase` | email, password, name, role | `User` |
 | `SignOutUseCase` | — | `void` |
@@ -208,7 +209,7 @@ Cada caso de uso es una clase que envuelve una operación del repositorio. Tiene
 ### `HotelUseCases.ts`
 
 | Clase | `execute()` params | Retorna |
-|-------|-------------------|---------|
+| ------- | ------------------- | --------- |
 | `GetHotelsUseCase` | filters? | `Hotel[]` |
 | `GetHotelByIdUseCase` | id | `Hotel \| null` |
 | `GetManagerHotelsUseCase` | managerId | `Hotel[]` |
@@ -221,7 +222,7 @@ Cada caso de uso es una clase que envuelve una operación del repositorio. Tiene
 ### `RoomUseCases.ts`
 
 | Clase | `execute()` params | Retorna |
-|-------|-------------------|---------|
+| ------- | ------------------- | --------- |
 | `GetRoomsByHotelUseCase` | hotelId | `Room[]` |
 | `GetRoomByIdUseCase` | id | `Room \| null` |
 | `CreateRoomUseCase` | room | `Room` |
@@ -234,7 +235,7 @@ Cada caso de uso es una clase que envuelve una operación del repositorio. Tiene
 ### `CommentUseCases.ts`
 
 | Clase | `execute()` params | Retorna |
-|-------|-------------------|---------|
+| ------- | ------------------- | --------- |
 | `GetCommentsByTargetUseCase` | targetId, targetType | `Comment[]` |
 | `CreateCommentUseCase` | input, userId, userName, userAvatar? | `Comment` |
 | `UpdateCommentUseCase` | id, content, rating | `Comment` |

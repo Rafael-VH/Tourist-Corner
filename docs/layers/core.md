@@ -4,7 +4,7 @@ Utilidades transversales que toda la aplicación necesita: inyección de depende
 
 ## Estructura
 
-```
+```text
 src/core/
 ├── di/
 │   └── Container.ts     # Dependency Injection Container (singleton)
@@ -22,7 +22,7 @@ src/core/
 
 ### Flujo de creación
 
-```
+```text
 1. Crear repositorios (new SupabaseXxxRepository())
      ↓
 2. Crear use cases inyectando repositorios
@@ -92,7 +92,7 @@ Configura las rutas de la aplicación usando React Router v7 con rutas protegida
 ### Rutas públicas
 
 | Ruta | Componente | Descripción |
-|------|-----------|-------------|
+| ------ | ----------- | ------------- |
 | `/login` | `LoginPage` | Login y registro |
 | `/` | `HomePage` | Listado de hoteles |
 | `/hotel/:id` | `HotelDetailPage` | Detalle de hotel |
@@ -101,7 +101,7 @@ Configura las rutas de la aplicación usando React Router v7 con rutas protegida
 ### Rutas protegidas (requiere autenticación + rol manager)
 
 | Ruta | Componente | Descripción |
-|------|-----------|-------------|
+| ------ | ----------- | ------------- |
 | `/dashboard` | `ManagerDashboardPage` | Panel del manager |
 | `/dashboard/hotel/:id` | `HotelManagementPage` | Gestión de hotel |
 | `/dashboard/room/:id` | `RoomManagementPage` | Gestión de habitación |
@@ -132,28 +132,32 @@ Define tokens de diseño consistentes para toda la aplicación. Exporta un objet
 ### Paleta de colores
 
 **Primary (naranja cálido)** — Color principal de marca
+
 | Token | Light | Uso |
-|-------|-------|-----|
+| ------- | ------- | ----- |
 | `primary.50` | `#FFF8F1` | Fondos muy claros |
 | `primary.500` | `#E8850C` | Botones primarios, acentos |
 | `primary.600` | `#C46A08` | Hover states |
 
 **Secondary (terracotta)** — Color secundario
-| Token | Light | Uso |
-|-------|-------|-----|
+
+| Token           | Light     | Uso                  |
+|-----------------|-----------|----------------------|
 | `secondary.500` | `#E85D35` | Elementos de énfasis |
 
 **Warm neutrals** — Escala de grises cálidos
+
 | Token | Light | Uso |
-|-------|-------|-----|
+| ------- | ------- | ----- |
 | `warm.50` | `#FDF8F3` | Background general |
 | `warm.100` | `#F5EDE3` | Bordes sutiles |
 | `warm.500` | `#96785A` | Texto secundario |
 | `warm.700` | `#5E4836` | Texto principal |
 
 **Dark mode** — Colores específicos para modo oscuro
+
 | Token | Dark | Uso |
-|-------|------|-----|
+| ------- | ------ | ----- |
 | `dark.bg` | `#0F1419` | Fondo general |
 | `dark.surface` | `#1A2028` | Cards, superficies |
 | `dark.accent` | `#FF9F1C` | Acentos en dark mode |
@@ -161,14 +165,14 @@ Define tokens de diseño consistentes para toda la aplicación. Exporta un objet
 ### Bordes y sombras
 
 | Token | Valor | Uso |
-|-------|-------|-----|
+| ------- | ------- | ----- |
 | `borderRadius.md` | `12px` | Cards, inputs |
 | `borderRadius.xl` | `24px` | Contenedores grandes |
 | `shadows.warm` | `rgba(232,133,12,0.15)` | Sombras con tinte naranja |
 
 ### Transiciones
 
-| Token | Valor | Uso |
-|-------|-------|-----|
-| `transitions.default` | `0.2s ease-in-out` | Hover, toggle |
-| `transitions.slow` | `0.3s ease-in-out` | Animaciones de entrada |
+| Token                 | Valor              | Uso                    |
+|-----------------------|--------------------|------------------------|
+| `transitions.default` | `0.2s ease-in-out` | Hover, toggle          |
+| `transitions.slow`    | `0.3s ease-in-out` | Animaciones de entrada |
