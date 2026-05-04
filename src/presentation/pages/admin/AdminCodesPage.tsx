@@ -2,13 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { supabase } from "@/data/datasources/SupabaseClient";
-import {
-  Key,
-  RefreshCw,
-  Check,
-  X,
-  Trash2,
-} from "lucide-react";
+import { Key, RefreshCw, Check, X, Trash2 } from "lucide-react";
 
 interface RegistrationCode {
   id: string;

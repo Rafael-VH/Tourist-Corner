@@ -1,10 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/data/datasources/SupabaseClient";
-import {
-  Users,
-  Search,
-  X,
-} from "lucide-react";
+import { Users, Search, X } from "lucide-react";
 
 interface UserRow {
   id: string;
@@ -17,7 +13,9 @@ export function AdminUsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [userFilter, setUserFilter] = useState<"all" | "client" | "owner" | "admin">("all");
+  const [userFilter, setUserFilter] = useState<
+    "all" | "client" | "owner" | "admin"
+  >("all");
   const [userSearch, setUserSearch] = useState("");
 
   const loadUsers = useCallback(async () => {
@@ -47,7 +45,7 @@ export function AdminUsersPage() {
     .filter(
       (u) =>
         u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-        u.email.toLowerCase().includes(userSearch.toLowerCase())
+        u.email.toLowerCase().includes(userSearch.toLowerCase()),
     );
 
   return (
@@ -84,24 +82,32 @@ export function AdminUsersPage() {
       {/* Role Tabs */}
       <div className="flex items-center gap-2 p-1 bg-white dark:bg-[#1A2028] rounded-xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-x-auto mb-4">
         {[
-          { key: "all" as const, label: "Todos", count: users.length, color: "" },
+          {
+            key: "all" as const,
+            label: "Todos",
+            count: users.length,
+            color: "",
+          },
           {
             key: "client" as const,
             label: "Clientes",
             count: users.filter((u) => u.role === "client").length,
-            color: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+            color:
+              "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
           },
           {
             key: "owner" as const,
             label: "Dueños",
             count: users.filter((u) => u.role === "owner").length,
-            color: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+            color:
+              "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
           },
           {
             key: "admin" as const,
             label: "Admins",
             count: users.filter((u) => u.role === "admin").length,
-            color: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
+            color:
+              "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
           },
         ].map((tab) => (
           <button
@@ -118,7 +124,8 @@ export function AdminUsersPage() {
               className={`px-1.5 py-0.5 text-xs rounded-md ${
                 userFilter === tab.key
                   ? "bg-white/20 text-white"
-                  : tab.color || "bg-[#E8D9C8] dark:bg-[#2D3748] text-[#96785A] dark:text-[#64748B]"
+                  : tab.color ||
+                    "bg-[#E8D9C8] dark:bg-[#2D3748] text-[#96785A] dark:text-[#64748B]"
               }`}
             >
               {tab.count}

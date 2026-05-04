@@ -1,12 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/data/datasources/SupabaseClient";
-import {
-  Users,
-  Building2,
-  Star,
-  X,
-} from "lucide-react";
+import { Users, Building2, Star, X } from "lucide-react";
 
 interface DashboardStats {
   totalClients: number;
@@ -29,18 +24,20 @@ export function AdminDashboardPage() {
     setLoading(true);
     setError("");
     try {
-      const [clientsRes, ownersRes, hotelsRes, featuredRes] = await Promise.all([
-        supabase
-          .from("users")
-          .select("id", { count: "exact" })
-          .eq("role", "client"),
-        supabase
-          .from("users")
-          .select("id", { count: "exact" })
-          .eq("role", "owner"),
-        supabase.from("hotels").select("id", { count: "exact" }),
-        supabase.from("featured_hotels").select("id", { count: "exact" }),
-      ]);
+      const [clientsRes, ownersRes, hotelsRes, featuredRes] = await Promise.all(
+        [
+          supabase
+            .from("users")
+            .select("id", { count: "exact" })
+            .eq("role", "client"),
+          supabase
+            .from("users")
+            .select("id", { count: "exact" })
+            .eq("role", "owner"),
+          supabase.from("hotels").select("id", { count: "exact" }),
+          supabase.from("featured_hotels").select("id", { count: "exact" }),
+        ],
+      );
 
       setStats({
         totalClients: clientsRes.count || 0,
