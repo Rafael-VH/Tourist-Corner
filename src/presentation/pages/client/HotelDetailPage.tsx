@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  useParams,
-  Link,
-  useSearchParams,
-} from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
@@ -395,7 +391,12 @@ export function HotelDetailPage() {
                         {rooms
                           .filter((r) => r.isFeatured)
                           .map((room) => (
-                            <RoomCard key={room.id} room={room} isFeatured onBook={handleBookRoom} />
+                            <RoomCard
+                              key={room.id}
+                              room={room}
+                              isFeatured
+                              onBook={handleBookRoom}
+                            />
                           ))}
                       </div>
                     </div>
@@ -410,7 +411,11 @@ export function HotelDetailPage() {
                       {rooms
                         .filter((r) => !r.isFeatured)
                         .map((room) => (
-                          <RoomCard key={room.id} room={room} onBook={handleBookRoom} />
+                          <RoomCard
+                            key={room.id}
+                            room={room}
+                            onBook={handleBookRoom}
+                          />
                         ))}
                     </div>
                   </div>
@@ -792,7 +797,15 @@ export function HotelDetailPage() {
   );
 }
 
-function RoomCard({ room, isFeatured, onBook }: { room: Room; isFeatured?: boolean; onBook?: (room: Room) => void }) {
+function RoomCard({
+  room,
+  isFeatured,
+  onBook,
+}: {
+  room: Room;
+  isFeatured?: boolean;
+  onBook?: (room: Room) => void;
+}) {
   return (
     <div
       className={`flex gap-4 bg-white dark:bg-[#1A2028] rounded-2xl overflow-hidden border transition-all group ${
@@ -806,7 +819,10 @@ function RoomCard({ room, isFeatured, onBook }: { room: Room; isFeatured?: boole
         className="w-32 md:w-48 shrink-0 relative overflow-hidden"
       >
         <img
-          src={room.images[0] || "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"}
+          src={
+            room.images[0] ||
+            "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"
+          }
           alt={room.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />

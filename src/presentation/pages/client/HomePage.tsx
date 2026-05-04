@@ -46,10 +46,16 @@ const amenityIcons: Record<string, React.ReactNode> = {
 };
 
 export function HomePage() {
-  const { hotels, featuredHotels, fetchHotels, fetchFeaturedHotels, isLoading, filters, setFilters } =
-    useHotelStore();
-  const { featuredRooms, fetchFeaturedRooms } =
-    useRoomStore();
+  const {
+    hotels,
+    featuredHotels,
+    fetchHotels,
+    fetchFeaturedHotels,
+    isLoading,
+    filters,
+    setFilters,
+  } = useHotelStore();
+  const { featuredRooms, fetchFeaturedRooms } = useRoomStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedType, setSelectedType] = useState<string>("");
@@ -498,7 +504,10 @@ function RoomCard({ room }: { room: Room }) {
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <img
-          src={room.images[0] || "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"}
+          src={
+            room.images[0] ||
+            "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"
+          }
           alt={room.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
@@ -564,7 +573,9 @@ function RoomCard({ room }: { room: Room }) {
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-5 pt-4 border-t border-[#F5EDE3] dark:border-[#2D3748]">
-          <span className={`text-sm ${room.isAvailable ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+          <span
+            className={`text-sm ${room.isAvailable ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+          >
             {room.isAvailable ? "Disponible" : "No disponible"}
           </span>
           <span className="flex items-center gap-1 text-sm font-medium text-[#E8850C] group-hover:gap-2 transition-all">
