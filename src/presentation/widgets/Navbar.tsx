@@ -129,7 +129,11 @@ export function Navbar() {
               <div className="px-4 py-4 space-y-3">
                 <div className="flex items-center gap-2 py-2">
                   {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full" />
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full"
+                    />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-[#E8850C] flex items-center justify-center">
                       <User className="w-4 h-4 text-white" />
@@ -248,7 +252,11 @@ export function Navbar() {
                 </Link>
                 <div className="flex items-center gap-2 py-2">
                   {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full" />
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-full"
+                    />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-[#E8850C] flex items-center justify-center">
                       <User className="w-4 h-4 text-white" />
