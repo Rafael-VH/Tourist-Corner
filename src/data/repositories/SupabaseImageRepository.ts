@@ -1,15 +1,16 @@
 import { supabase, handleSupabaseError } from '../datasources/SupabaseClient';
 import type { ImageRepository } from '@/domain/repositories/ImageRepository';
+import { convertToWebP } from '@/core/utils/imageConverter';
 
 export class SupabaseImageRepository implements ImageRepository {
   async uploadHotelImage(hotelId: string, file: File): Promise<string> {
-    const fileExt = file.name.split('.').pop();
+    const webpFile = await convertToWebP(file);
     const timestamp = Date.now();
-    const fileName = `${hotelId}/${timestamp}.${fileExt}`;
+    const fileName = `${hotelId}/${timestamp}.webp`;
 
     const { error: uploadError } = await supabase.storage
       .from('hotel-images')
-      .upload(fileName, file);
+      .upload(fileName, webpFile);
 
     if (uploadError) handleSupabaseError(uploadError);
 
@@ -21,13 +22,13 @@ export class SupabaseImageRepository implements ImageRepository {
   }
 
   async uploadRoomImage(roomId: string, file: File): Promise<string> {
-    const fileExt = file.name.split('.').pop();
+    const webpFile = await convertToWebP(file);
     const timestamp = Date.now();
-    const fileName = `${roomId}/${timestamp}.${fileExt}`;
+    const fileName = `${roomId}/${timestamp}.webp`;
 
     const { error: uploadError } = await supabase.storage
       .from('room-images')
-      .upload(fileName, file);
+      .upload(fileName, webpFile);
 
     if (uploadError) handleSupabaseError(uploadError);
 

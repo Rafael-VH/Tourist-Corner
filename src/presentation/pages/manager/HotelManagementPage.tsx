@@ -34,9 +34,6 @@ export function HotelManagementPage() {
   const [branches, setBranches] = useState<
     { id: string; name: string; city: string }[]
   >([]);
-  const [hotelImages, setHotelImages] = useState<string[]>([]);
-  const [coverImage, setCoverImage] = useState("");
-
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     name: selectedHotel?.name || "",
@@ -71,13 +68,6 @@ export function HotelManagementPage() {
       fetchRoomsByHotel(id);
     }
   }, [id, fetchHotelById, fetchRoomsByHotel]);
-
-  useEffect(() => {
-    if (selectedHotel) {
-      setHotelImages(selectedHotel.images || []);
-      setCoverImage(selectedHotel.coverImage || "");
-    }
-  }, [selectedHotel]);
 
   useEffect(() => {
     if (selectedHotel?.isMain && id) {
@@ -130,14 +120,12 @@ export function HotelManagementPage() {
   };
 
   const handleImagesChange = async (images: string[]) => {
-    setHotelImages(images);
     if (id) {
       await supabase.from("hotels").update({ images }).eq("id", id);
     }
   };
 
   const handleCoverChange = async (cover: string) => {
-    setCoverImage(cover);
     if (id) {
       await supabase.from("hotels").update({ cover_image: cover }).eq("id", id);
     }
@@ -211,12 +199,16 @@ export function HotelManagementPage() {
           className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden mb-8"
         >
           {/* Cover */}
-            <div className="relative h-48 md:h-64">
-              <img
-                src={coverImage || hotelImages[0] || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400' fill='%23333'%3E%3Crect width='800' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='24'%3ESin imagen%3C/text%3E%3C/svg%3E"}
-                alt={hotel.name}
-                className="w-full h-full object-cover"
-              />
+          <div className="relative h-48 md:h-64">
+            <img
+              src={
+                hotel.coverImage ||
+                hotel.images?.[0] ||
+                "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400' fill='%23333'%3E%3Crect width='800' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='24'%3ESin imagen%3C/text%3E%3C/svg%3E"
+              }
+              alt={hotel.name}
+              className="w-full h-full object-cover"
+            />
             <div className="absolute inset-0 bg-[#2D1F14]/30" />
             <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
               <div>
@@ -448,8 +440,8 @@ export function HotelManagementPage() {
             </h2>
           </div>
           <ImageUpload
-            images={hotelImages}
-            coverImage={coverImage}
+            images={hotel.images || []}
+            coverImage={hotel.coverImage || ""}
             onImagesChange={handleImagesChange}
             onCoverChange={handleCoverChange}
             onUpload={handleUploadImages}

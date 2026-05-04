@@ -152,7 +152,7 @@ export function ImageUpload({
           Arrastra imagenes aqui o haz clic para seleccionar
         </p>
         <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-1">
-          PNG, JPG, WEBP — Max {maxSizeMB}MB por imagen
+          Se convertiran a WebP automaticamente — Max {maxSizeMB}MB
         </p>
       </div>
 

@@ -15,8 +15,6 @@ import {
   DollarSign,
   Maximize,
   Image as ImageIcon,
-  Plus,
-  Trash2,
   ToggleLeft,
   ToggleRight,
 } from "lucide-react";
@@ -27,8 +25,6 @@ export function RoomManagementPage() {
   const { rooms, fetchRoomById, isLoading, updateRoomStatus, updateRoom } =
     useRoomStore();
   const selectedRoom = rooms.find((r) => r.id === id) || null;
-  const [roomImages, setRoomImages] = useState<string[]>([]);
-
   const [isEditing, setIsEditing] = useState(true);
   const [editForm, setEditForm] = useState({
     name: selectedRoom?.name || "",
@@ -45,12 +41,6 @@ export function RoomManagementPage() {
       fetchRoomById(id);
     }
   }, [id, fetchRoomById]);
-
-  useEffect(() => {
-    if (selectedRoom) {
-      setRoomImages(selectedRoom.images || []);
-    }
-  }, [selectedRoom]);
 
   if (isLoading || !selectedRoom) {
     return (
@@ -98,7 +88,6 @@ export function RoomManagementPage() {
   };
 
   const handleImagesChange = async (images: string[]) => {
-    setRoomImages(images);
     if (id) {
       await supabase.from("rooms").update({ images }).eq("id", id);
     }
@@ -279,7 +268,7 @@ export function RoomManagementPage() {
                 </h2>
               </div>
               <ImageUpload
-                images={roomImages}
+                images={selectedRoom?.images || []}
                 onImagesChange={handleImagesChange}
                 onCoverChange={() => {}}
                 onUpload={handleUploadImages}
