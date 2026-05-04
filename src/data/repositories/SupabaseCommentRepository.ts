@@ -91,6 +91,7 @@ export class SupabaseCommentRepository implements CommentRepository {
       .single();
 
     if (error) handleSupabaseError(error);
+    if (!data) throw new Error('Comentario no encontrado');
 
     const newLikes = (data.likes || 0) + 1;
 
