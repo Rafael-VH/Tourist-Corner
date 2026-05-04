@@ -31,3 +31,5 @@ dist-ssr
 # Supabase migration scripts (temporary)
 supabase/run_migration.js
 supabase/supabase_migration.sql
+
+.github

@@ -2,19 +2,19 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { Layout } from "@/presentation/widgets/Layout";
 import { LoginPage } from "@/presentation/pages/LoginPage";
-import { HomePage } from "@/presentation/pages/HomePage";
-import { HotelDetailPage } from "@/presentation/pages/HotelDetailPage";
-import { RoomDetailPage } from "@/presentation/pages/RoomDetailPage";
-import { ManagerDashboardPage } from "@/presentation/pages/ManagerDashboardPage";
-import { AdminDashboardPage } from "@/presentation/pages/AdminDashboardPage";
-import { HotelManagementPage } from "@/presentation/pages/HotelManagementPage";
-import { RoomManagementPage } from "@/presentation/pages/RoomManagementPage";
-import { NewHotelPage } from "@/presentation/pages/NewHotelPage";
-import { NewRoomPage } from "@/presentation/pages/NewRoomPage";
-import { NewRoomTypePage } from "@/presentation/pages/NewRoomTypePage";
-import { NewServicePage } from "@/presentation/pages/NewServicePage";
-import { CalendarPage } from "@/presentation/pages/CalendarPage";
-import { ReservationDetailPage } from "@/presentation/pages/ReservationDetailPage";
+import { HomePage } from "@/presentation/pages/client/HomePage";
+import { HotelDetailPage } from "@/presentation/pages/client/HotelDetailPage";
+import { RoomDetailPage } from "@/presentation/pages/client/RoomDetailPage";
+import { ManagerDashboardPage } from "@/presentation/pages/manager/ManagerDashboardPage";
+import { AdminDashboardPage } from "@/presentation/pages/admin/AdminDashboardPage";
+import { HotelManagementPage } from "@/presentation/pages/manager/HotelManagementPage";
+import { RoomManagementPage } from "@/presentation/pages/manager/RoomManagementPage";
+import { NewHotelPage } from "@/presentation/pages/manager/NewHotelPage";
+import { NewRoomPage } from "@/presentation/pages/manager/NewRoomPage";
+import { NewRoomTypePage } from "@/presentation/pages/manager/NewRoomTypePage";
+import { NewServicePage } from "@/presentation/pages/manager/NewServicePage";
+import { CalendarPage } from "@/presentation/pages/manager/CalendarPage";
+import { ReservationDetailPage } from "@/presentation/pages/manager/ReservationDetailPage";
 
 function ProtectedRoute({
   children,
