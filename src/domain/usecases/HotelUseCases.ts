@@ -96,3 +96,15 @@ export class ToggleHotelStatusUseCase {
     return this.hotelRepository.toggleHotelStatus(id);
   }
 }
+
+export class GetFeaturedHotelsUseCase {
+  private hotelRepository: HotelRepository;
+
+  constructor(hotelRepository: HotelRepository) {
+    this.hotelRepository = hotelRepository;
+  }
+
+  async execute(): Promise<Hotel[]> {
+    return this.hotelRepository.getFeaturedHotels();
+  }
+}

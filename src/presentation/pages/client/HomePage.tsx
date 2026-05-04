@@ -42,7 +42,7 @@ const amenityIcons: Record<string, React.ReactNode> = {
 };
 
 export function HomePage() {
-  const { hotels, fetchHotels, isLoading, filters, setFilters } =
+  const { hotels, featuredHotels, fetchHotels, fetchFeaturedHotels, isLoading, filters, setFilters } =
     useHotelStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -51,7 +51,8 @@ export function HomePage() {
 
   useEffect(() => {
     fetchHotels();
-  }, [fetchHotels]);
+    fetchFeaturedHotels();
+  }, [fetchHotels, fetchFeaturedHotels]);
 
   const handleSearch = () => {
     setFilters({ searchQuery: searchQuery || undefined });
@@ -176,6 +177,36 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Featured Hotels Section */}
+      {featuredHotels.length > 0 && (
+        <section className="py-16 bg-white dark:bg-[#1A2028]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
+                <Star className="w-6 h-6 text-[#E8850C]" />
+                Hoteles Destacados
+              </h2>
+              <p className="text-[#96785A] dark:text-[#64748B] mt-1">
+                Seleccionados especialmente para ti
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredHotels.map((hotel, index) => (
+                <motion.div
+                  key={hotel.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <HotelCard hotel={hotel} />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Explore Section */}
       <section id="explore" className="py-16">

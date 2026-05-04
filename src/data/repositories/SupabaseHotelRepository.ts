@@ -57,7 +57,57 @@ export class SupabaseHotelRepository implements HotelRepository {
     const { data, error } = await query;
     if (error) handleSupabaseError(error);
 
-    return (data || []).map(this.mapToHotel);
+    const hotels = (data || []).map(this.mapToHotel);
+
+    const { data: featuredData } = await supabase
+      .from('featured_hotels')
+      .select('hotel_id')
+      .eq('active', true);
+
+    const featuredSet = new Set((featuredData || []).map((f: { hotel_id: string }) => f.hotel_id));
+
+    return hotels.map((h) => ({
+      ...h,
+      isFeatured: featuredSet.has(h.id),
+    }));
+  }
+
+  async getFeaturedHotels(): Promise<Hotel[]> {
+    const { data: featuredData, error: featuredError } = await supabase
+      .from('featured_hotels')
+      .select('hotel_id')
+      .eq('active', true)
+      .order('featured_order', { ascending: true });
+
+    if (featuredError) handleSupabaseError(featuredError);
+
+    if (!featuredData || featuredData.length === 0) {
+      return [];
+    }
+
+    const hotelIds = featuredData.map((f: { hotel_id: string }) => f.hotel_id);
+
+    const { data: hotelsData, error: hotelsError } = await supabase
+      .from('hotels')
+      .select('*')
+      .in('id', hotelIds)
+      .eq('is_active', true);
+
+    if (hotelsError) handleSupabaseError(hotelsError);
+
+    const hotels = (hotelsData || []).map(this.mapToHotel);
+    const featuredSet = new Set(hotelIds);
+
+    const hotelsWithFeatured = hotels.map((h) => ({
+      ...h,
+      isFeatured: featuredSet.has(h.id),
+    }));
+
+    return hotelsWithFeatured.sort((a, b) => {
+      const aIndex = hotelIds.indexOf(a.id);
+      const bIndex = hotelIds.indexOf(b.id);
+      return aIndex - bIndex;
+    });
   }
 
   async getHotelById(id: string): Promise<Hotel | null> {
@@ -209,6 +259,7 @@ export class SupabaseHotelRepository implements HotelRepository {
       managerId: record.manager_id,
       branchOf: record.branch_of,
       isMain: record.is_main,
+      isFeatured: false,
       createdAt: new Date(record.created_at),
       updatedAt: new Date(record.updated_at),
       isActive: record.is_active,

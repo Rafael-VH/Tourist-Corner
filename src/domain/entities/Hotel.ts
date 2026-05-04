@@ -24,6 +24,7 @@ export interface Hotel {
   branchOf?: string | null;
   isMain: boolean;
   branches?: Hotel[];
+  isFeatured: boolean;
   createdAt: Date;
   updatedAt: Date;
   isActive: boolean;

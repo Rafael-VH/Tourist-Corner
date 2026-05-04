@@ -19,4 +19,5 @@ export interface HotelRepository {
   deleteHotel(id: string): Promise<void>;
   getHotelEssentialInfo(id: string): Promise<HotelEssentialInfo | null>;
   toggleHotelStatus(id: string): Promise<boolean>;
+  getFeaturedHotels(): Promise<Hotel[]>;
 }

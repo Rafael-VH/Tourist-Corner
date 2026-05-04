@@ -22,6 +22,7 @@ import {
   DeleteHotelUseCase,
   GetHotelEssentialInfoUseCase,
   ToggleHotelStatusUseCase,
+  GetFeaturedHotelsUseCase,
 } from '@/domain/usecases/HotelUseCases';
 
 import {
@@ -80,6 +81,7 @@ function createContainer() {
     deleteHotel: new DeleteHotelUseCase(hotelRepository),
     getHotelEssentialInfo: new GetHotelEssentialInfoUseCase(hotelRepository),
     toggleHotelStatus: new ToggleHotelStatusUseCase(hotelRepository),
+    getFeaturedHotels: new GetFeaturedHotelsUseCase(hotelRepository),
 
     // Room use cases
     getRoomsByHotel: new GetRoomsByHotelUseCase(roomRepository),
