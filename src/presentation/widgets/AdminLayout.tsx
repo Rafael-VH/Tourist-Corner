@@ -9,12 +9,14 @@ import {
   Users,
   Menu,
   X,
+  Bed,
 } from "lucide-react";
 
 const navItems = [
   { to: "/admin", label: "Panel", icon: LayoutDashboard },
   { to: "/admin/codes", label: "Codigos", icon: Key },
   { to: "/admin/hotels", label: "Hoteles", icon: Star },
+  { to: "/admin/rooms", label: "Habitaciones", icon: Bed },
   { to: "/admin/users", label: "Usuarios", icon: Users },
 ];
 
@@ -62,12 +64,7 @@ export function AdminLayout() {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1">
-            {navItems.map((item) => {
-              const isActive =
-                item.to === "/admin"
-                  ? location.pathname === "/admin"
-                  : location.pathname.startsWith(item.to);
-              return (
+            {navItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
@@ -83,8 +80,7 @@ export function AdminLayout() {
                   <item.icon className="w-5 h-5" />
                   {item.label}
                 </NavLink>
-              );
-            })}
+              ))}
           </nav>
 
           {/* Footer */}

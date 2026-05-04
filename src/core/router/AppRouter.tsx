@@ -10,6 +10,7 @@ import { ManagerDashboardPage } from "@/presentation/pages/manager/ManagerDashbo
 import { AdminDashboardPage } from "@/presentation/pages/admin/AdminDashboardPage";
 import { AdminCodesPage } from "@/presentation/pages/admin/AdminCodesPage";
 import { AdminHotelsPage } from "@/presentation/pages/admin/AdminHotelsPage";
+import { AdminRoomsPage } from "@/presentation/pages/admin/AdminRoomsPage";
 import { AdminUsersPage } from "@/presentation/pages/admin/AdminUsersPage";
 import { HotelManagementPage } from "@/presentation/pages/manager/HotelManagementPage";
 import { RoomManagementPage } from "@/presentation/pages/manager/RoomManagementPage";
@@ -99,6 +100,7 @@ export function AppRouter() {
             <Route index element={<AdminDashboardPage />} />
             <Route path="codes" element={<AdminCodesPage />} />
             <Route path="hotels" element={<AdminHotelsPage />} />
+            <Route path="rooms" element={<AdminRoomsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
           </Route>
 
