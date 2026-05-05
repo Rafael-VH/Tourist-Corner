@@ -22,7 +22,7 @@ interface RoomState {
   deleteRoom: (roomId: string) => Promise<void>;
 }
 
-export const useRoomStore = create<RoomState>((set, get) => ({
+export const useRoomStore = create<RoomState>((set) => ({
   rooms: [],
   featuredRooms: [],
   selectedRoom: null,

@@ -1,49 +1,14 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
-import type { Hotel } from "@/domain/entities/Hotel";
-import type { HotelType } from "@/domain/entities/Hotel";
-import type { Room } from "@/domain/entities/Room";
-import {
-  Search,
-  MapPin,
-  Star,
-  Hotel as HotelIcon,
-  TreePine,
-  Home,
-  Building,
-  ArrowRight,
-  Filter,
-  X,
-  Wifi,
-  Waves,
-  UtensilsCrossed,
-  Car,
-  Dumbbell,
-  Wine,
-  Bath,
-  Bed,
-  Users,
-} from "lucide-react";
+import { HotelCard } from "@/presentation/components/HotelCard";
+import { RoomCard } from "@/presentation/components/RoomCard";
+import { Search, Star, Hotel as HotelIcon, Bed } from "lucide-react";
+import { hotelTypeIcons, HOTEL_TYPES } from "@/presentation/utils/iconMaps.tsx";
 
-const hotelTypeIcons: Record<HotelType, React.ReactNode> = {
-  hotel: <HotelIcon className="w-4 h-4" />,
-  resort: <TreePine className="w-4 h-4" />,
-  motel: <Home className="w-4 h-4" />,
-  residential: <Building className="w-4 h-4" />,
-};
-
-const amenityIcons: Record<string, React.ReactNode> = {
-  WiFi: <Wifi className="w-3.5 h-3.5" />,
-  Piscina: <Waves className="w-3.5 h-3.5" />,
-  Restaurante: <UtensilsCrossed className="w-3.5 h-3.5" />,
-  Estacionamiento: <Car className="w-3.5 h-3.5" />,
-  Gimnasio: <Dumbbell className="w-3.5 h-3.5" />,
-  Bar: <Wine className="w-3.5 h-3.5" />,
-  Spa: <Bath className="w-3.5 h-3.5" />,
-};
+const ITEMS_PER_PAGE = 9;
+const HERO_IMAGE = import.meta.env.VITE_HERO_IMAGE || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400";
 
 export function HomePage() {
   const {
@@ -52,6 +17,7 @@ export function HomePage() {
     fetchHotels,
     fetchFeaturedHotels,
     isLoading,
+    error,
     filters,
     setFilters,
   } = useHotelStore();
@@ -60,6 +26,24 @@ export function HomePage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
+  const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cities = useMemo(
+    () => [...new Set(hotels.map((h) => h.city).filter(Boolean))],
+    [hotels]
+  );
+
+  const hotelCount = useMemo(() => hotels.length, [hotels]);
+  const resortCount = useMemo(
+    () => hotels.filter((h) => h.type === "resort").length,
+    [hotels]
+  );
+  const cityCount = useMemo(() => cities.length, [cities]);
+  const reviewCount = useMemo(
+    () => hotels.reduce((sum, h) => sum + h.reviewCount, 0),
+    [hotels]
+  );
 
   useEffect(() => {
     fetchHotels();
@@ -67,27 +51,59 @@ export function HomePage() {
     fetchFeaturedRooms();
   }, [fetchHotels, fetchFeaturedHotels, fetchFeaturedRooms]);
 
-  const handleSearch = () => {
-    setFilters({ searchQuery: searchQuery || undefined });
-    fetchHotels({ ...filters, searchQuery: searchQuery || undefined });
-  };
+  const applyFilters = useCallback(
+    (updates: { searchQuery?: string; type?: string; city?: string }) => {
+      const newFilters = {
+        searchQuery: updates.searchQuery ?? filters.searchQuery,
+        type: updates.type ?? filters.type,
+        city: updates.city ?? filters.city,
+      };
+      setFilters(newFilters);
+      fetchHotels(newFilters);
+    },
+    [filters, setFilters, fetchHotels]
+  );
 
-  const handleTypeFilter = (type: string) => {
-    const newType = selectedType === type ? "" : type;
-    setSelectedType(newType);
-    setFilters({ type: newType || undefined });
-    fetchHotels({ ...filters, type: newType || undefined });
-  };
+  const handleSearch = useCallback(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      applyFilters({ searchQuery: searchQuery || undefined });
+    }, 300);
+  }, [searchQuery, applyFilters]);
 
-  const handleCityFilter = (city: string) => {
-    const newCity = selectedCity === city ? "" : city;
-    setSelectedCity(newCity);
-    setFilters({ city: newCity || undefined });
-    fetchHotels({ ...filters, city: newCity || undefined });
-  };
+  const handleTypeFilter = useCallback(
+    (type: string) => {
+      const newType = selectedType === type ? "" : type;
+      setSelectedType(newType);
+      applyFilters({ type: newType || undefined });
+    },
+    [selectedType, applyFilters]
+  );
 
-  const cities = [...new Set(hotels.map((h) => h.city))];
-  const types: HotelType[] = ["hotel", "resort", "motel", "residential"];
+  const handleCityFilter = useCallback(
+    (city: string) => {
+      const newCity = selectedCity === city ? "" : city;
+      setSelectedCity(newCity);
+      applyFilters({ city: newCity || undefined });
+    },
+    [selectedCity, applyFilters]
+  );
+
+  const handleLoadMore = useCallback(() => {
+    setDisplayCount((prev) => prev + ITEMS_PER_PAGE);
+  }, []);
+
+  const visibleHotels = useMemo(
+    () => hotels.slice(0, displayCount),
+    [hotels, displayCount]
+  );
+  const hasMore = displayCount < hotels.length;
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
 
   return (
     <div className="bg-[#FDF8F3] dark:bg-[#0F1419]">
@@ -95,7 +111,7 @@ export function HomePage() {
       <section className="relative bg-[#2D1F14] overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400"
+            src={HERO_IMAGE}
             alt="Hero"
             className="w-full h-full object-cover opacity-40"
           />
@@ -150,22 +166,22 @@ export function HomePage() {
             {[
               {
                 label: "Hoteles",
-                value: "120+",
+                value: hotelCount > 0 ? `${hotelCount}+` : "120+",
                 icon: <HotelIcon className="w-6 h-6" />,
               },
               {
                 label: "Resorts",
-                value: "35+",
-                icon: <TreePine className="w-6 h-6" />,
+                value: resortCount > 0 ? `${resortCount}+` : "35+",
+                icon: <HotelIcon className="w-6 h-6" />,
               },
               {
                 label: "Ciudades",
-                value: "8",
-                icon: <MapPin className="w-6 h-6" />,
+                value: cityCount > 0 ? `${cityCount}` : "8",
+                icon: <Star className="w-6 h-6" />,
               },
               {
                 label: "Opiniones",
-                value: "10k+",
+                value: reviewCount > 0 ? `${reviewCount.toLocaleString()}+` : "10k+",
                 icon: <Star className="w-6 h-6" />,
               },
             ].map((stat, index) => (
@@ -191,9 +207,20 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Error Banner */}
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <p className="text-sm text-red-700 dark:text-red-300">
+              Error al cargar los datos: {error}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Featured Hotels Section */}
       {featuredHotels.length > 0 && (
-        <section className="py-16 bg-white dark:bg-[#1A2028]">
+        <section id="featured-hotels" className="py-16 bg-white dark:bg-[#1A2028]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
@@ -223,7 +250,7 @@ export function HomePage() {
 
       {/* Featured Rooms Section */}
       {featuredRooms.length > 0 && (
-        <section className="py-16 bg-[#FDF8F3] dark:bg-[#0F1419]">
+        <section id="featured-rooms" className="py-16 bg-[#FDF8F3] dark:bg-[#0F1419]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
@@ -268,9 +295,18 @@ export function HomePage() {
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1A2028] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#5E4836] dark:text-[#94A3B8] hover:border-[#E8850C] transition-colors"
             >
-              <Filter className="w-4 h-4" />
-              Filtros
-              {showFilters ? <X className="w-4 h-4" /> : null}
+              <span>Filtros</span>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={showFilters ? "close" : "open"}
+                  initial={{ opacity: 0, rotate: -90 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: 90 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  {showFilters ? "✕" : "▾"}
+                </motion.span>
+              </AnimatePresence>
             </button>
           </div>
 
@@ -288,7 +324,7 @@ export function HomePage() {
                   Tipo de Alojamiento
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {types.map((type) => (
+                  {HOTEL_TYPES.map((type) => (
                     <button
                       key={type}
                       onClick={() => handleTypeFilter(type)}
@@ -342,7 +378,7 @@ export function HomePage() {
             >
               Todos
             </button>
-            {types.map((type) => (
+            {HOTEL_TYPES.map((type) => (
               <button
                 key={type}
                 onClick={() => handleTypeFilter(type)}
@@ -361,7 +397,7 @@ export function HomePage() {
           {/* Hotel Grid */}
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="animate-pulse">
                   <div className="h-56 bg-[#E8D9C8] dark:bg-[#2D3748] rounded-t-2xl" />
                   <div className="p-5 bg-white dark:bg-[#1A2028] rounded-b-2xl space-y-3">
@@ -373,21 +409,35 @@ export function HomePage() {
               ))}
             </div>
           ) : (
-            <div
-              id="featured"
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {hotels.map((hotel, index) => (
-                <motion.div
-                  key={hotel.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <HotelCard hotel={hotel} />
-                </motion.div>
-              ))}
-            </div>
+            <>
+              <div
+                id="hotel-grid"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              >
+                {visibleHotels.map((hotel, index) => (
+                  <motion.div
+                    key={hotel.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <HotelCard hotel={hotel} />
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Load More */}
+              {hasMore && (
+                <div className="flex justify-center mt-12">
+                  <button
+                    onClick={handleLoadMore}
+                    className="px-8 py-3 bg-white dark:bg-[#1A2028] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#5E4836] dark:text-[#94A3B8] font-medium hover:border-[#E8850C] hover:text-[#E8850C] transition-colors"
+                  >
+                    Cargar más ({hotels.length - displayCount} restantes)
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
           {hotels.length === 0 && !isLoading && (
@@ -404,186 +454,5 @@ export function HomePage() {
         </div>
       </section>
     </div>
-  );
-}
-
-function HotelCard({ hotel }: { hotel: Hotel }) {
-  return (
-    <Link
-      to={`/hotel/${hotel.id}`}
-      className="group block bg-white dark:bg-[#1A2028] rounded-2xl overflow-hidden border border-[#E8D9C8] dark:border-[#2D3748] hover:shadow-xl hover:shadow-[#E8850C]/10 hover:border-[#E8850C]/30 transition-all duration-300"
-    >
-      {/* Image */}
-      <div className="relative h-56 overflow-hidden">
-        <img
-          src={hotel.coverImage || hotel.images[0]}
-          alt={hotel.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-[#2D1F14]/20 group-hover:bg-[#2D1F14]/10 transition-colors" />
-
-        {/* Badge */}
-        <div className="absolute top-4 left-4">
-          <span className="px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-xs font-medium text-[#5E4836] flex items-center gap-1.5">
-            {hotelTypeIcons[hotel.type]}
-            {hotel.type.charAt(0).toUpperCase() + hotel.type.slice(1)}
-          </span>
-        </div>
-
-        {/* Rating */}
-        <div className="absolute top-4 right-4">
-          <span className="px-3 py-1 bg-[#E8850C] rounded-lg text-xs font-bold text-white flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 fill-white" />
-            {hotel.rating}
-          </span>
-        </div>
-
-        {/* Price */}
-        <div className="absolute bottom-4 right-4">
-          <span className="px-4 py-2 bg-white/95 backdrop-blur rounded-xl text-sm font-bold text-[#E8850C]">
-            ${hotel.priceRange.min}
-            <span className="text-[#96785A] font-normal">/noche</span>
-          </span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-5">
-        <h3 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
-          {hotel.name}
-        </h3>
-
-        <div className="flex items-center gap-1 mt-1.5 text-[#96785A] dark:text-[#64748B]">
-          <MapPin className="w-4 h-4" />
-          <span className="text-sm">{hotel.city}</span>
-        </div>
-
-        <p className="text-sm text-[#96785A] dark:text-[#64748B] mt-2.5 line-clamp-2 leading-relaxed">
-          {hotel.description}
-        </p>
-
-        {/* Amenities */}
-        <div className="flex flex-wrap gap-2 mt-4">
-          {hotel.amenities.slice(0, 4).map((amenity) => (
-            <span
-              key={amenity}
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FFF8F1] dark:bg-[#242B35] rounded-lg text-xs text-[#5E4836] dark:text-[#94A3B8]"
-            >
-              {amenityIcons[amenity] || null}
-              {amenity}
-            </span>
-          ))}
-          {hotel.amenities.length > 4 && (
-            <span className="px-2.5 py-1 text-xs text-[#96785A] dark:text-[#64748B]">
-              +{hotel.amenities.length - 4}
-            </span>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-5 pt-4 border-t border-[#F5EDE3] dark:border-[#2D3748]">
-          <span className="text-sm text-[#96785A] dark:text-[#64748B]">
-            {hotel.reviewCount} opiniones
-          </span>
-          <span className="flex items-center gap-1 text-sm font-medium text-[#E8850C] group-hover:gap-2 transition-all">
-            Ver detalles
-            <ArrowRight className="w-4 h-4" />
-          </span>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function RoomCard({ room }: { room: Room }) {
-  return (
-    <Link
-      to={`/room/${room.id}`}
-      className="group block bg-white dark:bg-[#1A2028] rounded-2xl overflow-hidden border border-[#E8D9C8] dark:border-[#2D3748] hover:shadow-xl hover:shadow-[#E8850C]/10 hover:border-[#E8850C]/30 transition-all duration-300"
-    >
-      {/* Image */}
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={
-            room.images[0] ||
-            "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"
-          }
-          alt={room.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-[#2D1F14]/20 group-hover:bg-[#2D1F14]/10 transition-colors" />
-
-        {/* Featured Badge */}
-        {room.isFeatured && (
-          <div className="absolute top-4 left-4">
-            <span className="px-3 py-1 bg-[#E8850C] rounded-lg text-xs font-bold text-white flex items-center gap-1.5">
-              <Star className="w-3.5 h-3.5 fill-white" />
-              Destacada
-            </span>
-          </div>
-        )}
-
-        {/* Price */}
-        <div className="absolute bottom-4 right-4">
-          <span className="px-4 py-2 bg-white/95 backdrop-blur rounded-xl text-sm font-bold text-[#E8850C]">
-            ${room.pricePerNight}
-            <span className="text-[#96785A] font-normal">/noche</span>
-          </span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-5">
-        <h3 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
-          {room.name}
-        </h3>
-
-        <p className="text-sm text-[#96785A] dark:text-[#64748B] mt-1">
-          {room.type}
-        </p>
-
-        <div className="flex items-center gap-4 mt-3 text-sm text-[#5E4836] dark:text-[#94A3B8]">
-          <span className="flex items-center gap-1.5">
-            <Users className="w-4 h-4" />
-            {room.capacity} personas
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Bed className="w-4 h-4" />
-            {room.bedType}
-          </span>
-        </div>
-
-        {/* Amenities */}
-        <div className="flex flex-wrap gap-2 mt-4">
-          {room.amenities.slice(0, 4).map((amenity) => (
-            <span
-              key={amenity}
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FFF8F1] dark:bg-[#242B35] rounded-lg text-xs text-[#5E4836] dark:text-[#94A3B8]"
-            >
-              {amenityIcons[amenity] || null}
-              {amenity}
-            </span>
-          ))}
-          {room.amenities.length > 4 && (
-            <span className="px-2.5 py-1 text-xs text-[#96785A] dark:text-[#64748B]">
-              +{room.amenities.length - 4}
-            </span>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-5 pt-4 border-t border-[#F5EDE3] dark:border-[#2D3748]">
-          <span
-            className={`text-sm ${room.isAvailable ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
-          >
-            {room.isAvailable ? "Disponible" : "No disponible"}
-          </span>
-          <span className="flex items-center gap-1 text-sm font-medium text-[#E8850C] group-hover:gap-2 transition-all">
-            Ver detalles
-            <ArrowRight className="w-4 h-4" />
-          </span>
-        </div>
-      </div>
-    </Link>
   );
 }
