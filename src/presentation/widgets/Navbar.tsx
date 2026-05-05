@@ -314,7 +314,7 @@ export function Navbar() {
               Explorar
             </button>
             <button
-              onClick={() => scrollToSection("featured")}
+              onClick={() => scrollToSection("featured-hotels")}
               className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C] transition-colors"
             >
               Destacados
@@ -418,12 +418,12 @@ export function Navbar() {
               >
                 Explorar
               </button>
-              <button
-                onClick={() => scrollToSection("featured")}
-                className="block py-2 text-[#5E4836] dark:text-[#94A3B8] font-medium"
-              >
-                Destacados
-              </button>
+               <button
+                 onClick={() => scrollToSection("featured-hotels")}
+                 className="block py-2 text-[#5E4836] dark:text-[#94A3B8] font-medium"
+               >
+                 Destacados
+               </button>
 
               <div className="border-t border-[#E8D9C8] dark:border-[#2D3748] pt-3">
                 {isAuthenticated ? (

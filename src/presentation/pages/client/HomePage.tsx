@@ -1,14 +1,26 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { HotelCard } from "@/presentation/components/HotelCard";
 import { RoomCard } from "@/presentation/components/RoomCard";
-import { Search, Star, Hotel as HotelIcon, Bed } from "lucide-react";
-import { hotelTypeIcons, HOTEL_TYPES } from "@/presentation/utils/iconMaps.tsx";
+import { hotelTypeIcons, HOTEL_TYPES } from "@/presentation/utils/iconMaps";
+import {
+  Search,
+  Star,
+  Hotel as HotelIcon,
+  TreePine,
+  MapPin,
+  ArrowRight,
+  Filter,
+  X,
+} from "lucide-react";
 
 const ITEMS_PER_PAGE = 9;
-const HERO_IMAGE = import.meta.env.VITE_HERO_IMAGE || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400";
+
+const HERO_IMAGE =
+  import.meta.env.VITE_HERO_IMAGE ||
+  "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400";
 
 export function HomePage() {
   const {
@@ -26,24 +38,8 @@ export function HomePage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
-  const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const cities = useMemo(
-    () => [...new Set(hotels.map((h) => h.city).filter(Boolean))],
-    [hotels]
-  );
-
-  const hotelCount = useMemo(() => hotels.length, [hotels]);
-  const resortCount = useMemo(
-    () => hotels.filter((h) => h.type === "resort").length,
-    [hotels]
-  );
-  const cityCount = useMemo(() => cities.length, [cities]);
-  const reviewCount = useMemo(
-    () => hotels.reduce((sum, h) => sum + h.reviewCount, 0),
-    [hotels]
-  );
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetchHotels();
@@ -51,63 +47,107 @@ export function HomePage() {
     fetchFeaturedRooms();
   }, [fetchHotels, fetchFeaturedHotels, fetchFeaturedRooms]);
 
-  const applyFilters = useCallback(
-    (updates: { searchQuery?: string; type?: string; city?: string }) => {
-      const newFilters = {
-        searchQuery: updates.searchQuery ?? filters.searchQuery,
-        type: updates.type ?? filters.type,
-        city: updates.city ?? filters.city,
-      };
-      setFilters(newFilters);
-      fetchHotels(newFilters);
-    },
-    [filters, setFilters, fetchHotels]
-  );
+  const applyFilters = (updates: {
+    searchQuery?: string;
+    type?: string;
+    city?: string;
+  }) => {
+    const newFilters: {
+      searchQuery?: string;
+      type?: string;
+      city?: string;
+    } = {};
 
-  const handleSearch = useCallback(() => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => {
-      applyFilters({ searchQuery: searchQuery || undefined });
+    if (updates.searchQuery !== undefined) {
+      newFilters.searchQuery = updates.searchQuery || undefined;
+    }
+    if (updates.type !== undefined) {
+      newFilters.type = updates.type || undefined;
+    }
+    if (updates.city !== undefined) {
+      newFilters.city = updates.city || undefined;
+    }
+
+    const mergedFilters = { ...filters, ...newFilters };
+    setFilters(newFilters);
+    fetchHotels(mergedFilters);
+  };
+
+  const handleSearch = () => {
+    applyFilters({ searchQuery });
+  };
+
+  const handleSearchDebounced = (value: string) => {
+    setSearchQuery(value);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      applyFilters({ searchQuery: value || "" });
     }, 300);
-  }, [searchQuery, applyFilters]);
+  };
 
-  const handleTypeFilter = useCallback(
-    (type: string) => {
-      const newType = selectedType === type ? "" : type;
-      setSelectedType(newType);
-      applyFilters({ type: newType || undefined });
-    },
-    [selectedType, applyFilters]
+  const handleTypeFilter = (type: string) => {
+    const newType = selectedType === type ? "" : type;
+    setSelectedType(newType);
+    applyFilters({ type: newType });
+  };
+
+  const handleCityFilter = (city: string) => {
+    const newCity = selectedCity === city ? "" : city;
+    setSelectedCity(newCity);
+    applyFilters({ city: newCity });
+  };
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
+  };
+
+  const cities = useMemo(
+    () => [...new Set(hotels.map((h) => h.city))],
+    [hotels]
   );
 
-  const handleCityFilter = useCallback(
-    (city: string) => {
-      const newCity = selectedCity === city ? "" : city;
-      setSelectedCity(newCity);
-      applyFilters({ city: newCity || undefined });
-    },
-    [selectedCity, applyFilters]
+  const hotelCount = useMemo(
+    () => hotels.filter((h) => h.type === "hotel").length,
+    [hotels]
   );
 
-  const handleLoadMore = useCallback(() => {
-    setDisplayCount((prev) => prev + ITEMS_PER_PAGE);
-  }, []);
+  const resortCount = useMemo(
+    () => hotels.filter((h) => h.type === "resort").length,
+    [hotels]
+  );
+
+  const cityCount = useMemo(() => cities.length, [cities]);
+
+  const reviewCount = useMemo(
+    () => hotels.reduce((acc, h) => acc + h.reviewCount, 0),
+    [hotels]
+  );
 
   const visibleHotels = useMemo(
-    () => hotels.slice(0, displayCount),
-    [hotels, displayCount]
+    () => hotels.slice(0, visibleCount),
+    [hotels, visibleCount]
   );
-  const hasMore = displayCount < hotels.length;
 
-  useEffect(() => {
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    };
-  }, []);
+  const hasMore = visibleCount < hotels.length;
 
   return (
     <div className="bg-[#FDF8F3] dark:bg-[#0F1419]">
-      {/* Hero Section */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-4 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <button
+              onClick={() => useHotelStore.getState().setFilters({})}
+              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <section className="relative bg-[#2D1F14] overflow-hidden">
         <div className="absolute inset-0">
           <img
@@ -134,14 +174,13 @@ export function HomePage() {
               hasta resorts de lujo, todos en un solo lugar.
             </p>
 
-            {/* Search Bar */}
             <div className="flex gap-2">
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B89A7A]" />
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearchDebounced(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="Buscar por nombre, ciudad o tipo..."
                   className="w-full pl-12 pr-4 py-4 bg-white/95 backdrop-blur rounded-xl text-[#2D1F14] placeholder-[#B89A7A] focus:outline-none focus:ring-2 focus:ring-[#E8850C] shadow-lg"
@@ -159,7 +198,6 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Stats Section */}
       <section className="py-12 bg-white dark:bg-[#1A2028] border-b border-[#E8D9C8] dark:border-[#2D3748]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -172,12 +210,12 @@ export function HomePage() {
               {
                 label: "Resorts",
                 value: resortCount > 0 ? `${resortCount}+` : "35+",
-                icon: <HotelIcon className="w-6 h-6" />,
+                icon: <TreePine className="w-6 h-6" />,
               },
               {
                 label: "Ciudades",
-                value: cityCount > 0 ? `${cityCount}` : "8",
-                icon: <Star className="w-6 h-6" />,
+                value: cityCount > 0 ? String(cityCount) : "8",
+                icon: <MapPin className="w-6 h-6" />,
               },
               {
                 label: "Opiniones",
@@ -207,18 +245,6 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Error Banner */}
-      {error && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-            <p className="text-sm text-red-700 dark:text-red-300">
-              Error al cargar los datos: {error}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Featured Hotels Section */}
       {featuredHotels.length > 0 && (
         <section id="featured-hotels" className="py-16 bg-white dark:bg-[#1A2028]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -248,13 +274,12 @@ export function HomePage() {
         </section>
       )}
 
-      {/* Featured Rooms Section */}
       {featuredRooms.length > 0 && (
         <section id="featured-rooms" className="py-16 bg-[#FDF8F3] dark:bg-[#0F1419]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
-                <Bed className="w-6 h-6 text-[#E8850C]" />
+                <HotelIcon className="w-6 h-6 text-[#E8850C]" />
                 Habitaciones Destacadas
               </h2>
               <p className="text-[#96785A] dark:text-[#64748B] mt-1">
@@ -278,10 +303,8 @@ export function HomePage() {
         </section>
       )}
 
-      {/* Explore Section */}
       <section id="explore" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
@@ -295,22 +318,12 @@ export function HomePage() {
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1A2028] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#5E4836] dark:text-[#94A3B8] hover:border-[#E8850C] transition-colors"
             >
-              <span>Filtros</span>
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={showFilters ? "close" : "open"}
-                  initial={{ opacity: 0, rotate: -90 }}
-                  animate={{ opacity: 1, rotate: 0 }}
-                  exit={{ opacity: 0, rotate: 90 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  {showFilters ? "✕" : "▾"}
-                </motion.span>
-              </AnimatePresence>
+              <Filter className="w-4 h-4" />
+              Filtros
+              {showFilters ? <X className="w-4 h-4" /> : null}
             </button>
           </div>
 
-          {/* Filters */}
           {showFilters && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
@@ -318,7 +331,6 @@ export function HomePage() {
               exit={{ opacity: 0, height: 0 }}
               className="mb-8 p-6 bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] space-y-4"
             >
-              {/* Type Filter */}
               <div>
                 <p className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-2">
                   Tipo de Alojamiento
@@ -340,7 +352,6 @@ export function HomePage() {
                 </div>
               </div>
 
-              {/* City Filter */}
               {cities.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] mb-2">
@@ -366,7 +377,6 @@ export function HomePage() {
             </motion.div>
           )}
 
-          {/* Type Quick Filter */}
           <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
             <button
               onClick={() => handleTypeFilter("")}
@@ -394,10 +404,9 @@ export function HomePage() {
             ))}
           </div>
 
-          {/* Hotel Grid */}
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
+              {[1, 2, 3].map((i) => (
                 <div key={i} className="animate-pulse">
                   <div className="h-56 bg-[#E8D9C8] dark:bg-[#2D3748] rounded-t-2xl" />
                   <div className="p-5 bg-white dark:bg-[#1A2028] rounded-b-2xl space-y-3">
@@ -409,35 +418,30 @@ export function HomePage() {
               ))}
             </div>
           ) : (
-            <>
-              <div
-                id="hotel-grid"
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              >
-                {visibleHotels.map((hotel, index) => (
-                  <motion.div
-                    key={hotel.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <HotelCard hotel={hotel} />
-                  </motion.div>
-                ))}
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {visibleHotels.map((hotel, index) => (
+                <motion.div
+                  key={hotel.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <HotelCard hotel={hotel} />
+                </motion.div>
+              ))}
+            </div>
+          )}
 
-              {/* Load More */}
-              {hasMore && (
-                <div className="flex justify-center mt-12">
-                  <button
-                    onClick={handleLoadMore}
-                    className="px-8 py-3 bg-white dark:bg-[#1A2028] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl text-[#5E4836] dark:text-[#94A3B8] font-medium hover:border-[#E8850C] hover:text-[#E8850C] transition-colors"
-                  >
-                    Cargar más ({hotels.length - displayCount} restantes)
-                  </button>
-                </div>
-              )}
-            </>
+          {!isLoading && hasMore && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={handleLoadMore}
+                className="px-8 py-3 bg-[#E8850C] hover:bg-[#C46A08] text-white font-medium rounded-xl transition-colors shadow-md hover:shadow-lg"
+              >
+                Cargar mas
+                <ArrowRight className="w-4 h-4 inline ml-2" />
+              </button>
+            </div>
           )}
 
           {hotels.length === 0 && !isLoading && (

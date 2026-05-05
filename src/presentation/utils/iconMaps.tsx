@@ -1,4 +1,9 @@
+import type { HotelType } from "@/domain/entities/Hotel";
 import {
+  Hotel as HotelIcon,
+  TreePine,
+  Home,
+  Building,
   Wifi,
   Waves,
   UtensilsCrossed,
@@ -6,12 +11,7 @@ import {
   Dumbbell,
   Wine,
   Bath,
-  Hotel as HotelIcon,
-  TreePine,
-  Home,
-  Building,
 } from "lucide-react";
-import type { HotelType } from "@/domain/entities/Hotel";
 
 export const hotelTypeIcons: Record<HotelType, React.ReactNode> = {
   hotel: <HotelIcon className="w-4 h-4" />,

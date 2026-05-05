@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { Star, Bed, Users, ArrowRight } from "lucide-react";
+import { Star, Users, Bed, ArrowRight } from "lucide-react";
 import type { Room } from "@/domain/entities/Room";
-import { amenityIcons } from "@/presentation/utils/iconMaps.tsx";
+import { amenityIcons } from "@/presentation/utils/iconMaps";
 
 export function RoomCard({ room }: { room: Room }) {
   return (
@@ -9,7 +9,6 @@ export function RoomCard({ room }: { room: Room }) {
       to={`/room/${room.id}`}
       className="group block bg-white dark:bg-[#1A2028] rounded-2xl overflow-hidden border border-[#E8D9C8] dark:border-[#2D3748] hover:shadow-xl hover:shadow-[#E8850C]/10 hover:border-[#E8850C]/30 transition-all duration-300"
     >
-      {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <img
           src={
@@ -21,7 +20,6 @@ export function RoomCard({ room }: { room: Room }) {
         />
         <div className="absolute inset-0 bg-[#2D1F14]/20 group-hover:bg-[#2D1F14]/10 transition-colors" />
 
-        {/* Featured Badge */}
         {room.isFeatured && (
           <div className="absolute top-4 left-4">
             <span className="px-3 py-1 bg-[#E8850C] rounded-lg text-xs font-bold text-white flex items-center gap-1.5">
@@ -31,7 +29,6 @@ export function RoomCard({ room }: { room: Room }) {
           </div>
         )}
 
-        {/* Price */}
         <div className="absolute bottom-4 right-4">
           <span className="px-4 py-2 bg-white/95 backdrop-blur rounded-xl text-sm font-bold text-[#E8850C]">
             ${room.pricePerNight}
@@ -40,7 +37,6 @@ export function RoomCard({ room }: { room: Room }) {
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-5">
         <h3 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
           {room.name}
@@ -61,7 +57,6 @@ export function RoomCard({ room }: { room: Room }) {
           </span>
         </div>
 
-        {/* Amenities */}
         <div className="flex flex-wrap gap-2 mt-4">
           {room.amenities.slice(0, 4).map((amenity) => (
             <span
@@ -79,7 +74,6 @@ export function RoomCard({ room }: { room: Room }) {
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between mt-5 pt-4 border-t border-[#F5EDE3] dark:border-[#2D3748]">
           <span
             className={`text-sm ${room.isAvailable ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
