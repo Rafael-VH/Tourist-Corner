@@ -96,9 +96,14 @@ export class SupabaseAuthRepository implements AuthRepository {
   }
 
   async updateProfile(userId: string, data: Partial<User>): Promise<User> {
+    const dbData: Record<string, unknown> = {};
+    if (data.name !== undefined) dbData.name = data.name;
+    if (data.phone !== undefined) dbData.phone = data.phone;
+    if (data.avatarUrl !== undefined) dbData.avatar_url = data.avatarUrl;
+
     const { data: updated, error } = await supabase
       .from('users')
-      .update(data)
+      .update(dbData)
       .eq('id', userId)
       .select()
       .single();

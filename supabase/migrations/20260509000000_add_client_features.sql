@@ -62,7 +62,7 @@ USING (
     EXISTS (
         SELECT 1 FROM public.hotels
         WHERE hotels.id = support_tickets.hotel_id
-        AND hotels.owner_id = auth.uid()
+        AND hotels.manager_id = auth.uid()
     )
 );
 
@@ -74,14 +74,14 @@ USING (
     EXISTS (
         SELECT 1 FROM public.hotels
         WHERE hotels.id = support_tickets.hotel_id
-        AND hotels.owner_id = auth.uid()
+        AND hotels.manager_id = auth.uid()
     )
 )
 WITH CHECK (
     EXISTS (
         SELECT 1 FROM public.hotels
         WHERE hotels.id = support_tickets.hotel_id
-        AND hotels.owner_id = auth.uid()
+        AND hotels.manager_id = auth.uid()
     )
 );
 

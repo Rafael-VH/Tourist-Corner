@@ -5,6 +5,7 @@ import type { Reservation, CreateReservationDto } from '@/domain/entities/Reserv
 interface ReservationRecord {
   id: string;
   room_id: string;
+  user_id: string | null;
   guest_name: string;
   guest_email: string;
   guest_phone: string | null;
@@ -96,7 +97,7 @@ export class SupabaseReservationRepository implements ReservationRepository {
     return {
       id: record.id,
       roomId: record.room_id,
-      userId: null,
+      userId: record.user_id,
       guestName: record.guest_name,
       guestEmail: record.guest_email,
       guestPhone: record.guest_phone,
