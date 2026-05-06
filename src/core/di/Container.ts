@@ -55,8 +55,17 @@ import {
   CreateReservationUseCase,
   GetReservationByIdUseCase,
   GetReservationsByUserUseCase,
+  GetReservationsByStatusUseCase,
   UpdateReservationStatusUseCase,
   CancelReservationUseCase,
+  CancelWithPolicyUseCase,
+  CheckInUseCase,
+  CheckOutUseCase,
+  ExtendReservationUseCase,
+  MarkNoShowUseCase,
+  ValidateAvailabilityUseCase,
+  GetStatusHistoryUseCase,
+  GetOverdueReservationsUseCase,
 } from '@/domain/usecases/ReservationUseCases';
 
 import {
@@ -70,7 +79,6 @@ import {
 let _container: ReturnType<typeof createContainer> | null = null;
 
 function createContainer() {
-  // Repositories
   const authRepository = new SupabaseAuthRepository();
   const hotelRepository = new SupabaseHotelRepository();
   const roomRepository = new SupabaseRoomRepository();
@@ -80,7 +88,6 @@ function createContainer() {
   const supportTicketRepository = new SupabaseSupportTicketRepository();
 
   return {
-    // Auth use cases
     signIn: new SignInUseCase(authRepository),
     signUp: new SignUpUseCase(authRepository),
     signOut: new SignOutUseCase(authRepository),
@@ -90,7 +97,6 @@ function createContainer() {
     updatePassword: new UpdatePasswordUseCase(authRepository),
     resetPassword: new ResetPasswordUseCase(authRepository),
 
-    // Hotel use cases
     getHotels: new GetHotelsUseCase(hotelRepository),
     getHotelById: new GetHotelByIdUseCase(hotelRepository),
     getManagerHotels: new GetManagerHotelsUseCase(hotelRepository),
@@ -101,7 +107,6 @@ function createContainer() {
     toggleHotelStatus: new ToggleHotelStatusUseCase(hotelRepository),
     getFeaturedHotels: new GetFeaturedHotelsUseCase(hotelRepository),
 
-    // Room use cases
     getRoomsByHotel: new GetRoomsByHotelUseCase(roomRepository),
     getRoomById: new GetRoomByIdUseCase(roomRepository),
     createRoom: new CreateRoomUseCase(roomRepository),
@@ -113,7 +118,6 @@ function createContainer() {
     getFeaturedRooms: new GetFeaturedRoomsUseCase(roomRepository),
     getFeaturedRoomsByHotel: new GetFeaturedRoomsByHotelUseCase(roomRepository),
 
-    // Comment use cases
     getCommentsByTarget: new GetCommentsByTargetUseCase(commentRepository),
     createComment: new CreateCommentUseCase(commentRepository),
     updateComment: new UpdateCommentUseCase(commentRepository),
@@ -121,21 +125,27 @@ function createContainer() {
     likeComment: new LikeCommentUseCase(commentRepository),
     getUserComments: new GetUserCommentsUseCase(commentRepository),
 
-    // Reservation use cases
-    createReservation: new CreateReservationUseCase(reservationRepository),
+    createReservation: new CreateReservationUseCase(reservationRepository, roomRepository),
     getReservationById: new GetReservationByIdUseCase(reservationRepository),
     getReservationsByUser: new GetReservationsByUserUseCase(reservationRepository),
+    getReservationsByStatus: new GetReservationsByStatusUseCase(reservationRepository),
     updateReservationStatus: new UpdateReservationStatusUseCase(reservationRepository),
     cancelReservation: new CancelReservationUseCase(reservationRepository),
+    cancelWithPolicy: new CancelWithPolicyUseCase(reservationRepository),
+    checkIn: new CheckInUseCase(reservationRepository),
+    checkOut: new CheckOutUseCase(reservationRepository),
+    extendReservation: new ExtendReservationUseCase(reservationRepository),
+    markNoShow: new MarkNoShowUseCase(reservationRepository),
+    validateAvailability: new ValidateAvailabilityUseCase(reservationRepository),
+    getStatusHistory: new GetStatusHistoryUseCase(reservationRepository),
+    getOverdueReservations: new GetOverdueReservationsUseCase(reservationRepository),
 
-    // Support ticket use cases
     createSupportTicket: new CreateSupportTicketUseCase(supportTicketRepository),
     getTicketsByUser: new GetTicketsByUserUseCase(supportTicketRepository),
     getTicketById: new GetTicketByIdUseCase(supportTicketRepository),
     updateTicketStatus: new UpdateTicketStatusUseCase(supportTicketRepository),
     getTicketsByHotel: new GetTicketsByHotelUseCase(supportTicketRepository),
 
-    // Image repository (used directly, no use case needed)
     imageRepository,
   };
 }
