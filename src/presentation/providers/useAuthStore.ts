@@ -14,10 +14,14 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<User | undefined>;
   signUp: (email: string, password: string, name: string, role: UserRole, registrationCode?: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateProfile: (userId: string, data: Partial<User>) => Promise<void>;
+  uploadAvatar: (userId: string, file: File) => Promise<void>;
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isLoading: false,
   error: null,
@@ -60,6 +64,58 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: null, isAuthenticated: false, isLoading: false });
     } catch (error: unknown) {
       set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
+  updateProfile: async (userId, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { updateProfile } = getContainer();
+      const updatedUser = await updateProfile.execute(userId, data);
+      set({ user: updatedUser, isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
+      throw error;
+    }
+  },
+
+  uploadAvatar: async (userId, file) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { uploadAvatar } = getContainer();
+      const avatarUrl = await uploadAvatar.execute(userId, file);
+      const currentUser = get().user;
+      if (currentUser) {
+        const updatedUser = await getContainer().updateProfile.execute(currentUser.id, { avatarUrl });
+        set({ user: updatedUser, isLoading: false });
+      }
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
+      throw error;
+    }
+  },
+
+  updatePassword: async (currentPassword, newPassword) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { updatePassword } = getContainer();
+      await updatePassword.execute(currentPassword, newPassword);
+      set({ isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
+      throw error;
+    }
+  },
+
+  resetPassword: async (email) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { resetPassword } = getContainer();
+      await resetPassword.execute(email);
+      set({ isLoading: false });
+    } catch (error: unknown) {
+      set({ error: (error as Error).message, isLoading: false });
+      throw error;
     }
   },
 }));

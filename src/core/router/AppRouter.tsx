@@ -6,6 +6,10 @@ import { LoginPage } from "@/presentation/pages/auth/LoginPage";
 import { HomePage } from "@/presentation/pages/client/HomePage";
 import { HotelDetailPage } from "@/presentation/pages/client/HotelDetailPage";
 import { RoomDetailPage } from "@/presentation/pages/client/RoomDetailPage";
+import { ClientProfilePage } from "@/presentation/pages/client/ClientProfilePage";
+import { ClientSecurityPage } from "@/presentation/pages/client/ClientSecurityPage";
+import { ClientReservationsPage } from "@/presentation/pages/client/ClientReservationsPage";
+import { ClientSupportPage } from "@/presentation/pages/client/ClientSupportPage";
 import { ManagerDashboardPage } from "@/presentation/pages/manager/ManagerDashboardPage";
 import { AdminDashboardPage } from "@/presentation/pages/admin/AdminDashboardPage";
 import { AdminCodesPage } from "@/presentation/pages/admin/AdminCodesPage";
@@ -25,10 +29,12 @@ function ProtectedRoute({
   children,
   requireManager = false,
   requireAdmin = false,
+  requireClient = false,
 }: {
   children: React.ReactNode;
   requireManager?: boolean;
   requireAdmin?: boolean;
+  requireClient?: boolean;
 }) {
   const { isAuthenticated, user } = useAuthStore();
 
@@ -41,6 +47,10 @@ function ProtectedRoute({
   }
 
   if (requireAdmin && user?.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
+  if (requireClient && user?.role !== "client") {
     return <Navigate to="/" replace />;
   }
 
@@ -88,6 +98,39 @@ export function AppRouter() {
             }
           />
           <Route path="/room/:id" element={<RoomDetailPage />} />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute requireClient>
+                <ClientProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/security"
+            element={
+              <ProtectedRoute requireClient>
+                <ClientSecurityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reservations"
+            element={
+              <ProtectedRoute requireClient>
+                <ClientReservationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/support"
+            element={
+              <ProtectedRoute requireClient>
+                <ClientSupportPage />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/admin"

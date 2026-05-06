@@ -4,6 +4,7 @@ import { SupabaseRoomRepository } from '@/data/repositories/SupabaseRoomReposito
 import { SupabaseCommentRepository } from '@/data/repositories/SupabaseCommentRepository';
 import { SupabaseReservationRepository } from '@/data/repositories/SupabaseReservationRepository';
 import { SupabaseImageRepository } from '@/data/repositories/SupabaseImageRepository';
+import { SupabaseSupportTicketRepository } from '@/data/repositories/SupabaseSupportTicketRepository';
 
 import {
   SignInUseCase,
@@ -12,6 +13,8 @@ import {
   GetCurrentUserUseCase,
   UpdateProfileUseCase,
   UploadAvatarUseCase,
+  UpdatePasswordUseCase,
+  ResetPasswordUseCase,
 } from '@/domain/usecases/AuthUseCases';
 
 import {
@@ -56,6 +59,14 @@ import {
   CancelReservationUseCase,
 } from '@/domain/usecases/ReservationUseCases';
 
+import {
+  CreateSupportTicketUseCase,
+  GetTicketsByUserUseCase,
+  GetTicketByIdUseCase,
+  UpdateTicketStatusUseCase,
+  GetTicketsByHotelUseCase,
+} from '@/domain/usecases/SupportTicketUseCases';
+
 let _container: ReturnType<typeof createContainer> | null = null;
 
 function createContainer() {
@@ -66,6 +77,7 @@ function createContainer() {
   const commentRepository = new SupabaseCommentRepository();
   const reservationRepository = new SupabaseReservationRepository();
   const imageRepository = new SupabaseImageRepository();
+  const supportTicketRepository = new SupabaseSupportTicketRepository();
 
   return {
     // Auth use cases
@@ -75,6 +87,8 @@ function createContainer() {
     getCurrentUser: new GetCurrentUserUseCase(authRepository),
     updateProfile: new UpdateProfileUseCase(authRepository),
     uploadAvatar: new UploadAvatarUseCase(authRepository),
+    updatePassword: new UpdatePasswordUseCase(authRepository),
+    resetPassword: new ResetPasswordUseCase(authRepository),
 
     // Hotel use cases
     getHotels: new GetHotelsUseCase(hotelRepository),
@@ -113,6 +127,13 @@ function createContainer() {
     getReservationsByUser: new GetReservationsByUserUseCase(reservationRepository),
     updateReservationStatus: new UpdateReservationStatusUseCase(reservationRepository),
     cancelReservation: new CancelReservationUseCase(reservationRepository),
+
+    // Support ticket use cases
+    createSupportTicket: new CreateSupportTicketUseCase(supportTicketRepository),
+    getTicketsByUser: new GetTicketsByUserUseCase(supportTicketRepository),
+    getTicketById: new GetTicketByIdUseCase(supportTicketRepository),
+    updateTicketStatus: new UpdateTicketStatusUseCase(supportTicketRepository),
+    getTicketsByHotel: new GetTicketsByHotelUseCase(supportTicketRepository),
 
     // Image repository (used directly, no use case needed)
     imageRepository,

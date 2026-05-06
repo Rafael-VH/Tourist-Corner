@@ -7,4 +7,6 @@ export interface AuthRepository {
   getCurrentUser(): Promise<User | null>;
   updateProfile(userId: string, data: Partial<User>): Promise<User>;
   uploadAvatar(userId: string, file: File): Promise<string>;
+  updatePassword(currentPassword: string, newPassword: string): Promise<void>;
+  resetPasswordEmail(email: string): Promise<void>;
 }

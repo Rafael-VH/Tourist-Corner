@@ -128,6 +128,23 @@ export class SupabaseAuthRepository implements AuthRepository {
     return data.publicUrl;
   }
 
+  async updatePassword(_currentPassword: string, newPassword: string): Promise<void> {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) handleSupabaseError(error);
+    if (!data.user) throw new Error('No se pudo actualizar la contraseña');
+  }
+
+  async resetPasswordEmail(email: string): Promise<void> {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login?reset=true`,
+    });
+
+    if (error) handleSupabaseError(error);
+  }
+
   private mapToUser(authUser: { id: string; email?: string; user_metadata?: Record<string, unknown> }, profile: Partial<UserRecord> | null): User {
     return {
       id: authUser.id,

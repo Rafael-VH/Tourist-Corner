@@ -72,3 +72,27 @@ export class UploadAvatarUseCase {
     return this.authRepository.uploadAvatar(userId, file);
   }
 }
+
+export class UpdatePasswordUseCase {
+  private authRepository: AuthRepository;
+
+  constructor(authRepository: AuthRepository) {
+    this.authRepository = authRepository;
+  }
+
+  async execute(currentPassword: string, newPassword: string): Promise<void> {
+    return this.authRepository.updatePassword(currentPassword, newPassword);
+  }
+}
+
+export class ResetPasswordUseCase {
+  private authRepository: AuthRepository;
+
+  constructor(authRepository: AuthRepository) {
+    this.authRepository = authRepository;
+  }
+
+  async execute(email: string): Promise<void> {
+    return this.authRepository.resetPasswordEmail(email);
+  }
+}
