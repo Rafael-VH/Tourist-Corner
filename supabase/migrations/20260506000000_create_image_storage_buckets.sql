@@ -24,10 +24,12 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
 
   -- RLS policies for hotel-images
+  DROP POLICY IF EXISTS "Public can view hotel images" ON storage.objects;
   CREATE POLICY "Public can view hotel images"
     ON storage.objects FOR SELECT
     USING (bucket_id = 'hotel-images');
 
+  DROP POLICY IF EXISTS "Authenticated users can upload hotel images" ON storage.objects;
   CREATE POLICY "Authenticated users can upload hotel images"
     ON storage.objects FOR INSERT
     WITH CHECK (
@@ -35,6 +37,7 @@ BEGIN
       auth.role() = 'authenticated'
     );
 
+  DROP POLICY IF EXISTS "Hotel managers can delete their hotel images" ON storage.objects;
   CREATE POLICY "Hotel managers can delete their hotel images"
     ON storage.objects FOR DELETE
     USING (
@@ -44,10 +47,12 @@ BEGIN
     );
 
   -- RLS policies for room-images
+  DROP POLICY IF EXISTS "Public can view room images" ON storage.objects;
   CREATE POLICY "Public can view room images"
     ON storage.objects FOR SELECT
     USING (bucket_id = 'room-images');
 
+  DROP POLICY IF EXISTS "Authenticated users can upload room images" ON storage.objects;
   CREATE POLICY "Authenticated users can upload room images"
     ON storage.objects FOR INSERT
     WITH CHECK (
@@ -55,6 +60,7 @@ BEGIN
       auth.role() = 'authenticated'
     );
 
+  DROP POLICY IF EXISTS "Hotel managers can delete their room images" ON storage.objects;
   CREATE POLICY "Hotel managers can delete their room images"
     ON storage.objects FOR DELETE
     USING (

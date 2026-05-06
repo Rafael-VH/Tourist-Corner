@@ -10,9 +10,11 @@ create table if not exists public.featured_rooms (
 
 alter table public.featured_rooms enable row level security;
 
+drop policy if exists "Anyone can view featured rooms" on public.featured_rooms;
 create policy "Anyone can view featured rooms" on public.featured_rooms
   for select using (true);
 
+drop policy if exists "Admins and Managers can manage featured rooms" on public.featured_rooms;
 create policy "Admins and Managers can manage featured rooms" on public.featured_rooms
   for all using (
     exists (
