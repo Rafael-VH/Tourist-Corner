@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { supabase } from "@/data/datasources/SupabaseClient";
-import { ArrowLeft, Save, AlertTriangle, Bed } from "lucide-react";
+import { Save, AlertTriangle, Bed } from "lucide-react";
 
 export function NewRoomTypePage() {
   const navigate = useNavigate();
@@ -58,13 +58,6 @@ export function NewRoomTypePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="inline-flex items-center gap-2 text-[#96785A] dark:text-[#64748B] hover:text-[#E8850C] transition-colors mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Volver al Panel
-          </button>
           <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-3">
             <Bed className="w-8 h-8 text-[#E8850C]" />
             Nuevo Tipo de Habitacion

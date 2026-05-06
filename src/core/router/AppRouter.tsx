@@ -27,6 +27,7 @@ import { CalendarPage } from "@/presentation/pages/manager/CalendarPage";
 import { ReservationDetailPage } from "@/presentation/pages/manager/ReservationDetailPage";
 import { DashboardHotelsPage } from "@/presentation/pages/manager/DashboardHotelsPage";
 import { DashboardRoomsPage } from "@/presentation/pages/manager/DashboardRoomsPage";
+import { CustomizePage } from "@/presentation/pages/manager/CustomizePage";
 
 function ProtectedRoute({
   children,
@@ -149,60 +150,59 @@ export function AppRouter() {
             <Route path="rooms" element={<AdminRoomsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
           </Route>
+        </Route>
 
+        {/* Manager routes — standalone layout (no Navbar/Footer) */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute requireManager>
+              <ManagerLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<ManagerDashboardPage />} />
+          <Route path="calendar" element={<CalendarPage />} />
+          <Route path="hotels" element={<DashboardHotelsPage />} />
+          <Route path="rooms" element={<DashboardRoomsPage />} />
+          <Route path="customize" element={<CustomizePage />} />
+          <Route path="hotel/new" element={<NewHotelPage />} />
+          <Route path="hotel/:id" element={<HotelManagementPage />} />
+          <Route path="room/new" element={<NewRoomPage />} />
+          <Route path="room/:id" element={<RoomManagementPage />} />
+          <Route path="room-type/new" element={<NewRoomTypePage />} />
+          <Route path="service/new" element={<NewServicePage />} />
+          <Route path="reservation/:id" element={<ReservationDetailPage />} />
           <Route
-            path="/dashboard"
+            path="reports"
             element={
-              <ProtectedRoute requireManager>
-                <ManagerLayout />
-              </ProtectedRoute>
+              <div className="min-h-screen p-8">
+                <div className="max-w-7xl mx-auto">
+                  <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                    Reportes
+                  </h1>
+                  <p className="text-[#96785A] dark:text-[#64748B] mt-2">
+                    Esta pagina esta en construccion
+                  </p>
+                </div>
+              </div>
             }
-          >
-            <Route index element={<ManagerDashboardPage />} />
-            <Route path="calendar" element={<CalendarPage />} />
-            <Route path="hotels" element={<DashboardHotelsPage />} />
-            <Route path="rooms" element={<DashboardRoomsPage />} />
-            <Route path="hotel/new" element={<NewHotelPage />} />
-            <Route path="hotel/:id" element={<HotelManagementPage />} />
-            <Route path="room/new" element={<NewRoomPage />} />
-            <Route path="room/:id" element={<RoomManagementPage />} />
-            <Route path="room-type/new" element={<NewRoomTypePage />} />
-            <Route path="service/new" element={<NewServicePage />} />
-            <Route
-              path="reservation/:id"
-              element={<ReservationDetailPage />}
-            />
-            <Route
-              path="reports"
-              element={
-                <div className="min-h-screen p-8">
-                  <div className="max-w-7xl mx-auto">
-                    <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
-                      Reportes
-                    </h1>
-                    <p className="text-[#96785A] dark:text-[#64748B] mt-2">
-                      Esta pagina esta en construccion
-                    </p>
-                  </div>
+          />
+          <Route
+            path="settings"
+            element={
+              <div className="min-h-screen p-8">
+                <div className="max-w-7xl mx-auto">
+                  <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                    Configuracion
+                  </h1>
+                  <p className="text-[#96785A] dark:text-[#64748B] mt-2">
+                    Esta pagina esta en construccion
+                  </p>
                 </div>
-              }
-            />
-            <Route
-              path="settings"
-              element={
-                <div className="min-h-screen p-8">
-                  <div className="max-w-7xl mx-auto">
-                    <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
-                      Configuracion
-                    </h1>
-                    <p className="text-[#96785A] dark:text-[#64748B] mt-2">
-                      Esta pagina esta en construccion
-                    </p>
-                  </div>
-                </div>
-              }
-            />
-          </Route>
+              </div>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>

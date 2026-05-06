@@ -6,7 +6,6 @@ import { supabase } from "@/data/datasources/SupabaseClient";
 import { ImageUpload } from "@/presentation/components/ImageUpload";
 import { getContainer } from "@/core/di/Container";
 import {
-  ArrowLeft,
   MapPin,
   Building2,
   Phone,
@@ -253,23 +252,6 @@ export function NewHotelPage() {
 
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
-      <div className="bg-white dark:bg-[#1A2028] border-b border-[#E8D9C8] dark:border-[#2D3748]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/dashboard"
-              className="inline-flex items-center gap-2 text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C] transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Panel</span>
-            </Link>
-            <span className="text-[#D4BEA5]">/</span>
-            <span className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
-              {isCreatingBranch ? "Nueva Sucursal" : "Nuevo Hotel"}
-            </span>
-          </div>
-        </div>
-      </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {submitError && (

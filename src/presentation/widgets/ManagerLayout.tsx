@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
@@ -10,6 +10,8 @@ import {
   Settings,
   Menu,
   X,
+  Sparkles,
+  LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 
@@ -18,13 +20,25 @@ const navItems = [
   { to: "/dashboard/calendar", label: "Calendario", icon: Calendar },
   { to: "/dashboard/hotels", label: "Hoteles", icon: Hotel },
   { to: "/dashboard/rooms", label: "Habitaciones", icon: Bed },
+  { to: "/dashboard/customize", label: "Personalizar", icon: Sparkles },
   { to: "/dashboard/reports", label: "Reportes", icon: BarChart3 },
   { to: "/dashboard/settings", label: "Configuracion", icon: Settings },
 ];
 
 export function ManagerLayout() {
-  const { user } = useAuthStore();
+  const { user, signOut } = useAuthStore();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/login");
+    } catch (err) {
+      console.error("Error al cerrar sesion:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419] flex">
@@ -101,6 +115,13 @@ export function ManagerLayout() {
                   Dueño
                 </p>
               </div>
+              <button
+                onClick={() => setShowLogoutConfirm(true)}
+                className="p-1.5 text-[#96785A] dark:text-[#64748B] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                title="Cerrar sesion"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -135,6 +156,43 @@ export function ManagerLayout() {
             <Outlet />
           </motion.div>
         </div>
+
+        {/* Logout confirmation modal */}
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full max-w-sm bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden shadow-2xl"
+            >
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
+                  <LogOut className="w-6 h-6 text-red-500" />
+                </div>
+                <h3 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-2">
+                  Cerrar sesion
+                </h3>
+                <p className="text-sm text-[#96785A] dark:text-[#64748B] mb-6">
+                  Estas seguro que deseas cerrar sesion?
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowLogoutConfirm(false)}
+                    className="flex-1 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] text-[#5E4836] dark:text-[#94A3B8] rounded-xl text-sm font-medium hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-medium transition-colors"
+                  >
+                    Cerrar sesion
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </main>
     </div>
   );

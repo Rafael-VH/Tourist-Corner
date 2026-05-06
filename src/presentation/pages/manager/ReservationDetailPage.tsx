@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { useReservationStore } from "@/presentation/providers/useReservationStore";
 import { supabase } from "@/data/datasources/SupabaseClient";
 import {
-  ArrowLeft,
   Calendar,
   Clock,
   CheckCircle,
@@ -208,23 +207,6 @@ export function ReservationDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
-      <div className="bg-white dark:bg-[#1A2028] border-b border-[#E8D9C8] dark:border-[#2D3748]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/dashboard/calendar"
-              className="inline-flex items-center gap-2 text-[#5E4836] dark:text-[#94A3B8] hover:text-[#E8850C] transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Calendario</span>
-            </Link>
-            <span className="text-[#D4BEA5]">/</span>
-            <span className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
-              Reservacion
-            </span>
-          </div>
-        </div>
-      </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading && !selectedReservation ? (
