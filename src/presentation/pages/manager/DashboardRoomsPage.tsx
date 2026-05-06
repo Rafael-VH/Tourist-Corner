@@ -11,6 +11,10 @@ import {
   Search,
   DollarSign,
   Users,
+  Hotel,
+  GitBranch,
+  Check,
+  X,
 } from "lucide-react";
 
 interface RoomData {
@@ -39,6 +43,7 @@ export function DashboardRoomsPage() {
   const [roomsByHotel, setRoomsByHotel] = useState<HotelGroup[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [showHotelPicker, setShowHotelPicker] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -98,6 +103,12 @@ export function DashboardRoomsPage() {
     .filter((g) => g.rooms.length > 0);
 
   const mainHotel = hotels.find((h) => h.isMain);
+  const branchHotels = hotels.filter((h) => h.branchOf);
+  const hasBranches = branchHotels.length > 0;
+  const allHotelsForPicker = [
+    ...(mainHotel ? [{ ...mainHotel, isMain: true }] : []),
+    ...branchHotels.map((h) => ({ ...h, isMain: false })),
+  ];
 
   return (
     <div>
@@ -111,17 +122,78 @@ export function DashboardRoomsPage() {
           </p>
         </div>
         <button
-          onClick={() =>
-            mainHotel
-              ? navigate(`/dashboard/room/new?hotelId=${mainHotel.id}`)
-              : navigate("/dashboard/hotel/new")
-          }
+          onClick={() => {
+            if (!mainHotel) {
+              navigate("/dashboard/hotel/new");
+            } else if (hasBranches) {
+              setShowHotelPicker(true);
+            } else {
+              navigate(`/dashboard/room/new?hotelId=${mainHotel.id}`);
+            }
+          }}
           className="flex items-center gap-2 px-4 py-2.5 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
           Nueva Habitacion
         </button>
       </div>
+
+      {/* Hotel Picker Modal */}
+      {showHotelPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-sm bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden shadow-2xl"
+          >
+            <div className="p-5 border-b border-[#F5EDE3] dark:border-[#2D3748] flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+                  Seleccionar Hotel
+                </h3>
+                <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-0.5">
+                  Donde deseas crear la habitacion?
+                </p>
+              </div>
+              <button
+                onClick={() => setShowHotelPicker(false)}
+                className="p-1.5 hover:bg-[#FDF8F3] dark:hover:bg-[#242B35] rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4 text-[#96785A] dark:text-[#64748B]" />
+              </button>
+            </div>
+            <div className="p-3 max-h-64 overflow-y-auto">
+              {allHotelsForPicker.map((hotel) => (
+                <button
+                  key={hotel.id}
+                  onClick={() => {
+                    navigate(`/dashboard/room/new?hotelId=${hotel.id}`);
+                    setShowHotelPicker(false);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#FDF8F3] dark:hover:bg-[#242B35] transition-colors text-left group"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-[#FFF8F1] dark:bg-[#242B35] flex items-center justify-center shrink-0">
+                    {hotel.isMain ? (
+                      <Hotel className="w-4 h-4 text-[#E8850C]" />
+                    ) : (
+                      <GitBranch className="w-4 h-4 text-[#96785A]" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0] group-hover:text-[#E8850C] transition-colors">
+                      {hotel.name}
+                    </p>
+                    <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                      {hotel.isMain ? "Hotel Principal" : "Sucursal"}
+                    </p>
+                  </div>
+                  <Check className="w-4 h-4 text-[#B89A7A] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative mb-4">
