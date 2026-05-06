@@ -361,28 +361,26 @@ export function CalendarPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419]">
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
-                Calendario de Reservaciones
-              </h1>
-              <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                Gestiona las reservaciones de tus hoteles
-              </p>
-            </div>
+    <div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
+            <Calendar className="w-5 h-5 text-white" />
           </div>
-        </motion.div>
+          <div>
+            <h1 className="text-2xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
+              Calendario de Reservaciones
+            </h1>
+            <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+              Gestiona las reservaciones de tus hoteles
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

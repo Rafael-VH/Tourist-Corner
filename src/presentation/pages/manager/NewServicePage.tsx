@@ -73,7 +73,7 @@ export function NewServicePage() {
 
         if (error) throw error;
 
-        navigate("/dashboard");
+        navigate("/dashboard/customize");
       } catch (err: unknown) {
         setSubmitError((err as Error).message || "Error al crear servicio");
         setIsSubmitting(false);
@@ -83,7 +83,7 @@ export function NewServicePage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419] p-4 md:p-8">
+    <div>
       <div className="max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -171,20 +171,29 @@ export function NewServicePage() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting || !form.name}
-            className="w-full py-3 bg-[#E8850C] hover:bg-[#C46A08] text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Crear Servicio
-              </>
-            )}
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard/customize")}
+              className="flex-1 py-3 bg-[#FDF8F3] dark:bg-[#242B35] text-[#5E4836] dark:text-[#94A3B8] font-medium rounded-xl transition-colors hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !form.name}
+              className="flex-1 py-3 bg-[#E8850C] hover:bg-[#C46A08] text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Crear Servicio
+                </>
+              )}
+            </button>
+          </div>
         </motion.form>
       </div>
     </div>
