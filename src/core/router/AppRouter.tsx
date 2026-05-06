@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/presentation/providers/useAuthStore";
 import { Layout } from "@/presentation/widgets/Layout";
 import { AdminLayout } from "@/presentation/widgets/AdminLayout";
+import { ManagerLayout } from "@/presentation/widgets/ManagerLayout";
 import { LoginPage } from "@/presentation/pages/auth/LoginPage";
 import { HomePage } from "@/presentation/pages/client/HomePage";
 import { HotelDetailPage } from "@/presentation/pages/client/HotelDetailPage";
@@ -24,6 +25,8 @@ import { NewRoomTypePage } from "@/presentation/pages/manager/NewRoomTypePage";
 import { NewServicePage } from "@/presentation/pages/manager/NewServicePage";
 import { CalendarPage } from "@/presentation/pages/manager/CalendarPage";
 import { ReservationDetailPage } from "@/presentation/pages/manager/ReservationDetailPage";
+import { DashboardHotelsPage } from "@/presentation/pages/manager/DashboardHotelsPage";
+import { DashboardRoomsPage } from "@/presentation/pages/manager/DashboardRoomsPage";
 
 function ProtectedRoute({
   children,
@@ -151,79 +154,28 @@ export function AppRouter() {
             path="/dashboard"
             element={
               <ProtectedRoute requireManager>
-                <ManagerDashboardPage />
+                <ManagerLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/dashboard/hotel/new"
-            element={
-              <ProtectedRoute requireManager>
-                <NewHotelPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/hotel/:id"
-            element={
-              <ProtectedRoute requireManager>
-                <HotelManagementPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/room/new"
-            element={
-              <ProtectedRoute requireManager>
-                <NewRoomPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/room/:id"
-            element={
-              <ProtectedRoute requireManager>
-                <RoomManagementPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/room-type/new"
-            element={
-              <ProtectedRoute requireManager>
-                <NewRoomTypePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/service/new"
-            element={
-              <ProtectedRoute requireManager>
-                <NewServicePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/calendar"
-            element={
-              <ProtectedRoute requireManager>
-                <CalendarPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/reservation/:id"
-            element={
-              <ProtectedRoute requireManager>
-                <ReservationDetailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/reports"
-            element={
-              <ProtectedRoute requireManager>
-                <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419] p-8">
+          >
+            <Route index element={<ManagerDashboardPage />} />
+            <Route path="calendar" element={<CalendarPage />} />
+            <Route path="hotels" element={<DashboardHotelsPage />} />
+            <Route path="rooms" element={<DashboardRoomsPage />} />
+            <Route path="hotel/new" element={<NewHotelPage />} />
+            <Route path="hotel/:id" element={<HotelManagementPage />} />
+            <Route path="room/new" element={<NewRoomPage />} />
+            <Route path="room/:id" element={<RoomManagementPage />} />
+            <Route path="room-type/new" element={<NewRoomTypePage />} />
+            <Route path="service/new" element={<NewServicePage />} />
+            <Route
+              path="reservation/:id"
+              element={<ReservationDetailPage />}
+            />
+            <Route
+              path="reports"
+              element={
+                <div className="min-h-screen p-8">
                   <div className="max-w-7xl mx-auto">
                     <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
                       Reportes
@@ -233,14 +185,12 @@ export function AppRouter() {
                     </p>
                   </div>
                 </div>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/settings"
-            element={
-              <ProtectedRoute requireManager>
-                <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419] p-8">
+              }
+            />
+            <Route
+              path="settings"
+              element={
+                <div className="min-h-screen p-8">
                   <div className="max-w-7xl mx-auto">
                     <h1 className="text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0]">
                       Configuracion
@@ -250,9 +200,9 @@ export function AppRouter() {
                     </p>
                   </div>
                 </div>
-              </ProtectedRoute>
-            }
-          />
+              }
+            />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
