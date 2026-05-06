@@ -122,7 +122,10 @@ export function NewHotelPage() {
     if (!createdHotelId) return [];
     const urls: string[] = [];
     for (const file of files) {
-      const url = await container.imageRepository.uploadHotelImage(createdHotelId, file);
+      const url = await container.imageRepository.uploadHotelImage(
+        createdHotelId,
+        file,
+      );
       urls.push(url);
     }
     return urls;

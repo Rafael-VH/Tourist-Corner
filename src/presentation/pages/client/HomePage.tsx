@@ -105,29 +105,29 @@ export function HomePage() {
 
   const cities = useMemo(
     () => [...new Set(hotels.map((h) => h.city))],
-    [hotels]
+    [hotels],
   );
 
   const hotelCount = useMemo(
     () => hotels.filter((h) => h.type === "hotel").length,
-    [hotels]
+    [hotels],
   );
 
   const resortCount = useMemo(
     () => hotels.filter((h) => h.type === "resort").length,
-    [hotels]
+    [hotels],
   );
 
   const cityCount = useMemo(() => cities.length, [cities]);
 
   const reviewCount = useMemo(
     () => hotels.reduce((acc, h) => acc + h.reviewCount, 0),
-    [hotels]
+    [hotels],
   );
 
   const visibleHotels = useMemo(
     () => hotels.slice(0, visibleCount),
-    [hotels, visibleCount]
+    [hotels, visibleCount],
   );
 
   const hasMore = visibleCount < hotels.length;
@@ -219,7 +219,8 @@ export function HomePage() {
               },
               {
                 label: "Opiniones",
-                value: reviewCount > 0 ? `${reviewCount.toLocaleString()}+` : "10k+",
+                value:
+                  reviewCount > 0 ? `${reviewCount.toLocaleString()}+` : "10k+",
                 icon: <Star className="w-6 h-6" />,
               },
             ].map((stat, index) => (
@@ -246,7 +247,10 @@ export function HomePage() {
       </section>
 
       {featuredHotels.length > 0 && (
-        <section id="featured-hotels" className="py-16 bg-white dark:bg-[#1A2028]">
+        <section
+          id="featured-hotels"
+          className="py-16 bg-white dark:bg-[#1A2028]"
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">
@@ -275,7 +279,10 @@ export function HomePage() {
       )}
 
       {featuredRooms.length > 0 && (
-        <section id="featured-rooms" className="py-16 bg-[#FDF8F3] dark:bg-[#0F1419]">
+        <section
+          id="featured-rooms"
+          className="py-16 bg-[#FDF8F3] dark:bg-[#0F1419]"
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-[#2D1F14] dark:text-[#E2E8F0] flex items-center gap-2">

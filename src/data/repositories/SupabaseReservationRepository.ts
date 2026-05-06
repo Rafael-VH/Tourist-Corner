@@ -223,7 +223,7 @@ export class SupabaseReservationRepository implements ReservationRepository {
       finalTotal = reservation.totalPrice + (extraNights * pricePerNight);
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('reservations')
       .update({
         status: 'checked-out',

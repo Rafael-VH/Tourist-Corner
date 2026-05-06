@@ -19,11 +19,18 @@ import {
   LogIn,
   LogOut,
   AlertTriangle,
-  Extend,
+  ArrowRightLeft,
   CalendarDays,
 } from "lucide-react";
 
-type ReservationStatus = "pending" | "accepted" | "checked-in" | "checked-out" | "completed" | "cancelled" | "no-show";
+type ReservationStatus =
+  | "pending"
+  | "accepted"
+  | "checked-in"
+  | "checked-out"
+  | "completed"
+  | "cancelled"
+  | "no-show";
 
 interface Reservation {
   id: string;
@@ -192,7 +199,7 @@ export function CalendarPage() {
   const [extendDate, setExtendDate] = useState("");
 
   const normalizedReservations = reservations.map((r) =>
-    normalizeReservation(r as unknown as Record<string, unknown>)
+    normalizeReservation(r as unknown as Record<string, unknown>),
   );
 
   useEffect(() => {
@@ -244,12 +251,19 @@ export function CalendarPage() {
 
   const counts = {
     all: normalizedReservations.length,
-    pending: normalizedReservations.filter((r) => r.status === "pending").length,
-    accepted: normalizedReservations.filter((r) => r.status === "accepted").length,
-    "checked-in": normalizedReservations.filter((r) => r.status === "checked-in").length,
-    completed: normalizedReservations.filter((r) => r.status === "completed").length,
-    cancelled: normalizedReservations.filter((r) => r.status === "cancelled").length,
-    "no-show": normalizedReservations.filter((r) => r.status === "no-show").length,
+    pending: normalizedReservations.filter((r) => r.status === "pending")
+      .length,
+    accepted: normalizedReservations.filter((r) => r.status === "accepted")
+      .length,
+    "checked-in": normalizedReservations.filter(
+      (r) => r.status === "checked-in",
+    ).length,
+    completed: normalizedReservations.filter((r) => r.status === "completed")
+      .length,
+    cancelled: normalizedReservations.filter((r) => r.status === "cancelled")
+      .length,
+    "no-show": normalizedReservations.filter((r) => r.status === "no-show")
+      .length,
   };
 
   const formatDate = (dateStr: string) => {
@@ -260,7 +274,10 @@ export function CalendarPage() {
     });
   };
 
-  const handleAction = async (id: string, action: "accept" | "cancel" | "check-in" | "check-out" | "no-show") => {
+  const handleAction = async (
+    id: string,
+    action: "accept" | "cancel" | "check-in" | "check-out" | "no-show",
+  ) => {
     setActionLoading(id);
     try {
       const reservation = normalizedReservations.find((r) => r.id === id);
@@ -281,7 +298,11 @@ export function CalendarPage() {
             if (count === 1) {
               await supabase
                 .from("rooms")
-                .update({ is_available: false, status: "occupied", updated_at: new Date().toISOString() })
+                .update({
+                  is_available: false,
+                  status: "occupied",
+                  updated_at: new Date().toISOString(),
+                })
                 .eq("id", reservation.room.id);
             }
           }
@@ -298,7 +319,11 @@ export function CalendarPage() {
             if (count === 0) {
               await supabase
                 .from("rooms")
-                .update({ is_available: true, status: "available", updated_at: new Date().toISOString() })
+                .update({
+                  is_available: true,
+                  status: "available",
+                  updated_at: new Date().toISOString(),
+                })
                 .eq("id", reservation.room.id);
             }
           }
@@ -314,24 +339,6 @@ export function CalendarPage() {
           await markNoShow(id);
           break;
       }
-
-      const { data } = await supabase
-        .from("reservations")
-        .select(
-          `
-          id, guest_name, guest_email, guest_phone, check_in, check_out, status,
-          total_price, created_at, actual_check_in, actual_check_out,
-          cancellation_reason, cancellation_fee, refund_amount, cancelled_at, no_show_flag,
-          room:room_id (id, name, type, hotel:hotel_id (id, name))
-        `,
-        )
-        .single();
-
-      if (data) {
-        setReservations((prev) =>
-          prev.map((r) => (r.id === id ? normalizeReservation(data) : r)) as unknown as typeof reservations,
-        );
-      }
     } finally {
       setActionLoading(null);
     }
@@ -343,25 +350,6 @@ export function CalendarPage() {
     try {
       await extendReservation(id, { newCheckOut: extendDate });
 
-      const { supabase } = await import("@/data/datasources/SupabaseClient");
-      const { data } = await supabase
-        .from("reservations")
-        .select(
-          `
-          id, guest_name, guest_email, guest_phone, check_in, check_out, status,
-          total_price, created_at, actual_check_in, actual_check_out,
-          cancellation_reason, cancellation_fee, refund_amount, cancelled_at, no_show_flag,
-          room:room_id (id, name, type, hotel:hotel_id (id, name))
-        `,
-        )
-        .eq("id", id)
-        .single();
-
-      if (data) {
-        setReservations((prev) =>
-          prev.map((r) => (r.id === id ? normalizeReservation(data) : r)) as unknown as typeof reservations,
-        );
-      }
       setShowExtendModal(null);
       setExtendDate("");
     } finally {
@@ -515,12 +503,14 @@ export function CalendarPage() {
                       </div>
                       {reservation.actual_check_in && (
                         <div className="mt-1 text-xs text-indigo-600 dark:text-indigo-400">
-                          Check-in real: {formatDate(reservation.actual_check_in)}
+                          Check-in real:{" "}
+                          {formatDate(reservation.actual_check_in)}
                         </div>
                       )}
                       {reservation.actual_check_out && (
                         <div className="mt-1 text-xs text-purple-600 dark:text-purple-400">
-                          Check-out real: {formatDate(reservation.actual_check_out)}
+                          Check-out real:{" "}
+                          {formatDate(reservation.actual_check_out)}
                         </div>
                       )}
                       {reservation.cancellation_reason && (
@@ -534,24 +524,38 @@ export function CalendarPage() {
                         </div>
                       )}
 
-                      {(reservation.status === "pending" || reservation.status === "accepted" || reservation.status === "checked-in") && (
+                      {(reservation.status === "pending" ||
+                        reservation.status === "accepted" ||
+                        reservation.status === "checked-in") && (
                         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#F5EDE3] dark:border-[#2D3748]">
                           {reservation.status === "pending" && (
                             <>
                               <button
-                                onClick={() => handleAction(reservation.id, "accept")}
+                                onClick={() =>
+                                  handleAction(reservation.id, "accept")
+                                }
                                 disabled={isActing}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {isActing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                {isActing ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Check className="w-3 h-3" />
+                                )}
                                 Aceptar
                               </button>
                               <button
-                                onClick={() => handleAction(reservation.id, "cancel")}
+                                onClick={() =>
+                                  handleAction(reservation.id, "cancel")
+                                }
                                 disabled={isActing}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {isActing ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
+                                {isActing ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <X className="w-3 h-3" />
+                                )}
                                 Cancelar
                               </button>
                             </>
@@ -559,27 +563,45 @@ export function CalendarPage() {
                           {reservation.status === "accepted" && (
                             <>
                               <button
-                                onClick={() => handleAction(reservation.id, "check-in")}
+                                onClick={() =>
+                                  handleAction(reservation.id, "check-in")
+                                }
                                 disabled={isActing}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {isActing ? <Loader2 className="w-3 h-3 animate-spin" /> : <LogIn className="w-3 h-3" />}
+                                {isActing ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <LogIn className="w-3 h-3" />
+                                )}
                                 Check-in
                               </button>
                               <button
-                                onClick={() => handleAction(reservation.id, "cancel")}
+                                onClick={() =>
+                                  handleAction(reservation.id, "cancel")
+                                }
                                 disabled={isActing}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {isActing ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
+                                {isActing ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <X className="w-3 h-3" />
+                                )}
                                 Cancelar
                               </button>
                               <button
-                                onClick={() => handleAction(reservation.id, "no-show")}
+                                onClick={() =>
+                                  handleAction(reservation.id, "no-show")
+                                }
                                 disabled={isActing}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {isActing ? <Loader2 className="w-3 h-3 animate-spin" /> : <AlertTriangle className="w-3 h-3" />}
+                                {isActing ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <AlertTriangle className="w-3 h-3" />
+                                )}
                                 No-show
                               </button>
                             </>
@@ -587,11 +609,17 @@ export function CalendarPage() {
                           {reservation.status === "checked-in" && (
                             <>
                               <button
-                                onClick={() => handleAction(reservation.id, "check-out")}
+                                onClick={() =>
+                                  handleAction(reservation.id, "check-out")
+                                }
                                 disabled={isActing}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {isActing ? <Loader2 className="w-3 h-3 animate-spin" /> : <LogOut className="w-3 h-3" />}
+                                {isActing ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <LogOut className="w-3 h-3" />
+                                )}
                                 Check-out
                               </button>
                               <button
@@ -602,7 +630,11 @@ export function CalendarPage() {
                                 disabled={isActing}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {isActing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Extend className="w-3 h-3" />}
+                                {isActing ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <ArrowRightLeft className="w-3 h-3" />
+                                )}
                                 Extender
                               </button>
                             </>
@@ -651,7 +683,8 @@ export function CalendarPage() {
                 Extender Reservacion
               </h3>
               <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-0.5">
-                {extendingReservation.guest_name} — {extendingReservation.room?.name}
+                {extendingReservation.guest_name} —{" "}
+                {extendingReservation.room?.name}
               </p>
             </div>
             <div className="p-5 space-y-4">
@@ -670,14 +703,17 @@ export function CalendarPage() {
               <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-sm text-blue-700 dark:text-blue-400">
                 <p className="font-medium mb-1">Informacion:</p>
                 <p className="text-xs">
-                  El precio se recalculara automaticamente segun las noches adicionales.
-                  Se verificara la disponibilidad de la habitacion.
+                  El precio se recalculara automaticamente segun las noches
+                  adicionales. Se verificara la disponibilidad de la habitacion.
                 </p>
               </div>
             </div>
             <div className="p-4 border-t border-[#F5EDE3] dark:border-[#2D3748] flex items-center justify-end gap-3">
               <button
-                onClick={() => { setShowExtendModal(null); setExtendDate(""); }}
+                onClick={() => {
+                  setShowExtendModal(null);
+                  setExtendDate("");
+                }}
                 className="px-4 py-2 text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FDF8F3] dark:hover:bg-[#242B35] rounded-xl transition-colors"
               >
                 Cancelar

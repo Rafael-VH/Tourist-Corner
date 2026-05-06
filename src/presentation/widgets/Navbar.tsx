@@ -37,7 +37,10 @@ export function Navbar() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setIsUserMenuOpen(false);
       }
     };
@@ -378,7 +381,9 @@ export function Navbar() {
                       <span className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {user?.name}
                       </span>
-                      <ChevronDown className={`w-4 h-4 text-[#5E4836] dark:text-[#94A3B8] transition-transform ${isUserMenuOpen ? "rotate-180" : ""}`} />
+                      <ChevronDown
+                        className={`w-4 h-4 text-[#5E4836] dark:text-[#94A3B8] transition-transform ${isUserMenuOpen ? "rotate-180" : ""}`}
+                      />
                     </button>
 
                     <AnimatePresence>
@@ -390,34 +395,50 @@ export function Navbar() {
                           className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1A2028] rounded-xl border border-[#E8D9C8] dark:border-[#2D3748] shadow-xl overflow-hidden"
                         >
                           <div className="p-4 border-b border-[#E8D9C8] dark:border-[#2D3748]">
-                            <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">{user?.name}</p>
-                            <p className="text-sm text-[#96785A] dark:text-[#64748B] truncate">{user?.email}</p>
+                            <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                              {user?.name}
+                            </p>
+                            <p className="text-sm text-[#96785A] dark:text-[#64748B] truncate">
+                              {user?.email}
+                            </p>
                           </div>
 
                           <div className="py-2">
                             <button
-                              onClick={() => { navigate("/profile"); setIsUserMenuOpen(false); }}
+                              onClick={() => {
+                                navigate("/profile");
+                                setIsUserMenuOpen(false);
+                              }}
                               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FFF8F1] dark:hover:bg-[#242B35] transition-colors"
                             >
                               <User className="w-4 h-4" />
                               Mi Perfil
                             </button>
                             <button
-                              onClick={() => { navigate("/reservations"); setIsUserMenuOpen(false); }}
+                              onClick={() => {
+                                navigate("/reservations");
+                                setIsUserMenuOpen(false);
+                              }}
                               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FFF8F1] dark:hover:bg-[#242B35] transition-colors"
                             >
                               <Calendar className="w-4 h-4" />
                               Mis Reservaciones
                             </button>
                             <button
-                              onClick={() => { navigate("/support"); setIsUserMenuOpen(false); }}
+                              onClick={() => {
+                                navigate("/support");
+                                setIsUserMenuOpen(false);
+                              }}
                               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FFF8F1] dark:hover:bg-[#242B35] transition-colors"
                             >
                               <MessageSquare className="w-4 h-4" />
                               Soporte
                             </button>
                             <button
-                              onClick={() => { navigate("/security"); setIsUserMenuOpen(false); }}
+                              onClick={() => {
+                                navigate("/security");
+                                setIsUserMenuOpen(false);
+                              }}
                               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FFF8F1] dark:hover:bg-[#242B35] transition-colors"
                             >
                               <Shield className="w-4 h-4" />
@@ -523,12 +544,12 @@ export function Navbar() {
               >
                 Explorar
               </button>
-               <button
-                 onClick={() => scrollToSection("featured-hotels")}
-                 className="block py-2 text-[#5E4836] dark:text-[#94A3B8] font-medium"
-               >
-                 Destacados
-               </button>
+              <button
+                onClick={() => scrollToSection("featured-hotels")}
+                className="block py-2 text-[#5E4836] dark:text-[#94A3B8] font-medium"
+              >
+                Destacados
+              </button>
 
               <div className="border-t border-[#E8D9C8] dark:border-[#2D3748] pt-3">
                 {isAuthenticated ? (

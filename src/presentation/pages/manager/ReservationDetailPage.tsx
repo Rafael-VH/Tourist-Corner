@@ -24,9 +24,17 @@ import {
   CalendarDays,
   History,
   Check,
+  ArrowRightLeft,
 } from "lucide-react";
 
-type ReservationStatus = "pending" | "accepted" | "checked-in" | "checked-out" | "completed" | "cancelled" | "no-show";
+type ReservationStatus =
+  | "pending"
+  | "accepted"
+  | "checked-in"
+  | "checked-out"
+  | "completed"
+  | "cancelled"
+  | "no-show";
 
 const statusConfig: Record<
   ReservationStatus,
@@ -125,7 +133,9 @@ export function ReservationDetailPage() {
     fetch();
   }, [id, getReservationById, getStatusHistory]);
 
-  const handleAction = async (action: "accept" | "cancel" | "check-in" | "check-out" | "no-show") => {
+  const handleAction = async (
+    action: "accept" | "cancel" | "check-in" | "check-out" | "no-show",
+  ) => {
     if (!id || !selectedReservation) return;
     setIsActionLoading(true);
     try {
@@ -290,7 +300,11 @@ export function ReservationDetailPage() {
                   disabled={isActionLoading}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                  {isActionLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4" />
+                  )}
                   Aceptar Reservacion
                 </button>
                 <button
@@ -298,7 +312,11 @@ export function ReservationDetailPage() {
                   disabled={isActionLoading}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                  {isActionLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <XCircle className="w-4 h-4" />
+                  )}
                   Cancelar Reservacion
                 </button>
               </motion.div>
@@ -316,7 +334,11 @@ export function ReservationDetailPage() {
                   disabled={isActionLoading}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+                  {isActionLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <LogIn className="w-4 h-4" />
+                  )}
                   Check-in
                 </button>
                 <button
@@ -324,7 +346,11 @@ export function ReservationDetailPage() {
                   disabled={isActionLoading}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                  {isActionLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <XCircle className="w-4 h-4" />
+                  )}
                   Cancelar
                 </button>
                 <button
@@ -332,7 +358,11 @@ export function ReservationDetailPage() {
                   disabled={isActionLoading}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
+                  {isActionLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4" />
+                  )}
                   Marcar No-show
                 </button>
               </motion.div>
@@ -350,18 +380,28 @@ export function ReservationDetailPage() {
                   disabled={isActionLoading}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+                  {isActionLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <LogOut className="w-4 h-4" />
+                  )}
                   Check-out (auto-completa)
                 </button>
                 <button
                   onClick={() => {
                     setShowExtendModal(true);
-                    setExtendDate(selectedReservation.checkOut.toISOString().split("T")[0]);
+                    setExtendDate(
+                      selectedReservation.checkOut.toISOString().split("T")[0],
+                    );
                   }}
                   disabled={isActionLoading}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#E8850C] hover:bg-[#C46A08] text-white rounded-xl font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Extend className="w-4 h-4" />}
+                  {isActionLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ArrowRightLeft className="w-4 h-4" />
+                  )}
                   Extender Estadia
                 </button>
               </motion.div>
@@ -379,7 +419,9 @@ export function ReservationDetailPage() {
                 </h2>
                 <div className="space-y-3">
                   {statusHistory.map((entry) => {
-                    const fromConfig = entry.fromStatus ? statusConfig[entry.fromStatus] : null;
+                    const fromConfig = entry.fromStatus
+                      ? statusConfig[entry.fromStatus]
+                      : null;
                     const toConfig = statusConfig[entry.toStatus];
                     return (
                       <div key={entry.id} className="flex items-start gap-3">
@@ -389,12 +431,16 @@ export function ReservationDetailPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             {entry.fromStatus && fromConfig && (
-                              <span className={`px-2 py-0.5 rounded text-xs font-medium ${fromConfig.bg} ${fromConfig.color}`}>
+                              <span
+                                className={`px-2 py-0.5 rounded text-xs font-medium ${fromConfig.bg} ${fromConfig.color}`}
+                              >
                                 {fromConfig.label}
                               </span>
                             )}
                             <span className="text-[#B89A7A]">→</span>
-                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${toConfig.bg} ${toConfig.color}`}>
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs font-medium ${toConfig.bg} ${toConfig.color}`}
+                            >
                               {toConfig.label}
                             </span>
                           </div>
@@ -426,7 +472,9 @@ export function ReservationDetailPage() {
                       <Hotel className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Hotel</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Hotel
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {roomInfo?.hotel?.name ?? "—"}
                       </p>
@@ -437,7 +485,9 @@ export function ReservationDetailPage() {
                       <Bed className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Habitacion</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Habitacion
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {roomInfo?.name ?? "—"}
                       </p>
@@ -456,7 +506,9 @@ export function ReservationDetailPage() {
                       <Calendar className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Check-in</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Check-in
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {formatDate(selectedReservation.checkIn)}
                       </p>
@@ -467,7 +519,9 @@ export function ReservationDetailPage() {
                       <Calendar className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Check-out</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Check-out
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {formatDate(selectedReservation.checkOut)}
                       </p>
@@ -479,7 +533,9 @@ export function ReservationDetailPage() {
                         <LogIn className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                       </div>
                       <div>
-                        <p className="text-xs text-indigo-600 dark:text-indigo-400">Check-in real</p>
+                        <p className="text-xs text-indigo-600 dark:text-indigo-400">
+                          Check-in real
+                        </p>
                         <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                           {formatDateTime(selectedReservation.actualCheckIn)}
                         </p>
@@ -492,7 +548,9 @@ export function ReservationDetailPage() {
                         <LogOut className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                       </div>
                       <div>
-                        <p className="text-xs text-purple-600 dark:text-purple-400">Check-out real</p>
+                        <p className="text-xs text-purple-600 dark:text-purple-400">
+                          Check-out real
+                        </p>
                         <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                           {formatDateTime(selectedReservation.actualCheckOut)}
                         </p>
@@ -517,7 +575,9 @@ export function ReservationDetailPage() {
                       <User className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Nombre</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Nombre
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {selectedReservation.guestName}
                       </p>
@@ -528,7 +588,9 @@ export function ReservationDetailPage() {
                       <Mail className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Email</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Email
+                      </p>
                       <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                         {selectedReservation.guestEmail}
                       </p>
@@ -540,7 +602,9 @@ export function ReservationDetailPage() {
                         <Phone className="w-4 h-4 text-[#E8850C]" />
                       </div>
                       <div>
-                        <p className="text-xs text-[#96785A] dark:text-[#64748B]">Telefono</p>
+                        <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                          Telefono
+                        </p>
                         <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
                           {selectedReservation.guestPhone}
                         </p>
@@ -560,7 +624,9 @@ export function ReservationDetailPage() {
                       <DollarSign className="w-4 h-4 text-[#E8850C]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">Total</p>
+                      <p className="text-xs text-[#96785A] dark:text-[#64748B]">
+                        Total
+                      </p>
                       <p className="text-xl font-bold text-[#E8850C]">
                         Bs {selectedReservation.totalPrice}
                       </p>
@@ -572,7 +638,9 @@ export function ReservationDetailPage() {
                         <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
                       </div>
                       <div>
-                        <p className="text-xs text-red-600 dark:text-red-400">Penalizacion</p>
+                        <p className="text-xs text-red-600 dark:text-red-400">
+                          Penalizacion
+                        </p>
                         <p className="font-medium text-red-600 dark:text-red-400">
                           Bs {selectedReservation.cancellationFee}
                         </p>
@@ -585,7 +653,9 @@ export function ReservationDetailPage() {
                         <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                       </div>
                       <div>
-                        <p className="text-xs text-green-600 dark:text-green-400">Reembolso</p>
+                        <p className="text-xs text-green-600 dark:text-green-400">
+                          Reembolso
+                        </p>
                         <p className="font-medium text-green-600 dark:text-green-400">
                           Bs {selectedReservation.refundAmount}
                         </p>
@@ -606,7 +676,8 @@ export function ReservationDetailPage() {
                   </p>
                   {selectedReservation.cancelledAt && (
                     <p className="text-xs text-[#96785A] dark:text-[#64748B] mt-2">
-                      Cancelada el: {formatDateTime(selectedReservation.cancelledAt)}
+                      Cancelada el:{" "}
+                      {formatDateTime(selectedReservation.cancelledAt)}
                     </p>
                   )}
                 </div>
@@ -678,13 +749,17 @@ export function ReservationDetailPage() {
               <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-sm text-blue-700 dark:text-blue-400">
                 <p className="font-medium mb-1">Informacion:</p>
                 <p className="text-xs">
-                  El precio se recalculara automaticamente. Se verificara disponibilidad.
+                  El precio se recalculara automaticamente. Se verificara
+                  disponibilidad.
                 </p>
               </div>
             </div>
             <div className="p-4 border-t border-[#F5EDE3] dark:border-[#2D3748] flex items-center justify-end gap-3">
               <button
-                onClick={() => { setShowExtendModal(false); setExtendDate(""); }}
+                onClick={() => {
+                  setShowExtendModal(false);
+                  setExtendDate("");
+                }}
                 className="px-4 py-2 text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FDF8F3] dark:hover:bg-[#242B35] rounded-xl transition-colors"
               >
                 Cancelar
@@ -694,7 +769,11 @@ export function ReservationDetailPage() {
                 disabled={isActionLoading || !extendDate}
                 className="px-4 py-2 bg-[#E8850C] hover:bg-[#C46A08] text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
               >
-                {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarDays className="w-4 h-4" />}
+                {isActionLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CalendarDays className="w-4 h-4" />
+                )}
                 Confirmar
               </button>
             </div>

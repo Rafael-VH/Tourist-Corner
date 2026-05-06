@@ -221,7 +221,7 @@ export function NewRoomPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden"
         >
-            <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
+          <div className="p-6 border-b border-[#F5EDE3] dark:border-[#2D3748]">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#E8850C] flex items-center justify-center">
                 <Bed className="w-5 h-5 text-white" />

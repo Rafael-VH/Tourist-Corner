@@ -75,7 +75,13 @@ const statusConfig = {
 export function ClientReservationsPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { reservations, isLoading, error, getReservationsByUser, cancelWithPolicy } = useReservationStore();
+  const {
+    reservations,
+    isLoading,
+    error,
+    getReservationsByUser,
+    cancelWithPolicy,
+  } = useReservationStore();
   const { fetchRoomById } = useRoomStore();
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState<string | null>(null);
@@ -101,7 +107,9 @@ export function ClientReservationsPage() {
     if (!showCancelModal) return;
     setCancellingId(showCancelModal);
     try {
-      await cancelWithPolicy(showCancelModal, { reason: cancelReason || undefined });
+      await cancelWithPolicy(showCancelModal, {
+        reason: cancelReason || undefined,
+      });
     } catch {
       // Error handled by store
     } finally {
@@ -172,7 +180,9 @@ export function ClientReservationsPage() {
             {reservations.map((reservation, index) => {
               const config = statusConfig[reservation.status];
               const StatusIcon = config?.icon ?? Timer;
-              const canCancel = reservation.status === "pending" || reservation.status === "accepted";
+              const canCancel =
+                reservation.status === "pending" ||
+                reservation.status === "accepted";
 
               return (
                 <motion.div
@@ -185,7 +195,9 @@ export function ClientReservationsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config?.bg || "bg-gray-50 dark:bg-gray-900/20"} ${config?.color || "text-gray-600"}`}>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config?.bg || "bg-gray-50 dark:bg-gray-900/20"} ${config?.color || "text-gray-600"}`}
+                        >
                           <StatusIcon className="w-3.5 h-3.5" />
                           {config?.label || reservation.status}
                         </span>
@@ -198,19 +210,39 @@ export function ClientReservationsPage() {
                         <div className="flex items-center gap-2 text-[#5E4836] dark:text-[#94A3B8]">
                           <Calendar className="w-4 h-4 text-[#B89A7A]" />
                           <span>
-                            Check-in: {new Date(reservation.checkIn).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+                            Check-in:{" "}
+                            {new Date(reservation.checkIn).toLocaleDateString(
+                              "es-ES",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-[#5E4836] dark:text-[#94A3B8]">
                           <Calendar className="w-4 h-4 text-[#B89A7A]" />
                           <span>
-                            Check-out: {new Date(reservation.checkOut).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+                            Check-out:{" "}
+                            {new Date(reservation.checkOut).toLocaleDateString(
+                              "es-ES",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-[#5E4836] dark:text-[#94A3B8]">
                           <Clock className="w-4 h-4 text-[#B89A7A]" />
                           <span>
-                            Creada: {new Date(reservation.createdAt).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                            Creada:{" "}
+                            {new Date(reservation.createdAt).toLocaleDateString(
+                              "es-ES",
+                              { day: "numeric", month: "short" },
+                            )}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-[#5E4836] dark:text-[#94A3B8]">
@@ -223,12 +255,28 @@ export function ClientReservationsPage() {
 
                       {reservation.actualCheckIn && (
                         <div className="mt-2 text-xs text-indigo-600 dark:text-indigo-400">
-                          Check-in real: {new Date(reservation.actualCheckIn).toLocaleDateString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          Check-in real:{" "}
+                          {new Date(
+                            reservation.actualCheckIn,
+                          ).toLocaleDateString("es-ES", {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </div>
                       )}
                       {reservation.actualCheckOut && (
                         <div className="mt-1 text-xs text-purple-600 dark:text-purple-400">
-                          Check-out real: {new Date(reservation.actualCheckOut).toLocaleDateString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          Check-out real:{" "}
+                          {new Date(
+                            reservation.actualCheckOut,
+                          ).toLocaleDateString("es-ES", {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </div>
                       )}
                       {reservation.cancellationReason && (
@@ -238,12 +286,14 @@ export function ClientReservationsPage() {
                       )}
                       {reservation.cancellationFee > 0 && (
                         <div className="mt-1 text-xs text-red-600 dark:text-red-400">
-                          Penalizacion: ${reservation.cancellationFee.toLocaleString()}
+                          Penalizacion: $
+                          {reservation.cancellationFee.toLocaleString()}
                         </div>
                       )}
                       {reservation.refundAmount > 0 && (
                         <div className="mt-1 text-xs text-green-600 dark:text-green-400">
-                          Reembolso: ${reservation.refundAmount.toLocaleString()}
+                          Reembolso: $
+                          {reservation.refundAmount.toLocaleString()}
                         </div>
                       )}
 
@@ -324,7 +374,10 @@ export function ClientReservationsPage() {
             </div>
             <div className="p-4 border-t border-[#F5EDE3] dark:border-[#2D3748] flex items-center justify-end gap-3">
               <button
-                onClick={() => { setShowCancelModal(null); setCancelReason(""); }}
+                onClick={() => {
+                  setShowCancelModal(null);
+                  setCancelReason("");
+                }}
                 className="px-4 py-2 text-sm font-medium text-[#5E4836] dark:text-[#94A3B8] hover:bg-[#FDF8F3] dark:hover:bg-[#242B35] rounded-xl transition-colors"
               >
                 Volver

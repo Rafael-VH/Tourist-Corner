@@ -46,7 +46,14 @@ const statusConfig = {
 export function ClientSupportPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { tickets, isLoading, error, fetchTicketsByUser, createTicket, clearError } = useSupportTicketStore();
+  const {
+    tickets,
+    isLoading,
+    error,
+    fetchTicketsByUser,
+    createTicket,
+    clearError,
+  } = useSupportTicketStore();
 
   const [showForm, setShowForm] = useState(false);
   const [subject, setSubject] = useState("");
@@ -113,21 +120,32 @@ export function ClientSupportPage() {
         </div>
 
         {(error || success) && (
-          <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${
-            error
-              ? "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
-              : "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
-          }`}>
+          <div
+            className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${
+              error
+                ? "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+                : "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
+            }`}
+          >
             {error ? (
               <>
                 <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                <button onClick={clearError} className="ml-auto text-red-400 hover:text-red-600">×</button>
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </p>
+                <button
+                  onClick={clearError}
+                  className="ml-auto text-red-400 hover:text-red-600"
+                >
+                  ×
+                </button>
               </>
             ) : (
               <>
                 <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <p className="text-sm text-green-600 dark:text-green-400">{success}</p>
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  {success}
+                </p>
               </>
             )}
           </div>
@@ -250,7 +268,9 @@ export function ClientSupportPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.color}`}>
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.color}`}
+                        >
                           {config.label}
                         </span>
                         <span className="text-xs text-[#96785A] dark:text-[#64748B]">
@@ -273,11 +293,14 @@ export function ClientSupportPage() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5" />
-                          {new Date(ticket.createdAt).toLocaleDateString("es-ES", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
+                          {new Date(ticket.createdAt).toLocaleDateString(
+                            "es-ES",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
                         </span>
                       </div>
                     </div>

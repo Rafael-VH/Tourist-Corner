@@ -139,7 +139,7 @@ export function AdminRoomsPage() {
       (filterHotel === "all" || r.hotel_id === filterHotel) &&
       (r.name.toLowerCase().includes(search.toLowerCase()) ||
         r.type.toLowerCase().includes(search.toLowerCase()) ||
-        r.hotel_name.toLowerCase().includes(search.toLowerCase()))
+        r.hotel_name.toLowerCase().includes(search.toLowerCase())),
   );
 
   const featuredRooms = rooms
@@ -158,7 +158,8 @@ export function AdminRoomsPage() {
           Habitaciones Destacadas
         </h1>
         <p className="text-[#96785A] dark:text-[#64748B] mt-1">
-          {featuredRooms.length} de {rooms.length} habitaciones destacadas en HomePage
+          {featuredRooms.length} de {rooms.length} habitaciones destacadas en
+          HomePage
         </p>
       </div>
 
@@ -312,7 +313,8 @@ export function AdminRoomsPage() {
                       )}
                     </div>
                     <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                      {room.hotel_name} — {room.type} — ${room.price_per_night}/noche
+                      {room.hotel_name} — {room.type} — ${room.price_per_night}
+                      /noche
                     </p>
                   </div>
                 </div>

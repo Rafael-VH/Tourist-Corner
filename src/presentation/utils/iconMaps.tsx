@@ -30,4 +30,9 @@ export const amenityIcons: Record<string, React.ReactNode> = {
   Spa: <Bath className="w-3.5 h-3.5" />,
 };
 
-export const HOTEL_TYPES: HotelType[] = ["hotel", "resort", "motel", "residential"];
+export const HOTEL_TYPES: HotelType[] = [
+  "hotel",
+  "resort",
+  "motel",
+  "residential",
+];

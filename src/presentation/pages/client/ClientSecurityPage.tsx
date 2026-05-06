@@ -14,7 +14,8 @@ import { useNavigate } from "react-router-dom";
 
 export function ClientSecurityPage() {
   const navigate = useNavigate();
-  const { updatePassword, resetPassword, isLoading, error, clearError } = useAuthStore();
+  const { updatePassword, resetPassword, isLoading, error, clearError } =
+    useAuthStore();
   const [success, setSuccess] = useState<string | null>(null);
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -36,7 +37,9 @@ export function ClientSecurityPage() {
     }
 
     if (newPassword.length < 6) {
-      setValidationError("La nueva contrasena debe tener al menos 6 caracteres");
+      setValidationError(
+        "La nueva contrasena debe tener al menos 6 caracteres",
+      );
       return;
     }
 
@@ -99,8 +102,13 @@ export function ClientSecurityPage() {
         {(error || validationError) && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-            <p className="text-sm text-red-600 dark:text-red-400">{error || validationError}</p>
-            <button onClick={clearError} className="ml-auto text-red-400 hover:text-red-600">
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {error || validationError}
+            </p>
+            <button
+              onClick={clearError}
+              className="ml-auto text-red-400 hover:text-red-600"
+            >
               ×
             </button>
           </div>
@@ -113,7 +121,9 @@ export function ClientSecurityPage() {
             className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl flex items-center gap-3"
           >
             <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-            <p className="text-sm text-green-600 dark:text-green-400">{success}</p>
+            <p className="text-sm text-green-600 dark:text-green-400">
+              {success}
+            </p>
           </motion.div>
         )}
 
@@ -143,7 +153,11 @@ export function ClientSecurityPage() {
                     onClick={() => setShowCurrent(!showCurrent)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B89A7A] hover:text-[#5E4836]"
                   >
-                    {showCurrent ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showCurrent ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -164,7 +178,11 @@ export function ClientSecurityPage() {
                     onClick={() => setShowNew(!showNew)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B89A7A] hover:text-[#5E4836]"
                   >
-                    {showNew ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showNew ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -200,7 +218,8 @@ export function ClientSecurityPage() {
             </div>
 
             <p className="text-sm text-[#96785A] dark:text-[#64748B] mb-4">
-              Si olvidaste tu contrasena, te enviaremos un enlace de recuperacion a tu correo.
+              Si olvidaste tu contrasena, te enviaremos un enlace de
+              recuperacion a tu correo.
             </p>
 
             {!showResetForm ? (

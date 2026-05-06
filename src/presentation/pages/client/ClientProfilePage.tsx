@@ -15,7 +15,8 @@ import { useNavigate } from "react-router-dom";
 
 export function ClientProfilePage() {
   const navigate = useNavigate();
-  const { user, updateProfile, uploadAvatar, isLoading, error, clearError } = useAuthStore();
+  const { user, updateProfile, uploadAvatar, isLoading, error, clearError } =
+    useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -73,7 +74,10 @@ export function ClientProfilePage() {
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
             <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            <button onClick={clearError} className="ml-auto text-red-400 hover:text-red-600">
+            <button
+              onClick={clearError}
+              className="ml-auto text-red-400 hover:text-red-600"
+            >
               ×
             </button>
           </div>
@@ -86,7 +90,9 @@ export function ClientProfilePage() {
             className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl flex items-center gap-3"
           >
             <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-            <p className="text-sm text-green-600 dark:text-green-400">{success}</p>
+            <p className="text-sm text-green-600 dark:text-green-400">
+              {success}
+            </p>
           </motion.div>
         )}
 
@@ -95,7 +101,11 @@ export function ClientProfilePage() {
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-[#FFF8F1] dark:bg-[#242B35] flex items-center justify-center overflow-hidden">
                 {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <User className="w-10 h-10 text-[#B89A7A]" />
                 )}
@@ -116,8 +126,12 @@ export function ClientProfilePage() {
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-[#2D1F14] dark:text-[#E2E8F0]">{user.name}</h2>
-              <p className="text-sm text-[#96785A] dark:text-[#64748B]">{user.email}</p>
+              <h2 className="text-lg font-semibold text-[#2D1F14] dark:text-[#E2E8F0]">
+                {user.name}
+              </h2>
+              <p className="text-sm text-[#96785A] dark:text-[#64748B]">
+                {user.email}
+              </p>
               <span className="inline-block mt-2 px-3 py-1 bg-[#FFF8F1] dark:bg-[#242B35] text-[#5E4836] dark:text-[#94A3B8] text-xs font-medium rounded-full">
                 Cliente
               </span>
