@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { supabase } from "@/data/datasources/SupabaseClient";
@@ -21,11 +21,16 @@ import {
 
 export function RoomManagementPage() {
   const { id } = useParams<{ id: string }>();
+
   const container = getContainer();
+
   const { rooms, fetchRoomById, isLoading, updateRoomStatus, updateRoom } =
     useRoomStore();
+
   const selectedRoom = rooms.find((r) => r.id === id) || null;
+
   const [isEditing, setIsEditing] = useState(true);
+
   const [editForm, setEditForm] = useState({
     name: selectedRoom?.name || "",
     description: selectedRoom?.description || "",
@@ -35,12 +40,21 @@ export function RoomManagementPage() {
     size: selectedRoom?.size || 0,
     status: (selectedRoom?.status || "available") as RoomStatus,
   });
+
   const [dbImages, setDbImages] = useState<ImageRecord[]>([]);
+
   const [uploadProgress, setUploadProgress] = useState<{
     current: number;
     total: number;
   } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchDbImages = useCallback(async (roomId: string) => {
+    const images = await container.imageRepository.getEntityImages(
+      "room",
+      roomId,
+    );
+    setDbImages(images);
+  }, [container]);
 
   useEffect(() => {
     if (id) {
@@ -52,12 +66,7 @@ export function RoomManagementPage() {
     if (id) {
       fetchDbImages(id);
     }
-  }, [id]);
-
-  const fetchDbImages = async (roomId: string) => {
-    const images = await container.imageRepository.getEntityImages("room", roomId);
-    setDbImages(images);
-  };
+  }, [id, fetchDbImages]);
 
   if (isLoading || !selectedRoom) {
     return (
@@ -112,7 +121,7 @@ export function RoomManagementPage() {
     if (!id || !selectedRoom) return;
     const existingUrls = selectedRoom.images || [];
     const allUrls = [...existingUrls, ...newUrls];
-    await supabase.from("rooms").update({ images }).eq("id", id);
+    await supabase.from("rooms").update({ images: allUrls }).eq("id", id);
     await fetchRoomById(id);
   };
 
@@ -135,7 +144,7 @@ export function RoomManagementPage() {
 
   const handleImagesChange = async (images: string[]) => {
     if (id) {
-      await supabase.from("rooms").update({ images }).eq("id", id);
+      await supabase.from("rooms").update({ images: images }).eq("id", id);
       await fetchRoomById(id);
     }
   };

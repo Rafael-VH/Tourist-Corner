@@ -262,7 +262,7 @@ export class SupabaseImageRepository implements ImageRepository {
   async setCoverImage(imageId: string): Promise<void> {
     const { data: image, error: fetchError } = await supabase
       .from("images")
-      .select("entity_type", "entity_id")
+      .select("entity_type, entity_id")
       .eq("id", imageId)
       .single();
 

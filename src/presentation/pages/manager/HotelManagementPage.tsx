@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
@@ -47,7 +47,6 @@ export function HotelManagementPage() {
     current: number;
     total: number;
   } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const deleteBranch = async (branchId: string, branchName: string) => {
     if (
