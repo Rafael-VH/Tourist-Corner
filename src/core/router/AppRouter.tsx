@@ -136,20 +136,22 @@ export function AppRouter() {
             }
           />
 
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute requireAdmin>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="codes" element={<AdminCodesPage />} />
-            <Route path="hotels" element={<AdminHotelsPage />} />
-            <Route path="rooms" element={<AdminRoomsPage />} />
-            <Route path="users" element={<AdminUsersPage />} />
           </Route>
+
+        {/* Admin routes — standalone layout (no Navbar/Footer) */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requireAdmin>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="codes" element={<AdminCodesPage />} />
+          <Route path="hotels" element={<AdminHotelsPage />} />
+          <Route path="rooms" element={<AdminRoomsPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
         </Route>
 
         {/* Manager routes — standalone layout (no Navbar/Footer) */}

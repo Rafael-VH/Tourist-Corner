@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Shield,
@@ -10,7 +10,9 @@ import {
   Menu,
   X,
   Bed,
+  LogOut,
 } from "lucide-react";
+import { useAuthStore } from "@/presentation/providers/useAuthStore";
 
 const navItems = [
   { to: "/admin", label: "Panel", icon: LayoutDashboard },
@@ -22,7 +24,19 @@ const navItems = [
 
 export function AdminLayout() {
   const location = useLocation();
+  const { user, signOut } = useAuthStore();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/login");
+    } catch (err) {
+      console.error("Error al cerrar sesion:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FDF8F3] dark:bg-[#0F1419] flex">
@@ -87,16 +101,23 @@ export function AdminLayout() {
           <div className="p-4 border-t border-[#E8D9C8] dark:border-[#2D3748]">
             <div className="flex items-center gap-3 px-4 py-2">
               <div className="w-8 h-8 rounded-full bg-[#E8850C] flex items-center justify-center text-white text-sm font-bold">
-                A
+                {user?.name?.[0]?.toUpperCase() || "A"}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-[#2D1F14] dark:text-[#E2E8F0] truncate">
-                  Administrador
+                  {user?.name || "Administrador"}
                 </p>
                 <p className="text-xs text-[#96785A] dark:text-[#64748B] truncate">
-                  admin@tourist.com
+                  {user?.email || "admin@tourist.com"}
                 </p>
               </div>
+              <button
+                onClick={() => setShowLogoutConfirm(true)}
+                className="p-1.5 text-[#96785A] dark:text-[#64748B] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                title="Cerrar sesion"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -129,6 +150,43 @@ export function AdminLayout() {
             <Outlet />
           </motion.div>
         </div>
+
+        {/* Logout confirmation modal */}
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full max-w-sm bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden shadow-2xl"
+            >
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
+                  <LogOut className="w-6 h-6 text-red-500" />
+                </div>
+                <h3 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-2">
+                  Cerrar sesion
+                </h3>
+                <p className="text-sm text-[#96785A] dark:text-[#64748B] mb-6">
+                  Estas seguro que deseas cerrar sesion?
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowLogoutConfirm(false)}
+                    className="flex-1 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] text-[#5E4836] dark:text-[#94A3B8] rounded-xl text-sm font-medium hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-medium transition-colors"
+                  >
+                    Cerrar sesion
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </main>
     </div>
   );
