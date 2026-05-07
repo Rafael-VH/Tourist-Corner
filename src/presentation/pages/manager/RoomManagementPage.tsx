@@ -25,10 +25,10 @@ export function RoomManagementPage() {
 
   const container = getContainer();
 
-  const { rooms, fetchRoomById, isLoading, updateRoomStatus, updateRoom, deleteRoom } =
+  const { selectedRoom, fetchRoomById, isLoading, updateRoomStatus, updateRoom, deleteRoom } =
     useRoomStore();
 
-  const selectedRoom = rooms.find((r) => r.id === id) || null;
+  const room = selectedRoom;
 
   const [isEditing, setIsEditing] = useState(true);
 
@@ -91,9 +91,12 @@ export function RoomManagementPage() {
     if (!room) return;
     try {
       await deleteRoom(room.id);
+      setShowDeleteConfirm(false);
       navigate(`/dashboard/hotel/${room.hotel_id}`);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error al eliminar habitacion:", err);
+      alert(`Error al eliminar: ${(err as Error)?.message || "Error desconocido"}`);
+      setShowDeleteConfirm(false);
     }
   };
 
