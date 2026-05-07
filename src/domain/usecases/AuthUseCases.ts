@@ -1,5 +1,6 @@
 import type { AuthRepository } from '@/domain/repositories/AuthRepository';
 import type { User, UserRole } from '@/domain/entities/User';
+import type { ImageRecord } from '@/domain/repositories/ImageRepository';
 
 export class SignInUseCase {
   private authRepository: AuthRepository;
@@ -68,7 +69,7 @@ export class UploadAvatarUseCase {
     this.authRepository = authRepository;
   }
 
-  async execute(userId: string, file: File): Promise<string> {
+  async execute(userId: string, file: File): Promise<ImageRecord> {
     return this.authRepository.uploadAvatar(userId, file);
   }
 }

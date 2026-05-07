@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
@@ -6,6 +6,7 @@ import { supabase } from "@/data/datasources/SupabaseClient";
 import { ImageUpload } from "@/presentation/components/ImageUpload";
 import { getContainer } from "@/core/di/Container";
 import type { RoomStatus } from "@/domain/entities/Room";
+import type { ImageRecord } from "@/domain/repositories/ImageRepository";
 import {
   Bed,
   Save,
@@ -34,12 +35,29 @@ export function RoomManagementPage() {
     size: selectedRoom?.size || 0,
     status: (selectedRoom?.status || "available") as RoomStatus,
   });
+  const [dbImages, setDbImages] = useState<ImageRecord[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (id) {
       fetchRoomById(id);
     }
   }, [id, fetchRoomById]);
+
+  useEffect(() => {
+    if (id) {
+      fetchDbImages(id);
+    }
+  }, [id]);
+
+  const fetchDbImages = async (roomId: string) => {
+    const images = await container.imageRepository.getEntityImages("room", roomId);
+    setDbImages(images);
+  };
 
   if (isLoading || !selectedRoom) {
     return (
@@ -74,21 +92,51 @@ export function RoomManagementPage() {
 
   const handleUploadImages = async (files: File[]) => {
     if (!id) return [];
-    const urls: string[] = [];
-    for (const file of files) {
-      const url = await container.imageRepository.uploadRoomImage(id, file);
-      urls.push(url);
+    setUploadProgress({ current: 0, total: files.length });
+    try {
+      const records = await container.imageRepository.uploadMultipleRoomImages(
+        id,
+        files,
+        (current, total) => setUploadProgress({ current, total }),
+      );
+      await fetchDbImages(id);
+      const urls = records.map((r) => r.url);
+      await updateImageUrlsInDb(urls);
+      return urls;
+    } finally {
+      setUploadProgress(null);
     }
-    return urls;
+  };
+
+  const updateImageUrlsInDb = async (newUrls: string[]) => {
+    if (!id || !selectedRoom) return;
+    const existingUrls = selectedRoom.images || [];
+    const allUrls = [...existingUrls, ...newUrls];
+    await supabase.from("rooms").update({ images }).eq("id", id);
+    await fetchRoomById(id);
   };
 
   const handleDeleteImage = async (imageUrl: string) => {
-    await container.imageRepository.deleteRoomImage(imageUrl);
+    const image = dbImages.find((img) => img.url === imageUrl);
+    if (image) {
+      await container.imageRepository.deleteImage(image.id);
+    } else {
+      await container.imageRepository.deleteRoomImage(imageUrl);
+    }
+    await fetchDbImages(id!);
+    if (selectedRoom) {
+      const updatedUrls = (selectedRoom.images || []).filter(
+        (url) => url !== imageUrl,
+      );
+      await supabase.from("rooms").update({ images: updatedUrls }).eq("id", id);
+      await fetchRoomById(id!);
+    }
   };
 
   const handleImagesChange = async (images: string[]) => {
     if (id) {
       await supabase.from("rooms").update({ images }).eq("id", id);
+      await fetchRoomById(id);
     }
   };
 
@@ -260,6 +308,27 @@ export function RoomManagementPage() {
                 onUpload={handleUploadImages}
                 onDelete={handleDeleteImage}
               />
+              {uploadProgress && uploadProgress.total > 0 && (
+                <div className="mt-4 p-3 bg-[#FFF8F1] dark:bg-[#242B35] rounded-xl">
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <span className="text-[#5E4836] dark:text-[#94A3B8]">
+                      Subiendo imagenes...
+                    </span>
+                    <span className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                      {uploadProgress.current}/{uploadProgress.total}
+                    </span>
+                  </div>
+                  <div className="w-full bg-[#E8D9C8] dark:bg-[#2D3748] rounded-full h-2">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{
+                        width: `${(uploadProgress.current / uploadProgress.total) * 100}%`,
+                      }}
+                      className="bg-[#E8850C] h-2 rounded-full transition-all"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
 

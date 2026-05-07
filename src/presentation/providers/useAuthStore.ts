@@ -83,10 +83,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const { uploadAvatar } = getContainer();
-      const avatarUrl = await uploadAvatar.execute(userId, file);
+      const imageRecord = await uploadAvatar.execute(userId, file);
       const currentUser = get().user;
       if (currentUser) {
-        const updatedUser = await getContainer().updateProfile.execute(currentUser.id, { avatarUrl });
+        const updatedUser = await getContainer().updateProfile.execute(currentUser.id, { avatarUrl: imageRecord.url });
         set({ user: updatedUser, isLoading: false });
       }
     } catch (error: unknown) {

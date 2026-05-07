@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useHotelStore } from "@/presentation/providers/useHotelStore";
@@ -6,6 +6,7 @@ import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { supabase } from "@/data/datasources/SupabaseClient";
 import { ImageUpload } from "@/presentation/components/ImageUpload";
 import { getContainer } from "@/core/di/Container";
+import type { ImageRecord } from "@/domain/repositories/ImageRepository";
 import {
   Plus,
   Bed,
@@ -41,6 +42,12 @@ export function HotelManagementPage() {
     email: selectedHotel?.email || "",
     address: selectedHotel?.address || "",
   });
+  const [dbImages, setDbImages] = useState<ImageRecord[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const deleteBranch = async (branchId: string, branchName: string) => {
     if (
@@ -74,6 +81,20 @@ export function HotelManagementPage() {
     }
   }, [selectedHotel?.isMain, id]);
 
+  useEffect(() => {
+    if (id) {
+      fetchDbImages(id);
+    }
+  }, [id]);
+
+  const fetchDbImages = async (hotelId: string) => {
+    const images = await container.imageRepository.getEntityImages(
+      "hotel",
+      hotelId,
+    );
+    setDbImages(images);
+  };
+
   const fetchBranches = async (mainHotelId: string) => {
     const { data } = await supabase
       .from("hotels")
@@ -106,27 +127,65 @@ export function HotelManagementPage() {
 
   const handleUploadImages = async (files: File[]) => {
     if (!id) return [];
-    const urls: string[] = [];
-    for (const file of files) {
-      const url = await container.imageRepository.uploadHotelImage(id, file);
-      urls.push(url);
+    setUploadProgress({ current: 0, total: files.length });
+    try {
+      const records = await container.imageRepository.uploadMultipleHotelImages(
+        id,
+        files,
+        (current, total) => setUploadProgress({ current, total }),
+      );
+      await fetchDbImages(id);
+      const urls = records.map((r) => r.url);
+      await updateImageUrlsInDb(urls);
+      return urls;
+    } finally {
+      setUploadProgress(null);
     }
-    return urls;
+  };
+
+  const updateImageUrlsInDb = async (newUrls: string[]) => {
+    if (!id || !selectedHotel) return;
+    const existingUrls = selectedHotel.images || [];
+    const allUrls = [...existingUrls, ...newUrls];
+    await supabase.from("hotels").update({ images: allUrls }).eq("id", id);
+    await fetchHotelById(id);
   };
 
   const handleDeleteImage = async (imageUrl: string) => {
-    await container.imageRepository.deleteHotelImage(imageUrl);
+    const image = dbImages.find((img) => img.url === imageUrl);
+    if (image) {
+      await container.imageRepository.deleteImage(image.id);
+    } else {
+      await container.imageRepository.deleteHotelImage(imageUrl);
+    }
+    await fetchDbImages(id!);
+    if (selectedHotel) {
+      const updatedUrls = (selectedHotel.images || []).filter(
+        (url) => url !== imageUrl,
+      );
+      await supabase
+        .from("hotels")
+        .update({ images: updatedUrls })
+        .eq("id", id);
+      await fetchHotelById(id!);
+    }
   };
 
   const handleImagesChange = async (images: string[]) => {
     if (id) {
       await supabase.from("hotels").update({ images }).eq("id", id);
+      await fetchHotelById(id);
     }
   };
 
   const handleCoverChange = async (cover: string) => {
+    const image = dbImages.find((img) => img.url === cover);
+    if (image) {
+      await container.imageRepository.setCoverImage(image.id);
+    }
     if (id) {
       await supabase.from("hotels").update({ cover_image: cover }).eq("id", id);
+      await fetchHotelById(id);
     }
   };
 
@@ -433,6 +492,27 @@ export function HotelManagementPage() {
             onUpload={handleUploadImages}
             onDelete={handleDeleteImage}
           />
+          {uploadProgress && uploadProgress.total > 0 && (
+            <div className="mt-4 p-3 bg-[#FFF8F1] dark:bg-[#242B35] rounded-xl">
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="text-[#5E4836] dark:text-[#94A3B8]">
+                  Subiendo imagenes...
+                </span>
+                <span className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
+                  {uploadProgress.current}/{uploadProgress.total}
+                </span>
+              </div>
+              <div className="w-full bg-[#E8D9C8] dark:bg-[#2D3748] rounded-full h-2">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: `${(uploadProgress.current / uploadProgress.total) * 100}%`,
+                  }}
+                  className="bg-[#E8850C] h-2 rounded-full transition-all"
+                />
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Rooms Section */}

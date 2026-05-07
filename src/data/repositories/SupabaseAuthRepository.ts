@@ -1,6 +1,8 @@
 import { supabase, handleSupabaseError } from '../datasources/SupabaseClient';
 import type { AuthRepository } from '@/domain/repositories/AuthRepository';
 import type { User, UserRole } from '@/domain/entities/User';
+import type { ImageRecord } from '@/domain/repositories/ImageRepository';
+import { SupabaseImageRepository } from './SupabaseImageRepository';
 
 interface UserRecord {
   id: string;
@@ -116,21 +118,9 @@ export class SupabaseAuthRepository implements AuthRepository {
     return this.mapToUser(authUser.user, updated);
   }
 
-  async uploadAvatar(userId: string, file: File): Promise<string> {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}/avatar.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(fileName, file, { upsert: true });
-
-    if (uploadError) handleSupabaseError(uploadError);
-
-    const { data } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName);
-
-    return data.publicUrl;
+  async uploadAvatar(userId: string, file: File): Promise<ImageRecord> {
+    const imageRepo = new SupabaseImageRepository();
+    return imageRepo.uploadUserAvatar(userId, file);
   }
 
   async updatePassword(_currentPassword: string, newPassword: string): Promise<void> {
