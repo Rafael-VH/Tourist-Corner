@@ -146,23 +146,28 @@ export function AdminUsersPage() {
             No se encontraron usuarios
           </p>
         </div>
-      ) : (
-        <div className="space-y-2">
+       ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredUsers.map((u) => (
             <div
               key={u.id}
-              className="flex items-center justify-between p-4 bg-white dark:bg-[#1A2028] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl"
+              className="p-4 bg-white dark:bg-[#1A2028] border border-[#E8D9C8] dark:border-[#2D3748] rounded-xl"
             >
-              <div>
-                <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0]">
-                  {u.name}
-                </p>
-                <p className="text-sm text-[#96785A] dark:text-[#64748B]">
-                  {u.email}
-                </p>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-[#E8850C] flex items-center justify-center text-white text-sm font-bold shrink-0">
+                  {u.name?.[0]?.toUpperCase() || "U"}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-[#2D1F14] dark:text-[#E2E8F0] truncate">
+                    {u.name}
+                  </p>
+                  <p className="text-xs text-[#96785A] dark:text-[#64748B] truncate">
+                    {u.email}
+                  </p>
+                </div>
               </div>
               <span
-                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
                   u.role === "admin"
                     ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
                     : u.role === "owner"
