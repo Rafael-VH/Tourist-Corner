@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useRoomStore } from "@/presentation/providers/useRoomStore";
 import { supabase } from "@/data/datasources/SupabaseClient";
@@ -28,7 +28,7 @@ export function RoomManagementPage() {
   const { selectedRoom, fetchRoomById, isLoading, updateRoomStatus, updateRoom, deleteRoom } =
     useRoomStore();
 
-  const room = selectedRoom;
+  const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(true);
 
@@ -82,6 +82,7 @@ export function RoomManagementPage() {
   const room = selectedRoom;
 
   const handleToggleStatus = async () => {
+    if (!room) return;
     const newStatus: RoomStatus =
       room.status === "available" ? "occupied" : "available";
     await updateRoomStatus(room.id, newStatus);
@@ -92,7 +93,7 @@ export function RoomManagementPage() {
     try {
       await deleteRoom(room.id);
       setShowDeleteConfirm(false);
-      navigate(`/dashboard/hotel/${room.hotel_id}`);
+      navigate(`/dashboard/hotel/${room.hotelId}`);
     } catch (err: unknown) {
       console.error("Error al eliminar habitacion:", err);
       alert(`Error al eliminar: ${(err as Error)?.message || "Error desconocido"}`);
@@ -134,8 +135,8 @@ export function RoomManagementPage() {
   };
 
   const updateImageUrlsInDb = async (newUrls: string[]) => {
-    if (!id || !selectedRoom) return;
-    const existingUrls = selectedRoom.images || [];
+    if (!id || !room) return;
+    const existingUrls = room.images || [];
     const allUrls = [...existingUrls, ...newUrls];
     await supabase.from("rooms").update({ images: allUrls }).eq("id", id);
     await fetchRoomById(id);
@@ -149,8 +150,8 @@ export function RoomManagementPage() {
       await container.imageRepository.deleteRoomImage(imageUrl);
     }
     await fetchDbImages(id!);
-    if (selectedRoom) {
-      const updatedUrls = (selectedRoom.images || []).filter(
+    if (room) {
+      const updatedUrls = (room.images || []).filter(
         (url) => url !== imageUrl,
       );
       await supabase.from("rooms").update({ images: updatedUrls }).eq("id", id);
@@ -334,7 +335,7 @@ export function RoomManagementPage() {
                 </h2>
               </div>
               <ImageUpload
-                images={selectedRoom?.images || []}
+                images={room.images || []}
                 onImagesChange={handleImagesChange}
                 onCoverChange={() => {}}
                 onUpload={handleUploadImages}
