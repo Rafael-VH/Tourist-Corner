@@ -17,6 +17,7 @@ import {
   Image as ImageIcon,
   ToggleLeft,
   ToggleRight,
+  Trash2,
 } from "lucide-react";
 
 export function RoomManagementPage() {
@@ -42,6 +43,8 @@ export function RoomManagementPage() {
   });
 
   const [dbImages, setDbImages] = useState<ImageRecord[]>([]);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [uploadProgress, setUploadProgress] = useState<{
     current: number;
@@ -82,6 +85,16 @@ export function RoomManagementPage() {
     const newStatus: RoomStatus =
       room.status === "available" ? "occupied" : "available";
     await updateRoomStatus(room.id, newStatus);
+  };
+
+  const handleDelete = async () => {
+    if (!room) return;
+    try {
+      await supabase.from("rooms").delete().eq("id", room.id);
+      navigate(`/dashboard/hotel/${room.hotel_id}`);
+    } catch (err) {
+      console.error("Error al eliminar habitacion:", err);
+    }
   };
 
   const handleSave = async () => {
@@ -184,6 +197,13 @@ export function RoomManagementPage() {
                 </>
               )}
             </div>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-red-300 dark:border-red-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl text-sm font-medium transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Eliminar
+            </button>
           </div>
         </div>
       </div>
@@ -453,6 +473,43 @@ export function RoomManagementPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-sm bg-white dark:bg-[#1A2028] rounded-2xl border border-[#E8D9C8] dark:border-[#2D3748] overflow-hidden shadow-2xl"
+          >
+            <div className="p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-6 h-6 text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-[#2D1F14] dark:text-[#E2E8F0] mb-2">
+                Eliminar Habitacion
+              </h3>
+              <p className="text-sm text-[#96785A] dark:text-[#64748B] mb-6">
+                Estas seguro que deseas eliminar "{room?.name}"? Esta accion no se puede deshacer.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 py-2.5 bg-[#FDF8F3] dark:bg-[#242B35] text-[#5E4836] dark:text-[#94A3B8] rounded-xl text-sm font-medium hover:bg-[#FFF8F1] dark:hover:bg-[#2D3748] transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-medium transition-colors"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
