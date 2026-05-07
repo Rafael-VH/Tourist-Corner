@@ -25,7 +25,7 @@ export function RoomManagementPage() {
 
   const container = getContainer();
 
-  const { rooms, fetchRoomById, isLoading, updateRoomStatus, updateRoom } =
+  const { rooms, fetchRoomById, isLoading, updateRoomStatus, updateRoom, deleteRoom } =
     useRoomStore();
 
   const selectedRoom = rooms.find((r) => r.id === id) || null;
@@ -90,7 +90,7 @@ export function RoomManagementPage() {
   const handleDelete = async () => {
     if (!room) return;
     try {
-      await supabase.from("rooms").delete().eq("id", room.id);
+      await deleteRoom(room.id);
       navigate(`/dashboard/hotel/${room.hotel_id}`);
     } catch (err) {
       console.error("Error al eliminar habitacion:", err);
