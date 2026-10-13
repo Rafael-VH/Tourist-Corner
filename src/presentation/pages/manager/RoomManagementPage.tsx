@@ -25,8 +25,14 @@ export function RoomManagementPage() {
 
   const container = getContainer();
 
-  const { selectedRoom, fetchRoomById, isLoading, updateRoomStatus, updateRoom, deleteRoom } =
-    useRoomStore();
+  const {
+    selectedRoom,
+    fetchRoomById,
+    isLoading,
+    updateRoomStatus,
+    updateRoom,
+    deleteRoom,
+  } = useRoomStore();
 
   const navigate = useNavigate();
 
@@ -51,13 +57,16 @@ export function RoomManagementPage() {
     total: number;
   } | null>(null);
 
-  const fetchDbImages = useCallback(async (roomId: string) => {
-    const images = await container.imageRepository.getEntityImages(
-      "room",
-      roomId,
-    );
-    setDbImages(images);
-  }, [container]);
+  const fetchDbImages = useCallback(
+    async (roomId: string) => {
+      const images = await container.imageRepository.getEntityImages(
+        "room",
+        roomId,
+      );
+      setDbImages(images);
+    },
+    [container],
+  );
 
   useEffect(() => {
     if (id) {
@@ -96,7 +105,9 @@ export function RoomManagementPage() {
       navigate(`/dashboard/hotel/${room.hotelId}`);
     } catch (err: unknown) {
       console.error("Error al eliminar habitacion:", err);
-      alert(`Error al eliminar: ${(err as Error)?.message || "Error desconocido"}`);
+      alert(
+        `Error al eliminar: ${(err as Error)?.message || "Error desconocido"}`,
+      );
       setShowDeleteConfirm(false);
     }
   };
@@ -151,9 +162,7 @@ export function RoomManagementPage() {
     }
     await fetchDbImages(id!);
     if (room) {
-      const updatedUrls = (room.images || []).filter(
-        (url) => url !== imageUrl,
-      );
+      const updatedUrls = (room.images || []).filter((url) => url !== imageUrl);
       await supabase.from("rooms").update({ images: updatedUrls }).eq("id", id);
       await fetchRoomById(id!);
     }
@@ -494,7 +503,8 @@ export function RoomManagementPage() {
                 Eliminar Habitacion
               </h3>
               <p className="text-sm text-[#96785A] dark:text-[#64748B] mb-6">
-                Estas seguro que deseas eliminar "{room?.name}"? Esta accion no se puede deshacer.
+                Estas seguro que deseas eliminar "{room?.name}"? Esta accion no
+                se puede deshacer.
               </p>
               <div className="flex gap-3">
                 <button
