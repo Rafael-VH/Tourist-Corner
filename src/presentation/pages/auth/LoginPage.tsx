@@ -48,9 +48,11 @@ export function LoginPage() {
     try {
       const user = await signIn(email, password);
       if (user?.role === "admin") {
-        navigate("/admin");
+        navigate("/admin", { replace: true });
+      } else if (user?.role === "owner") {
+        navigate("/dashboard", { replace: true });
       } else {
-        navigate("/");
+        navigate("/", { replace: true });
       }
     } catch (err: unknown) {
       setError((err as Error).message || "Error al iniciar sesion");
