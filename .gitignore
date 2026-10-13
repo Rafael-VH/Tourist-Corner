@@ -32,4 +32,10 @@ dist-ssr
 supabase/run_migration.js
 supabase/supabase_migration.sql
 
-.github
+# CLI
+.antigravitycli/
+.commandcode/
+.opencode/
+
+# Repo
+.specify/
